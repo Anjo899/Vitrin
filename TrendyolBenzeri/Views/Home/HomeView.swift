@@ -7,6 +7,11 @@ import SwiftUI
 
 struct HomeView: View {
     @State private var viewModel = HomeViewModel()
+    @State private var searchText = ""
+
+    private var isSearching: Bool {
+        !searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
 
     private let columns = [
         GridItem(.flexible(), spacing: 12),
@@ -14,14 +19,25 @@ struct HomeView: View {
     ]
 
     var body: some View {
-        content
-            .navigationTitle("Vitrin")
-            .navigationDestination(for: Product.self) { product in
-                ProductDetailView(product: product)
+        Group {
+            if isSearching {
+                searchContent
+            } else {
+                content
             }
-            .task {
-                await viewModel.loadIfNeeded()
-            }
+        }
+        .navigationTitle("Vitrin")
+        .searchable(text: $searchText, prompt: "Ürün, marka ara")
+        // searchText her değiştiğinde önceki görev iptal edilip yenisi başlar.
+        .task(id: searchText) {
+            await viewModel.search(searchText)
+        }
+        .navigationDestination(for: Product.self) { product in
+            ProductDetailView(product: product)
+        }
+        .task {
+            await viewModel.loadIfNeeded()
+        }
     }
 
     @ViewBuilder
@@ -42,6 +58,29 @@ struct HomeView: View {
             .refreshable {
                 await viewModel.refresh()
             }
+        }
+    }
+
+    @ViewBuilder
+    private var searchContent: some View {
+        switch viewModel.searchState {
+        case .idle, .loading:
+            LoadingView(message: "Aranıyor…")
+        case .failed(let message):
+            ErrorView(message: message) {
+                await viewModel.search(searchText)
+            }
+        case .loaded(let products) where products.isEmpty:
+            ContentUnavailableView(
+                "Sonuç bulunamadı",
+                systemImage: "magnifyingglass",
+                description: Text("“\(searchText)” için ürün bulunamadı. Farklı bir kelime dene.")
+            )
+        case .loaded(let products):
+            ScrollView {
+                productGrid(products)
+            }
+            .scrollDismissesKeyboard(.immediately)
         }
     }
 
