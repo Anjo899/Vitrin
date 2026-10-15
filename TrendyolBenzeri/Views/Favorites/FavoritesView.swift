@@ -8,6 +8,9 @@ import SwiftUI
 /// Favori ürünler. Veri ağdan değil `FavoritesStore`'dan geldiği için yükleniyor/hata durumu yok;
 /// başka bir ekranda kalbe basıldığında bu liste kendiliğinden güncellenir.
 struct FavoritesView: View {
+    /// Seçili sekme `MainTabView`'a ait; `@Binding` ile buradan değiştirebiliyoruz.
+    @Binding var selectedTab: MainTabView.Tab
+
     @Environment(FavoritesStore.self) private var favoritesStore
 
     var body: some View {
@@ -23,11 +26,16 @@ struct FavoritesView: View {
         let products = favoritesStore.products
 
         if products.isEmpty {
-            ContentUnavailableView(
-                "Henüz favori ürünün yok",
-                systemImage: "heart",
-                description: Text("Beğendiğin ürünlerdeki kalbe basarak onları buraya ekleyebilirsin.")
-            )
+            ContentUnavailableView {
+                Label("Henüz favori ürünün yok", systemImage: "heart")
+            } description: {
+                Text("Beğendiğin ürünlerdeki kalbe basarak onları buraya ekleyebilirsin.")
+            } actions: {
+                Button("Ürünleri Keşfet") {
+                    selectedTab = .home
+                }
+                .buttonStyle(.borderedProminent)
+            }
         } else {
             ScrollView {
                 Text("\(products.count) ürün")
@@ -50,7 +58,14 @@ struct FavoritesView: View {
     }
 
     return NavigationStack {
-        FavoritesView()
+        FavoritesView(selectedTab: .constant(.favorites))
     }
     .environment(favoritesStore)
+}
+
+#Preview("Boş") {
+    NavigationStack {
+        FavoritesView(selectedTab: .constant(.favorites))
+    }
+    .environment(FavoritesStore(storage: PlistStorage(directory: .temporaryDirectory.appending(path: UUID().uuidString))))
 }
