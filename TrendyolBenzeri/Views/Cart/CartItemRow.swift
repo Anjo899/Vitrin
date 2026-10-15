@@ -1,0 +1,111 @@
+//
+//  CartItemRow.swift
+//  TrendyolBenzeri
+//
+
+import SwiftUI
+
+/// Sepetteki bir satır: görsel, ürün bilgisi, fiyat ve adet kontrolleri.
+struct CartItemRow: View {
+    let item: CartItem
+
+    @Environment(CartStore.self) private var cartStore
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 12) {
+            thumbnail
+
+            VStack(alignment: .leading, spacing: 4) {
+                if let brand = item.product.brand {
+                    Text(brand)
+                        .font(.caption.weight(.semibold))
+                }
+                Text(item.product.title)
+                    .font(.subheadline)
+                    .lineLimit(2)
+
+                HStack(spacing: 4) {
+                    Text(item.product.discountedPrice.formattedPrice)
+                    if item.product.hasDiscount {
+                        Text(item.product.price.formattedPrice)
+                            .strikethrough()
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                .font(.caption)
+
+                HStack {
+                    quantityControls
+                    Spacer()
+                    Text(item.lineTotal.formattedPrice)
+                        .font(.subheadline.bold())
+                }
+                .padding(.top, 4)
+            }
+        }
+        .padding(.vertical, 4)
+    }
+
+    private var thumbnail: some View {
+        AsyncImage(url: item.product.thumbnail) { phase in
+            if let image = phase.image {
+                image
+                    .resizable()
+                    .scaledToFit()
+            } else {
+                Image(systemName: "photo")
+                    .foregroundStyle(.tertiary)
+            }
+        }
+        .frame(width: 72, height: 72)
+        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 8))
+    }
+
+    private var quantityControls: some View {
+        HStack(spacing: 0) {
+            Button {
+                cartStore.decrement(item)
+            } label: {
+                // Adet 1'deyken azaltmak ürünü sepetten çıkarır; ikon bunu belli eder.
+                Image(systemName: item.quantity == 1 ? "trash" : "minus")
+                    .frame(width: 32, height: 32)
+            }
+            .accessibilityLabel(item.quantity == 1 ? "Sepetten çıkar" : "Adedi azalt")
+
+            Text("\(item.quantity)")
+                .font(.subheadline.monospacedDigit().bold())
+                .frame(minWidth: 28)
+                .contentTransition(.numericText())
+
+            Button {
+                cartStore.increment(item)
+            } label: {
+                Image(systemName: "plus")
+                    .frame(width: 32, height: 32)
+            }
+            .disabled(!cartStore.canAdd(item.product))
+            .accessibilityLabel("Adedi artır")
+        }
+        .font(.subheadline.weight(.semibold))
+        // List satırında butonların ayrı ayrı basılabilmesi için gerekli;
+        // aksi halde satıra basmak her iki butonu da tetikler.
+        .buttonStyle(.borderless)
+        .overlay {
+            Capsule()
+                .stroke(Color(.separator))
+        }
+        .animation(.default, value: item.quantity)
+    }
+}
+
+#Preview {
+    let cartStore = CartStore(storage: .preview)
+    cartStore.add(.previewMascara)
+
+    return List {
+        if let item = cartStore.sortedItems.first {
+            CartItemRow(item: item)
+        }
+    }
+    .environment(cartStore)
+}
