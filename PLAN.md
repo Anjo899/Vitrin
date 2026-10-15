@@ -18,7 +18,7 @@ Trendyol benzeri bir e-ticaret uygulaması (okul projesi, SwiftUI öğrenme ama�
 |---|--------|------|-------|
 | 0 | `chore/project-setup` | `main` | ✅ Tamamlandı |
 | 1 | `feature/core-networking` | `chore/project-setup` | ✅ Tamamlandı |
-| 2 | `feature/stores-persistence` | `feature/core-networking` | ⬜ |
+| 2 | `feature/stores-persistence` | `feature/core-networking` | ✅ Tamamlandı |
 | 3 | `feature/app-shell` | `feature/stores-persistence` | ⬜ |
 | 4 | `feature/home-grid` | `feature/app-shell` | ⬜ |
 | 5 | `feature/home-search` | `feature/home-grid` | ⬜ |
@@ -38,10 +38,11 @@ Trendyol benzeri bir e-ticaret uygulaması (okul projesi, SwiftUI öğrenme ama�
 - `Utilities/PriceFormatter.swift`: fiyat biçimlendirme (dummyjson fiyatları dolar: `$1,234.50`, en_US).
 - Testler: örnek JSON ile decode testleri.
 
-### 2. feature/stores-persistence: paylaşılan state
+### 2. feature/stores-persistence ✅: paylaşılan state
+- Paylaşılan `TrendyolBenzeri` scheme'i: test aksiyonu sadece unit testleri çalıştırır (şablon UI testleri çıkarıldı, dosyaları duruyor).
 - `Persistence/PlistStorage.swift`: generic `save` / `load`, Documents altında `favorites.plist`, `cart.plist`.
 - `Stores/FavoritesStore.swift` (`@Observable`): `items: [Int: Product]`, `isFavorite(_:)`, `toggle(_:)`, sıralı `products`; her değişiklikte kaydet, açılışta yükle.
-- `Stores/CartStore.swift` (`@Observable`): `items: [Int: CartItem]` (product + quantity), `add`, `increment`, `decrement` (1'in altına inince sil), `remove`, `totalQuantity`, `totalPrice`.
+- `Stores/CartStore.swift` (`@Observable`): `items: [Int: CartItem]` (product + quantity), `add` (stoktan fazla eklenmez), `increment`, `decrement` (1'in altına inince sil), `remove`, `totalQuantity`, `totalPrice` (indirimli fiyatlarla).
 - `TrendyolBenzeriApp`: store'lar `@State` ile oluşturulup `.environment(...)` ile verilir.
 - Testler: store mantığı + plist kaydet/yükle.
 
