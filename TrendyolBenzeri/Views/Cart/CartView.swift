@@ -6,6 +6,9 @@
 import SwiftUI
 
 struct CartView: View {
+    /// Seçili sekme `MainTabView`'a ait; boş sepetteki buton Ana Sayfa'ya geçirir.
+    @Binding var selectedTab: MainTabView.Tab
+
     @Environment(CartStore.self) private var cartStore
     @State private var showsCheckoutAlert = false
 
@@ -22,11 +25,16 @@ struct CartView: View {
     @ViewBuilder
     private var content: some View {
         if cartStore.isEmpty {
-            ContentUnavailableView(
-                "Sepetin boş",
-                systemImage: "cart",
-                description: Text("Beğendiğin ürünleri sepete ekleyerek alışverişe başlayabilirsin.")
-            )
+            ContentUnavailableView {
+                Label("Sepetin boş", systemImage: "cart")
+            } description: {
+                Text("Beğendiğin ürünleri sepete ekleyerek alışverişe başlayabilirsin.")
+            } actions: {
+                Button("Alışverişe Başla") {
+                    selectedTab = .home
+                }
+                .buttonStyle(.borderedProminent)
+            }
         } else {
             List {
                 ForEach(cartStore.sortedItems) { item in
@@ -84,7 +92,14 @@ struct CartView: View {
     cartStore.add(.previewMascara)
 
     return NavigationStack {
-        CartView()
+        CartView(selectedTab: .constant(.cart))
     }
     .environment(cartStore)
+}
+
+#Preview("Boş") {
+    NavigationStack {
+        CartView(selectedTab: .constant(.cart))
+    }
+    .environment(CartStore(storage: PlistStorage(directory: .temporaryDirectory.appending(path: UUID().uuidString))))
 }
