@@ -102,9 +102,7 @@ struct ProductDecodingTests {
         #expect(categories[1].name == "Mens Shirts")
     }
 
-    @Test func formatsPriceInTurkishLira() {
-        let text = 1234.5.formattedPrice
-        #expect(text.contains("₺"))
-        #expect(text.contains("1.234,50"))
+    @Test func formatsPriceInUSDollars() {
+        #expect(1234.5.formattedPrice == "$1,234.50")
     }
 }

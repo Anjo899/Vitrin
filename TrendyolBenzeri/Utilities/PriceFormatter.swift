@@ -6,9 +6,9 @@
 import Foundation
 
 nonisolated extension Double {
-    /// Türk lirası biçiminde fiyat, ör. 1234.5 → "₺1.234,50".
+    /// dummyjson fiyatları dolar cinsinden, ör. 1234.5 → "$1,234.50".
     var formattedPrice: String {
-        formatted(.currency(code: "TRY").locale(Locale(identifier: "tr_TR")))
+        formatted(.currency(code: "USD").locale(Locale(identifier: "en_US")))
     }
 }
 

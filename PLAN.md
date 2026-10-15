@@ -35,7 +35,7 @@ Trendyol benzeri bir e-ticaret uygulaması (okul projesi, SwiftUI öğrenme ama�
 - `Models/ProductCategory.swift`: `/products/categories` `{slug, name, url}` nesneleri döndürüyor.
 - `Networking/APIClient.swift`: generic `get<T: Decodable>(_ path:, query:) async throws -> T`, `APIError` (invalidURL, badStatus, decoding), Türkçe `errorDescription`.
 - `Networking/ProductService.swift`: `fetchProducts()`, `searchProducts(query:)`, `fetchCategories()`, `fetchProducts(category:)` (`/products/category/{slug}`), `fetchProduct(id:)`.
-- `Utilities/PriceFormatter.swift`: fiyat biçimlendirme (`₺`, tr_TR).
+- `Utilities/PriceFormatter.swift`: fiyat biçimlendirme (dummyjson fiyatları dolar: `$1,234.50`, en_US).
 - Testler: örnek JSON ile decode testleri.
 
 ### 2. feature/stores-persistence: paylaşılan state
