@@ -16,6 +16,9 @@ struct HomeView: View {
     var body: some View {
         content
             .navigationTitle("Vitrin")
+            .navigationDestination(for: Product.self) { product in
+                ProductDetailView(product: product)
+            }
             .task {
                 await viewModel.loadIfNeeded()
             }
