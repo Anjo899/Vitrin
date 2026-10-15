@@ -31,6 +31,10 @@ struct ProductDetailView: View {
                 .padding()
             }
         }
+        // Çubuk içeriğin altına yerleşir; kaydırılan içerik çubuğun arkasında kalmaz.
+        .safeAreaInset(edge: .bottom) {
+            AddToCartBar(product: product)
+        }
         .navigationTitle(product.title)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -137,4 +141,5 @@ struct ProductDetailView: View {
         ProductDetailView(product: .previewMascara)
     }
     .environment(FavoritesStore(storage: .preview))
+    .environment(CartStore(storage: .preview))
 }
