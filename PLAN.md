@@ -17,7 +17,7 @@ Trendyol benzeri bir e-ticaret uygulaması (okul projesi, SwiftUI öğrenme ama�
 | # | Branch | Base | Durum |
 |---|--------|------|-------|
 | 0 | `chore/project-setup` | `main` | ✅ Tamamlandı |
-| 1 | `feature/core-networking` | `chore/project-setup` | ⬜ |
+| 1 | `feature/core-networking` | `chore/project-setup` | ✅ Tamamlandı |
 | 2 | `feature/stores-persistence` | `feature/core-networking` | ⬜ |
 | 3 | `feature/app-shell` | `feature/stores-persistence` | ⬜ |
 | 4 | `feature/home-grid` | `feature/app-shell` | ⬜ |
@@ -30,7 +30,7 @@ Trendyol benzeri bir e-ticaret uygulaması (okul projesi, SwiftUI öğrenme ama�
 ### 0. chore/project-setup ✅
 `.gitignore`, deployment target iOS 17.0, görünen ad Vitrin, `AccentColor` + `BrandAccent` renkleri, `PLAN.md`.
 
-### 1. feature/core-networking: veri katmanı (henüz UI yok)
+### 1. feature/core-networking ✅: veri katmanı (henüz UI yok)
 - `Models/Product.swift`: `Product` (id, title, description, category, price, discountPercentage, rating, stock, brand?, thumbnail, images, reviews), `Review`, `ProductsResponse` (products, total, skip, limit). Hepsi `Codable, Identifiable, Hashable`. `brand` opsiyonel (bazı ürünlerde yok). Hesaplanan `discountedPrice`.
 - `Models/ProductCategory.swift`: `/products/categories` `{slug, name, url}` nesneleri döndürüyor.
 - `Networking/APIClient.swift`: generic `get<T: Decodable>(_ path:, query:) async throws -> T`, `APIError` (invalidURL, badStatus, decoding), Türkçe `errorDescription`.
