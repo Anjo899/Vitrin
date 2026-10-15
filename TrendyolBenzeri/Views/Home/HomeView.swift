@@ -13,11 +13,6 @@ struct HomeView: View {
         !searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
-    private let columns = [
-        GridItem(.flexible(), spacing: 12),
-        GridItem(.flexible(), spacing: 12),
-    ]
-
     var body: some View {
         Group {
             if isSearching {
@@ -53,7 +48,7 @@ struct HomeView: View {
             ContentUnavailableView("Ürün bulunamadı", systemImage: "shippingbox")
         case .loaded(let products):
             ScrollView {
-                productGrid(products)
+                ProductGridView(products: products)
             }
             .refreshable {
                 await viewModel.refresh()
@@ -78,28 +73,10 @@ struct HomeView: View {
             )
         case .loaded(let products):
             ScrollView {
-                productGrid(products)
+                ProductGridView(products: products)
             }
             .scrollDismissesKeyboard(.immediately)
         }
-    }
-
-    private func productGrid(_ products: [Product]) -> some View {
-        LazyVGrid(columns: columns, spacing: 12) {
-            ForEach(products) { product in
-                NavigationLink(value: product) {
-                    ProductCardView(product: product)
-                }
-                .buttonStyle(.plain)
-                // Kalp, NavigationLink'in dışında; basınca detay açılmaz.
-                .overlay(alignment: .topTrailing) {
-                    FavoriteButton(product: product)
-                        .padding(12)
-                }
-            }
-        }
-        .padding(.horizontal)
-        .padding(.bottom)
     }
 }
 
