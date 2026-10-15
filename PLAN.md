@@ -24,7 +24,7 @@ Trendyol benzeri bir e-ticaret uygulaması (okul projesi, SwiftUI öğrenme ama�
 | 5 | `feature/home-search` | `feature/home-grid` | ✅ Tamamlandı |
 | 6 | `feature/product-detail` | `feature/home-search` | ✅ Tamamlandı |
 | 7 | `feature/categories` | `feature/product-detail` | ✅ Tamamlandı |
-| 8 | `feature/favorites-screen` | `feature/categories` | ⬜ |
+| 8 | `feature/favorites-screen` | `feature/categories` | ✅ Tamamlandı |
 | 9 | `feature/cart-screen` | `feature/favorites-screen` | ⬜ |
 
 ### 0. chore/project-setup ✅
@@ -69,8 +69,8 @@ Trendyol benzeri bir e-ticaret uygulaması (okul projesi, SwiftUI öğrenme ama�
 ### 7. feature/categories ✅
 Kategori listesi → seçilen kategorinin ürünleri. Ana sayfadaki grid ortak `ProductGridView`'e çıkarılır (`refactor:` commit). API kategori adları İngilizce olduğu için slug → Türkçe ad + SF Symbol ikonu eşlemesi (`ProductCategory+Display.swift`), bilinmeyen kategoride API adı kullanılır.
 
-### 8. feature/favorites-screen
-Favori ürünlerin grid'i; boşken "Henüz favori ürünün yok" ekranı.
+### 8. feature/favorites-screen ✅
+Favori ürünlerin grid'i; boşken "Henüz favori ürünün yok" ekranı ve seçili sekmeyi `@Binding` ile Ana Sayfa'ya çeviren "Ürünleri Keşfet" butonu.
 
 ### 9. feature/cart-screen
 Sepet satırları (görsel, ad, fiyat, `−` / adet / `+`), kaydırarak veya çöp butonuyla silme, toplam tutar, "Alışverişi Tamamla" (MVP'de sadece uyarı), boş sepet ekranı ("Sepetin boş").
