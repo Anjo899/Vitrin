@@ -15,6 +15,8 @@ final class HomeViewModel {
     private(set) var searchState: LoadState<[Product]> = .idle
 
     @ObservationIgnored private let service: ProductService
+    /// En son istenen arama. Daha eski bir aramanın geç gelen sonucu bununla karşılaştırılıp atılır.
+    @ObservationIgnored private var latestQuery = ""
 
     init(service: ProductService = .shared) {
         self.service = service
@@ -41,19 +43,29 @@ final class HomeViewModel {
     /// önceki görev iptal edildiği için bekleme sırasında gelen harfler istek attırmaz (debounce).
     func search(_ query: String) async {
         let trimmedQuery = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        latestQuery = trimmedQuery
         guard !trimmedQuery.isEmpty else {
             searchState = .idle
             return
         }
 
+        // İptal edilmeyen eski bir arama ("Tekrar Dene" görevi gibi) veya iptalle aynı anda gelen
+        // bir cevap, yenisinin sonucunu ezmesin.
+        func isLatest() -> Bool {
+            trimmedQuery == latestQuery && !Task.isCancelled
+        }
+
         do {
             try await Task.sleep(for: .milliseconds(400))
+            guard isLatest() else { return }
             searchState = .loading
             let products = try await service.searchProducts(query: trimmedQuery)
+            guard isLatest() else { return }
             searchState = .loaded(products)
         } catch is CancellationError {
             // Kullanıcı yazmaya devam etti; yeni arama zaten başladı.
         } catch {
+            guard isLatest() else { return }
             searchState = .failed(error.localizedDescription)
         }
     }
