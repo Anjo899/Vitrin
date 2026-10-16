@@ -17,10 +17,11 @@
 | `Views/<Ekran>/` | Ekran view'ları ve varsa ekranın `ViewModel`'i (`Home/`, `Categories/`, `ProductDetail/`, `Favorites/`, `Cart/`) |
 | `Views/Common/` | `LoadState`, `LoadingView`, `ErrorView` |
 | `Views/Components/` | Tekrar kullanılan bileşenler (aşağıda) |
-| `Utilities/` | `PriceFormatter`, `PreviewData` (yalnızca DEBUG) |
+| `Utilities/` | `PriceFormatter`, `PreviewData` (önizleme verisi; `#Preview` blokları Release'te de derlendiği için `#if DEBUG` içine alınmaz) |
 
 - Akış: View → ViewModel → `ProductService` → `APIClient`. View'lar URL bilmez.
 - Projede `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor`. View, ViewModel ve store'lar MainActor'da; modeller, ağ katmanı ve `PlistStorage` `nonisolated` + `Sendable`.
+- `SWIFT_APPROACHABLE_CONCURRENCY` açık (`NonisolatedNonsendingByDefault`): `nonisolated async` bir fonksiyon çağıranın actor'ünde çalışır. Yani ViewModel'den çağrılan `APIClient.get` JSON'u şu an ana thread'de çözüyor; işi arka plana almak için `@concurrent` gerekir (`REVIEW.md` O4).
 
 ## State management
 - **`@State`**: ekrana ait değerler ve ekranın ViewModel'i (`@State private var viewModel = HomeViewModel()`). ViewModel bir parametreye bağlıysa init'te `_viewModel = State(initialValue: …)`.
