@@ -3,10 +3,10 @@
 //  TrendyolBenzeri
 //
 
-#if DEBUG
 import Foundation
 
-/// Sadece Xcode önizlemelerinde (#Preview) kullanılan örnek veriler.
+/// Xcode önizlemelerinde (#Preview) kullanılan örnek veriler.
+/// `#Preview` blokları Release dahil her yapılandırmada derlendiği için bu dosya `#if DEBUG` içinde değil.
 extension Product {
     static let previewMascara = Product(
         id: 1,
@@ -47,4 +47,3 @@ extension PlistStorage {
         PlistStorage(directory: FileManager.default.temporaryDirectory)
     }
 }
-#endif
