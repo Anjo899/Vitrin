@@ -27,6 +27,20 @@ struct PlistStorageTests {
 
         #expect(loaded == items)
     }
+
+    @MainActor
+    @Test func corruptFileIsMovedAsideInsteadOfOverwritten() throws {
+        let storage = try PlistStorage.temporary()
+        let corruptData = Data("bozuk veri".utf8)
+        try corruptData.write(to: storage.directory.appending(path: "cart.plist"))
+
+        let cartStore = CartStore(storage: storage)
+        cartStore.add(.sample())
+
+        #expect(cartStore.totalQuantity == 1)
+        let movedAside = try Data(contentsOf: storage.directory.appending(path: "cart.plist.corrupt"))
+        #expect(movedAside == corruptData)
+    }
 }
 
 @MainActor

@@ -21,7 +21,9 @@ final class FavoritesStore {
         do {
             items = try storage.load([Int: Product].self, from: fileName) ?? [:]
         } catch {
-            print("Favoriler yüklenemedi: \(error)")
+            // Bozuk ya da eski formattaki dosya, boş liste kaydedilirken ezilmesin.
+            print("Favoriler yüklenemedi, dosya kenara alınıyor: \(error)")
+            storage.moveAsideCorruptFile(fileName)
         }
     }
 

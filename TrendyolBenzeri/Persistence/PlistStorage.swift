@@ -32,6 +32,21 @@ nonisolated struct PlistStorage: Sendable {
         return try PropertyListDecoder().decode(type, from: data)
     }
 
+    /// Okunamayan dosyayı silmeden kenara alır (ör. `cart.plist` → `cart.plist.corrupt`).
+    /// Böylece bir sonraki kayıt eski veriyi ezmez; dosya incelenip kurtarılabilir.
+    func moveAsideCorruptFile(_ fileName: String) {
+        let source = fileURL(for: fileName)
+        let destination = fileURL(for: "\(fileName).corrupt")
+        do {
+            if FileManager.default.fileExists(atPath: destination.path()) {
+                try FileManager.default.removeItem(at: destination)
+            }
+            try FileManager.default.moveItem(at: source, to: destination)
+        } catch {
+            print("\(fileName) kenara alınamadı: \(error)")
+        }
+    }
+
     private func fileURL(for fileName: String) -> URL {
         directory.appending(path: fileName)
     }
