@@ -27,8 +27,9 @@ nonisolated struct Product: Codable, Identifiable, Hashable, Sendable {
     }
 
     /// `price` indirimsiz fiyat; indirimli fiyatı yüzdeden hesaplıyoruz.
+    /// Kuruşa yuvarlanır ki ekranda görünen fiyat ile sepet toplamları aynı değerden hesaplansın.
     var discountedPrice: Double {
-        price * (1 - discountPercentage / 100)
+        (price * (1 - discountPercentage / 100)).roundedToCents
     }
 
     var isInStock: Bool {
