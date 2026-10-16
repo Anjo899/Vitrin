@@ -65,7 +65,8 @@ struct ProductCardView: View {
                     .foregroundStyle(.white)
                     .padding(.horizontal, 6)
                     .padding(.vertical, 3)
-                    .background(.red, in: Capsule())
+                    // Beyaz metin için yeterli kontrast (6:1); sistem kırmızısı 3,5:1 kalıyor.
+                    .background(Color.discountBadge, in: Capsule())
                     .padding(6)
             }
         }
