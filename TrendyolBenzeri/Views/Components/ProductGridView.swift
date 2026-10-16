@@ -25,8 +25,9 @@ struct ProductGridView: View {
                 .buttonStyle(.plain)
                 // Kalp, NavigationLink'in dışında; basınca detay açılmaz.
                 .overlay(alignment: .topTrailing) {
+                    // Buton 44 pt dokunma alanına sahip; 7 pt boşlukla görünen kalp eski yerinde kalır.
                     FavoriteButton(product: product)
-                        .padding(12)
+                        .padding(7)
                 }
             }
         }
