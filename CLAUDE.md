@@ -47,7 +47,7 @@
 - Branch adları: `feature/<ad>`, `fix/<ad>`, `chore/<ad>`.
 - Stacked PR: yeni branch bir önceki özellik branch'inden açılır, PR'ın base'i o branch olur.
 - Push, PR ve merge işlerinin hepsini proje sahibi yapar; hoca yalnızca yönlendirir, merge yapmaz. `main`'e merge yapılabilir.
-- Stacked PR'lar en alttan başlayarak sırayla `--merge` ile merge edilir (squash zinciri bozar). Her merge'den sonra bir üstteki PR'ın base'i `main`'e çevrilir. Repo'da "Automatically delete head branches" açık.
+- Stacked PR'lar en alttan başlayarak sırayla `--merge` ile merge edilir (squash zinciri bozar). Her merge'den önce bir üstteki PR'ın base'i `main`'e çevrilir; böylece alttaki branch silinince üstteki PR kapanmaz. Repo'da "Automatically delete head branches" açık.
 - Commit mesajları İngilizce Conventional Commits (`feat:`, `fix:`, `refactor:`, `chore:`, `docs:`, `test:`). Her commit tek bir anlamlı adım ve kendi başına derlenir.
 - Her özellik ayrı PR. PR açıklaması Türkçe: Özet, Değişiklikler, Nasıl test edilir.
 - Özellik bitince: `PLAN.md`'de ✅ işaretlenir, test adımları verilir ve sonraki özelliğe geçmeden onay beklenir.
@@ -73,4 +73,4 @@ xcodebuild -project TrendyolBenzeri.xcodeproj -scheme TrendyolBenzeri \
 ## Agents
 Tanımlar `.claude/agents/` içinde.
 - Commit işleri `committer` agent'ı ile yapılır: `main`'de commit atmaz, dosyaları adıyla ekler (`xcuserdata`, `.DS_Store` gibi dosyaları eklemez), push yapmaz.
-- Push, PR açma ve merge işleri `pr-manager` agent'ı ile yapılır: `gh` kullanır, push ve merge'den önce açık onay ister, stacked PR'ları alttan başlayarak `gh pr merge --merge --delete-branch` ile merge eder ve üstteki PR'ın base'ini `main`'e çevirir.
+- Push, PR açma ve merge işleri `pr-manager` agent'ı ile yapılır: `gh` kullanır, push ve merge'den önce açık onay ister, stacked PR'ları alttan başlayarak önce üstteki PR'ın base'ini `main`'e çevirir, sonra `gh pr merge --merge --delete-branch` ile merge eder.

@@ -27,9 +27,11 @@ Push ve merge işlemleri yalnızca görev metninde kullanıcının bu işlem iç
 - Push, PR ve merge işlerinin hepsi proje sahibine aittir; hoca yalnızca yönlendirir, merge yapmaz. `main`'e merge yapılabilir.
 - Her merge, o PR için verilmiş açık onayla yapılır. Birden fazla PR için onay verildiyse her birinin ayrıca onaylandığından emin ol.
 - Stacked PR'ları **en alttan başlayarak** sırayla merge et. Önce zinciri `gh pr list --json number,headRefName,baseRefName` ile çıkar. Merge edilecek ilk PR'ın base'i `main` olmalı.
-- Her merge'den önce `gh pr view <no> --json state,mergeable,baseRefName,statusCheckRollup` ile kontrol et. Çakışma ya da başarısız kontrol varsa merge etme, durumu bildir ve zincirde ilerleme.
-- Kullanılacak komut: `gh pr merge <no> --merge --delete-branch`. Zincirdeki commit'ler korunsun diye `--squash` ve `--rebase` kullanma.
-- Her merge'den sonra bir üstteki PR'ın base'ini çevir: `gh pr edit <üst-no> --base main`. Ardından `gh pr view <üst-no> --json state,baseRefName,mergeable` ile PR'ın açık kaldığını ve base'inin `main` olduğunu doğrula. Sonra bir sonraki PR'a geç.
+- Zincirdeki her PR için şu sırayı izle. Branch silinince üstteki PR kapanmasın diye base, merge'den **önce** çevrilir:
+  1. `gh pr view <no> --json state,mergeable,baseRefName,statusCheckRollup` ile kontrol et. Çakışma ya da başarısız kontrol varsa merge etme, durumu bildir ve zincirde ilerleme.
+  2. Üstte bu branch'i base alan bir PR varsa önce onun base'ini çevir: `gh pr edit <üst-no> --base main`. Sonra `gh pr view <üst-no> --json state,baseRefName` ile PR'ın açık olduğunu ve base'inin `main` olduğunu doğrula. Doğrulanamazsa merge etme.
+  3. Merge et: `gh pr merge <no> --merge --delete-branch`. Zincirdeki commit'ler korunsun diye `--squash` ve `--rebase` kullanma.
+  4. Merge'ün tamamlandığını doğrula, sonra bir üstteki PR'a geç.
 - Bir PR kapanmışsa ya da çakışma çıkarsa dur ve raporla. Onay olmadan rebase ya da force push yapma.
 
 ## Rapor
