@@ -24,10 +24,13 @@ Push ve merge işlemleri yalnızca görev metninde kullanıcının bu işlem iç
 - Kullanılacak komut: `gh pr create --base <base> --head <branch> --title ... --body-file <dosya>`. PR linkini raporla.
 
 ## Merge
-- Proje kuralı: PR'ları normalde hoca sırayla merge eder ve `main`'e kendiliğinden merge yapılmaz. Merge'ü yalnızca o PR için açık onay varsa yap; base `main` ise raporda bunu ayrıca vurgula.
-- Merge'den önce `gh pr view <no> --json state,mergeable,baseRefName,statusCheckRollup` ile kontrol et. Çakışma ya da başarısız kontrol varsa merge etme, durumu bildir.
-- Kullanılacak komut: `gh pr merge <no> --squash --delete-branch`.
-- Merge'den sonra bu branch'i base alan PR'ları `gh pr list --base <branch>` ile bul. Squash merge sonrası bu PR'ların `main` üzerine rebase edilmesi gerekebilir. Bunu raporla ama onay olmadan rebase ya da force push yapma.
+- Push, PR ve merge işlerinin hepsi proje sahibine aittir; hoca yalnızca yönlendirir, merge yapmaz. `main`'e merge yapılabilir.
+- Her merge, o PR için verilmiş açık onayla yapılır. Birden fazla PR için onay verildiyse her birinin ayrıca onaylandığından emin ol.
+- Stacked PR'ları **en alttan başlayarak** sırayla merge et. Önce zinciri `gh pr list --json number,headRefName,baseRefName` ile çıkar. Merge edilecek ilk PR'ın base'i `main` olmalı.
+- Her merge'den önce `gh pr view <no> --json state,mergeable,baseRefName,statusCheckRollup` ile kontrol et. Çakışma ya da başarısız kontrol varsa merge etme, durumu bildir ve zincirde ilerleme.
+- Kullanılacak komut: `gh pr merge <no> --merge --delete-branch`. Zincirdeki commit'ler korunsun diye `--squash` ve `--rebase` kullanma.
+- Her merge'den sonra bir üstteki PR'ın base'ini çevir: `gh pr edit <üst-no> --base main`. Ardından `gh pr view <üst-no> --json state,baseRefName,mergeable` ile PR'ın açık kaldığını ve base'inin `main` olduğunu doğrula. Sonra bir sonraki PR'a geç.
+- Bir PR kapanmışsa ya da çakışma çıkarsa dur ve raporla. Onay olmadan rebase ya da force push yapma.
 
 ## Rapor
 Ne yaptığını (push edilen branch, PR linki, merge sonucu) ya da onay bekleyen komutları kısaca bildir.

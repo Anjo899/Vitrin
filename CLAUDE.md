@@ -45,11 +45,13 @@
 
 ## Git çalışma şekli
 - Branch adları: `feature/<ad>`, `fix/<ad>`, `chore/<ad>`.
-- Stacked PR: yeni branch bir önceki özellik branch'inden açılır, PR'ın base'i o branch olur. `main`'e merge yapılmaz; hoca PR'ları sırayla merge eder (repo'da "Automatically delete head branches" açık).
+- Stacked PR: yeni branch bir önceki özellik branch'inden açılır, PR'ın base'i o branch olur.
+- Push, PR ve merge işlerinin hepsini proje sahibi yapar; hoca yalnızca yönlendirir, merge yapmaz. `main`'e merge yapılabilir.
+- Stacked PR'lar en alttan başlayarak sırayla `--merge` ile merge edilir (squash zinciri bozar). Her merge'den sonra bir üstteki PR'ın base'i `main`'e çevrilir. Repo'da "Automatically delete head branches" açık.
 - Commit mesajları İngilizce Conventional Commits (`feat:`, `fix:`, `refactor:`, `chore:`, `docs:`, `test:`). Her commit tek bir anlamlı adım ve kendi başına derlenir.
 - Her özellik ayrı PR. PR açıklaması Türkçe: Özet, Değişiklikler, Nasıl test edilir.
 - Özellik bitince: `PLAN.md`'de ✅ işaretlenir, test adımları verilir ve sonraki özelliğe geçmeden onay beklenir.
-- Push'tan ve merge'den önce her zaman onay alınır.
+- Her push ve her merge proje sahibinin açık onayıyla yapılır; bir onay yalnızca o işlem için geçerlidir.
 - Remote: `https://github.com/Anjo899/Vitrin`. PR'lar `gh` ile açılır.
 
 ## Build ve test
@@ -71,4 +73,4 @@ xcodebuild -project TrendyolBenzeri.xcodeproj -scheme TrendyolBenzeri \
 ## Agents
 Tanımlar `.claude/agents/` içinde.
 - Commit işleri `committer` agent'ı ile yapılır: `main`'de commit atmaz, dosyaları adıyla ekler (`xcuserdata`, `.DS_Store` gibi dosyaları eklemez), push yapmaz.
-- Push, PR açma ve merge işleri `pr-manager` agent'ı ile yapılır: `gh` kullanır, push ve merge'den önce onay ister, `gh pr merge --squash --delete-branch` ile merge eder.
+- Push, PR açma ve merge işleri `pr-manager` agent'ı ile yapılır: `gh` kullanır, push ve merge'den önce açık onay ister, stacked PR'ları alttan başlayarak `gh pr merge --merge --delete-branch` ile merge eder ve üstteki PR'ın base'ini `main`'e çevirir.
