@@ -59,13 +59,13 @@
 ```sh
 # Derleme
 xcodebuild -project TrendyolBenzeri.xcodeproj -scheme TrendyolBenzeri \
-  -destination 'platform=iOS Simulator,name=iPhone 17,OS=26.4' build
+  -destination 'platform=iOS Simulator,name=iPhone 17,OS=26.3.1' build
 
 # Unit testler (sonuç satırı: "✔ Test run with N tests …")
 xcodebuild -project TrendyolBenzeri.xcodeproj -scheme TrendyolBenzeri \
-  -destination 'platform=iOS Simulator,name=iPhone 17,OS=26.4' test
+  -destination 'platform=iOS Simulator,name=iPhone 17,OS=26.3.1' test
 ```
-- Geliştirme makinesine özel: Xcode `~/Downloads/Xcode.app` içinde ve `xcode-select` Command Line Tools'u gösteriyor. Komutların başına `DEVELOPER_DIR=/Users/skilic/Downloads/Xcode.app/Contents/Developer` eklenir. `gh`, `/opt/homebrew/bin` içinde.
+- Geliştirme makinesine özel: Xcode 26.2 `/Applications/Xcode_26.2.app` içinde ve `xcode-select` onu gösteriyor; `DEVELOPER_DIR` gerekmez. Simülatör: iPhone 17, iOS 26.3.1. `gh`, `/opt/homebrew/bin` içinde.
 - Paylaşılan `TrendyolBenzeri` scheme'inin test aksiyonu yalnızca `TrendyolBenzeriTests`'i çalıştırır:
   - Paralel test kapalı (`parallelizable = "NO"`). Kopya simülatörlerde test çalıştırma takılmıştı.
   - Şablon UI testleri (`TrendyolBenzeriUITests`) scheme'den çıkarıldı; dosyaları duruyor. Geri eklenmez.
