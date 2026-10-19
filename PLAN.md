@@ -86,7 +86,7 @@ Sepet satırları (görsel, ad, fiyat, `−` / adet / `+`; adet 1'deyken `−` �
 1. Bir önceki branch'ten yeni branch aç
 2. Küçük, anlamlı commit'ler; her adımın Türkçe kısa açıklaması
 3. Derle ve testleri çalıştır:
-   `DEVELOPER_DIR=/Users/skilic/Downloads/Xcode.app/Contents/Developer xcodebuild -project TrendyolBenzeri.xcodeproj -scheme TrendyolBenzeri -destination 'platform=iOS Simulator,name=iPhone 17' build test`
+   `xcodebuild -project TrendyolBenzeri.xcodeproj -scheme TrendyolBenzeri -destination 'platform=iOS Simulator,name=iPhone 17,OS=26.3.1' build test`
 4. Simülatörde test adımlarını ver, bu dosyada durumu ✅ yap, onay bekle
 5. Push/PR öncesi sor (PR base'i = önceki branch)
 
