@@ -26,6 +26,7 @@ Trendyol benzeri bir e-ticaret uygulaması (okul projesi, SwiftUI öğrenme ama�
 | 7 | `feature/categories` | `feature/product-detail` | ✅ Tamamlandı |
 | 8 | `feature/favorites-screen` | `feature/categories` | ✅ Tamamlandı |
 | 9 | `feature/cart-screen` | `feature/favorites-screen` | ✅ Tamamlandı |
+| 10 | `feature/theme-selection` | `fix/code-review-findings` | ✅ Tamamlandı |
 
 ### 0. chore/project-setup ✅
 `.gitignore`, deployment target iOS 17.0, görünen ad Vitrin, `AccentColor` + `BrandAccent` renkleri, `PLAN.md`.
@@ -75,11 +76,17 @@ Favori ürünlerin grid'i; boşken "Henüz favori ürünün yok" ekranı ve seç
 ### 9. feature/cart-screen ✅
 Sepet satırları (görsel, ad, fiyat, `−` / adet / `+`; adet 1'deyken `−` çöp ikonuna döner ve ürünü çıkarır, stok sınırında `+` devre dışı), sola kaydırarak silme, toplam adet ve tutar, "Alışverişi Tamamla" (MVP'de sadece uyarı), boş sepet ekranı ("Sepetin boş" + `@Binding` ile Ana Sayfa'ya geçiren "Alışverişe Başla").
 
+### 10. feature/theme-selection ✅
+- `Models/AppTheme.swift`: `system` / `light` / `dark` (Sistem, Açık, Koyu), `colorScheme` (`system` için `nil`).
+- Seçim `@AppStorage("appTheme")` ile kalıcı; `TrendyolBenzeriApp` kök view'a `.preferredColorScheme` uygular.
+- `Views/Settings/SettingsView.swift`: Ana Sayfa'daki dişli butonuyla açılan sheet, "Görünüm" bölümünde segmented `Picker`.
+- Renk denetimi: arka planlar zaten sistem renkleri, asset renklerinin koyu varyantları var; indirim rozetindeki beyaz yazı kırmızı zeminde iki modda da okunuyor.
+
 ## Her branch için iş akışı
 1. Bir önceki branch'ten yeni branch aç
 2. Küçük, anlamlı commit'ler; her adımın Türkçe kısa açıklaması
 3. Derle ve testleri çalıştır:
-   `DEVELOPER_DIR=/Users/skilic/Downloads/Xcode.app/Contents/Developer xcodebuild -project TrendyolBenzeri.xcodeproj -scheme TrendyolBenzeri -destination 'platform=iOS Simulator,name=iPhone 17' build test`
+   `xcodebuild -project TrendyolBenzeri.xcodeproj -scheme TrendyolBenzeri -destination 'platform=iOS Simulator,name=iPhone 17,OS=26.3.1' build test`
 4. Simülatörde test adımlarını ver, bu dosyada durumu ✅ yap, onay bekle
 5. Push/PR öncesi sor (PR base'i = önceki branch)
 

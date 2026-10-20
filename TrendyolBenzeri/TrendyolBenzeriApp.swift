@@ -12,12 +12,16 @@ struct TrendyolBenzeriApp: App {
     /// Ekranlar arası paylaşılan store'lar burada bir kez oluşturulur.
     @State private var favoritesStore = FavoritesStore()
     @State private var cartStore = CartStore()
+    /// Seçilen tema UserDefaults'ta saklanır; uygulama yeniden açılınca korunur.
+    @AppStorage(AppTheme.storageKey) private var theme: AppTheme = .system
 
     var body: some Scene {
         WindowGroup {
             MainTabView()
                 .environment(favoritesStore)
                 .environment(cartStore)
+                // Kökte uygulandığı için sheet'ler dahil bütün pencereyi etkiler.
+                .preferredColorScheme(theme.colorScheme)
         }
     }
 }

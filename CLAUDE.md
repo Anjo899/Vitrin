@@ -10,11 +10,11 @@
 ## Mimari
 | Klasör | Sorumluluk |
 | --- | --- |
-| `Models/` | `Codable` veri tipleri: `Product`, `Review`, `ProductsResponse`, `ProductCategory` (+ `+Display`: slug → Türkçe ad ve SF Symbol), `CartItem` |
+| `Models/` | `Codable` veri tipleri: `Product`, `Review`, `ProductsResponse`, `ProductCategory` (+ `+Display`: slug → Türkçe ad ve SF Symbol), `CartItem`, `AppTheme` |
 | `Networking/` | `APIClient` (generic `get`, tarih çözen `JSONDecoder.dummyJSON`), `APIError` (Türkçe hata mesajları), `ProductService` (endpoint'leri bilen tek yer) |
 | `Persistence/` | `PlistStorage`: `Codable` değerleri Documents'a plist olarak yazar ve okur |
 | `Stores/` | Paylaşılan state: `FavoritesStore`, `CartStore` |
-| `Views/<Ekran>/` | Ekran view'ları ve varsa ekranın `ViewModel`'i (`Home/`, `Categories/`, `ProductDetail/`, `Favorites/`, `Cart/`) |
+| `Views/<Ekran>/` | Ekran view'ları ve varsa ekranın `ViewModel`'i (`Home/`, `Categories/`, `ProductDetail/`, `Favorites/`, `Cart/`, `Settings/`) |
 | `Views/Common/` | `LoadState`, `LoadingView`, `ErrorView` |
 | `Views/Components/` | Tekrar kullanılan bileşenler (aşağıda) |
 | `Utilities/` | `PriceFormatter`, `PreviewData` (önizleme verisi; `#Preview` blokları Release'te de derlendiği için `#if DEBUG` içine alınmaz) |
@@ -29,6 +29,7 @@
 - **`LoadState`** (`idle` / `loading` / `loaded` / `failed(String)`): View `switch` ile `LoadingView`, `ErrorView(message:retry:)`, boşsa `ContentUnavailableView` ya da içeriği gösterir.
 - **`.environment`**: `FavoritesStore` ve `CartStore`, `TrendyolBenzeriApp` içinde bir kez `@State` olarak oluşturulur ve `.environment(...)` ile verilir; view'lar `@Environment(CartStore.self)` ile okur. View içinde yeni store örneği oluşturulmaz.
 - **Store'lar**: ürün id'sine bağlı dictionary (`[Int: Product]`, `[Int: CartItem]`) tutar ve her değişiklikte `favorites.plist` / `cart.plist`'e kaydeder. Sepete stoktan fazla ürün eklenemez, adet 0'a inince satır silinir, toplamlar indirimli fiyatla hesaplanır.
+- **`@AppStorage`**: tema seçimi (`AppTheme.storageKey` = `"appTheme"`). `TrendyolBenzeriApp` kökte `.preferredColorScheme` uygular; `SettingsView` aynı anahtarı yazar.
 - **`@Binding`**: seçili sekme `MainTabView`'a ait; `FavoritesView` ve `CartView`'a binding olarak verilir (boş durum butonları Ana Sayfa'ya geçirir).
 - **Navigasyon**: her sekmenin kendi `NavigationStack`'i var. Geçişler `NavigationLink(value:)` ile, hedefler sekmenin kök view'unda `.navigationDestination(for: Product.self)` (Kategoriler'de ayrıca `ProductCategory.self`) ile tanımlı.
 
@@ -58,13 +59,13 @@
 ```sh
 # Derleme
 xcodebuild -project TrendyolBenzeri.xcodeproj -scheme TrendyolBenzeri \
-  -destination 'platform=iOS Simulator,name=iPhone 17,OS=26.4' build
+  -destination 'platform=iOS Simulator,name=iPhone 17,OS=26.3.1' build
 
 # Unit testler (sonuç satırı: "✔ Test run with N tests …")
 xcodebuild -project TrendyolBenzeri.xcodeproj -scheme TrendyolBenzeri \
-  -destination 'platform=iOS Simulator,name=iPhone 17,OS=26.4' test
+  -destination 'platform=iOS Simulator,name=iPhone 17,OS=26.3.1' test
 ```
-- Geliştirme makinesine özel: Xcode `~/Downloads/Xcode.app` içinde ve `xcode-select` Command Line Tools'u gösteriyor. Komutların başına `DEVELOPER_DIR=/Users/skilic/Downloads/Xcode.app/Contents/Developer` eklenir. `gh`, `/opt/homebrew/bin` içinde.
+- Geliştirme makinesine özel: Xcode 26.2 `/Applications/Xcode_26.2.app` içinde ve `xcode-select` onu gösteriyor; `DEVELOPER_DIR` gerekmez. Simülatör: iPhone 17, iOS 26.3.1. `gh`, `/opt/homebrew/bin` içinde.
 - Paylaşılan `TrendyolBenzeri` scheme'inin test aksiyonu yalnızca `TrendyolBenzeriTests`'i çalıştırır:
   - Paralel test kapalı (`parallelizable = "NO"`). Kopya simülatörlerde test çalıştırma takılmıştı.
   - Şablon UI testleri (`TrendyolBenzeriUITests`) scheme'den çıkarıldı; dosyaları duruyor. Geri eklenmez.

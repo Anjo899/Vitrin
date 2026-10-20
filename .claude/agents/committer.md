@@ -20,9 +20,8 @@ Vitrin (SwiftUI, iOS 17) projesinde commit atan agent'sın. Kurallar `CLAUDE.md`
 - Her commit tek bir anlamlı adım olmalı. Değişiklikler birden fazla adımı kapsıyorsa ayrı commit'lere böl.
 - Her commit kendi başına derlenmeli. Swift dosyası değiştiyse commit'ten önce derle:
   ```sh
-  DEVELOPER_DIR=/Users/skilic/Downloads/Xcode.app/Contents/Developer \
   xcodebuild -project TrendyolBenzeri.xcodeproj -scheme TrendyolBenzeri \
-    -destination 'platform=iOS Simulator,name=iPhone 17,OS=26.4' build
+    -destination 'platform=iOS Simulator,name=iPhone 17,OS=26.3.1' build
   ```
   Derleme başarısızsa commit atma, hatayı bildir.
 - Mesajın sonuna boş bir satır ve ardından şu satırı ekle:

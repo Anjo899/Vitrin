@@ -8,6 +8,7 @@ import SwiftUI
 struct HomeView: View {
     @State private var viewModel = HomeViewModel()
     @State private var searchText = ""
+    @State private var isShowingSettings = false
 
     private var isSearching: Bool {
         !searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
@@ -22,6 +23,16 @@ struct HomeView: View {
             }
         }
         .navigationTitle("Vitrin")
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button("Ayarlar", systemImage: "gearshape") {
+                    isShowingSettings = true
+                }
+            }
+        }
+        .sheet(isPresented: $isShowingSettings) {
+            SettingsView()
+        }
         .searchable(text: $searchText, prompt: "Ürün, marka ara")
         // searchText her değiştiğinde önceki görev iptal edilip yenisi başlar.
         .task(id: searchText) {
