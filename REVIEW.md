@@ -30,42 +30,68 @@ Doğrulama yöntemi: Release derlemesi, gerçek API verisi, kontrast oranları, 
 
 ## Öncelik sırasına göre özet
 
-| # | Önem | Bulgu |
+| # | Önem | Bulgu | Durum |
+| --- | --- | --- | --- |
+| K1 | Kritik | Release derlemesi başarısız: `PreviewData` yalnızca DEBUG'da var, `#Preview`'lar her yapılandırmada derleniyor | ✅ Düzeltildi (`83f4532`) |
+| O1 | Önemli | İndirimli fiyat yuvarlanmadan çarpılıyor; satır ve sepet toplamında kuruş farkı | ✅ Düzeltildi (`81b795c`) |
+| O2 | Önemli | Sepet ve favoriler ürünün eski kopyasını saklıyor; fiyat ve stok hiç güncellenmiyor | Sonraki adım |
+| O3 | Önemli | Plist çözülemezse sepet ve favoriler sessizce siliniyor | ✅ Kısmen (`fbdf477`) |
+| O4 | Önemli | JSON çözümü ve tarih ayrıştırma ana thread'de yapılıyor | Sonraki adım |
+| O5 | Önemli | Eski bir aramanın sonucu yeni aramanın üzerine yazılabiliyor | ✅ Düzeltildi (`57e680a`) |
+| O6 | Önemli | Arayüz sistem metinleri ve VoiceOver dili İngilizce (uygulamada Türkçe yerelleştirme yok) | Sonraki adım |
+| O7 | Önemli | Stok ve indirim metinlerinde renk kontrastı WCAG AA'nın altında | ✅ Düzeltildi (`dfa4564`) |
+| O8 | Önemli | Kalp ve adet butonlarının dokunma alanı 44 pt'den küçük | ✅ Düzeltildi (`74064b6`) |
+| O9 | Önemli | VoiceOver ürün kartını parça parça ve bağlamsız okuyor | Sonraki adım |
+| O10 | Önemli | Sabit font ve çerçeve boyutları Dynamic Type ile büyümüyor | Sonraki adım |
+| T1 | Önemli | ViewModel, `APIClient` ve fiyat hesaplama testleri eksik | Sonraki adım |
+| S1 | Küçük | %0,5'in altındaki indirimler "%0" rozeti olarak görünüyor | Sonraki adım |
+| S2 | Küçük | Arama metnindeki `+` sunucuya boşluk olarak gidiyor | Sonraki adım |
+| S3 | Küçük | Negatif stok ya da %100'ün üzerindeki indirim gibi hatalı verilere karşı koruma yok | Sonraki adım |
+| S4 | Küçük | Sıralı listeler her erişimde yeniden hesaplanıyor; gözlem tüm sözlüğü kapsıyor | Sonraki adım |
+| S5 | Küçük | Görsel önbelleği küçük; 194 ürün tek istekte yükleniyor | Sonraki adım |
+| S6 | Küçük | Yükleme mantığı, fiyat gösterimi ve görsel yükleme kodu tekrar ediyor | Sonraki adım |
+| S7 | Küçük | İsimlendirme ve yerleşim: `MainTabView.Tab`, `discountLabel`'ın yeri, kullanılmayan kod, `print` | Sonraki adım |
+| S8 | Küçük | `PlistStorage.preview` tüm önizlemelerde aynı klasörü kullanıyor | Sonraki adım |
+| S9 | Küçük | Demo ödeme uyarısı "Siparişin alındı" diyor ama sepet olduğu gibi duruyor | Sonraki adım |
+| S10 | Küçük | Sayı biçimleri karışık: fiyat en_US, tarih tr_TR, puan cihaz dili | Sonraki adım |
+| T2 | Küçük | Arama, plist, uç durumlar ve Release derlemesi için ek test ve kontroller | Sonraki adım |
+
+## Yapılan düzeltmeler
+
+Düzeltmeler `fix/code-review-findings` branch'inde, her biri ayrı bir commit olarak yapıldı. Release derlemesi başarılı ve 27 unit testin hepsi geçiyor.
+
+| # | Commit | Ne yapıldı |
 | --- | --- | --- |
-| K1 | Kritik | Release derlemesi başarısız: `PreviewData` yalnızca DEBUG'da var, `#Preview`'lar her yapılandırmada derleniyor |
-| O1 | Önemli | İndirimli fiyat yuvarlanmadan çarpılıyor; satır ve sepet toplamında kuruş farkı |
-| O2 | Önemli | Sepet ve favoriler ürünün eski kopyasını saklıyor; fiyat ve stok hiç güncellenmiyor |
-| O3 | Önemli | Plist çözülemezse sepet ve favoriler sessizce siliniyor |
-| O4 | Önemli | JSON çözümü ve tarih ayrıştırma ana thread'de yapılıyor |
-| O5 | Önemli | Eski bir aramanın sonucu yeni aramanın üzerine yazılabiliyor |
-| O6 | Önemli | Arayüz sistem metinleri ve VoiceOver dili İngilizce (uygulamada Türkçe yerelleştirme yok) |
-| O7 | Önemli | Stok ve indirim metinlerinde renk kontrastı WCAG AA'nın altında |
-| O8 | Önemli | Kalp ve adet butonlarının dokunma alanı 44 pt'den küçük |
-| O9 | Önemli | VoiceOver ürün kartını parça parça ve bağlamsız okuyor |
-| O10 | Önemli | Sabit font ve çerçeve boyutları Dynamic Type ile büyümüyor |
-| T1 | Önemli | ViewModel, `APIClient` ve fiyat hesaplama testleri eksik |
-| S1 | Küçük | %0,5'in altındaki indirimler "%0" rozeti olarak görünüyor |
-| S2 | Küçük | Arama metnindeki `+` sunucuya boşluk olarak gidiyor |
-| S3 | Küçük | Negatif stok ya da %100'ün üzerindeki indirim gibi hatalı verilere karşı koruma yok |
-| S4 | Küçük | Sıralı listeler her erişimde yeniden hesaplanıyor; gözlem tüm sözlüğü kapsıyor |
-| S5 | Küçük | Görsel önbelleği küçük; 194 ürün tek istekte yükleniyor |
-| S6 | Küçük | Yükleme mantığı, fiyat gösterimi ve görsel yükleme kodu tekrar ediyor |
-| S7 | Küçük | İsimlendirme ve yerleşim: `MainTabView.Tab`, `discountLabel`'ın yeri, kullanılmayan kod, `print` |
-| S8 | Küçük | `PlistStorage.preview` tüm önizlemelerde aynı klasörü kullanıyor |
-| S9 | Küçük | Demo ödeme uyarısı "Siparişin alındı" diyor ama sepet olduğu gibi duruyor |
-| S10 | Küçük | Sayı biçimleri karışık: fiyat en_US, tarih tr_TR, puan cihaz dili |
-| T2 | Küçük | Arama, plist, uç durumlar ve Release derlemesi için ek test ve kontroller |
+| K1 | `83f4532` | `PreviewData` artık `#if DEBUG` içinde değil |
+| O1 | `81b795c` | İndirimli fiyat ve satır toplamı kuruşa yuvarlanıyor. `PriceRoundingTests`: $8.94, 2 × $8.94 = $17.88, sepet toplamı $50.58 |
+| O5 | `57e680a` | ViewModel en son sorguyu (`latestQuery`) hatırlıyor; eski ya da iptal edilmiş aramanın durumu ve sonucu yazılmıyor. Gecikmeli sahte ağ katmanıyla test: `staleSearchResultDoesNotOverwriteNewerQuery` |
+| O3 | `fbdf477` | Okunamayan plist `.corrupt` olarak kenara alınıyor, üzerine yazılmıyor. Test: `corruptFileIsMovedAsideInsteadOfOverwritten`. Kalıcı veri için sürümlü ayrı bir tip kullanma kısmı sonraki adımlarda |
+| O7 | `dfa4564` | Assets'e `StockAvailable`, `StockLow`, `StockOut` ve `DiscountBadge` renkleri eklendi; açık ve koyu temada en az 4,5:1 |
+| O8 | `74064b6` | Kalp ve adet butonlarının dokunma alanı 44 pt; kalbin görünümü ve yeri değişmedi |
+| — | `101af1c` | `CLAUDE.md`'de `PreviewData` ve concurrency notları düzeltildi |
+
+## Sonraki adımlar
+
+Aşağıdakiler bilerek bu turda düzeltilmedi. Önerilen sıra:
+
+1. **O2:** Sepet ve favorilerdeki ürünleri id ile tazele; sepetteki adet yeni stoktan fazlaysa stoğa indir.
+2. **O4:** `APIClient.get`'i `@concurrent` yap; tarih biçimlendiricilerini `static let` olarak tanımla.
+3. **O3 (kalan kısım):** Plist'te `Product`'ın tamamı yerine sürümlü ve ayrı bir kayıt tipi kullan.
+4. **O6:** Türkçe yerelleştirme ekle: `developmentRegion` ve String Catalog.
+5. **O9 ve O10:** VoiceOver etiketlerini düzenle ve Dynamic Type desteği ekle. Bu ikisi simülatörde denenerek yapılmalı.
+6. **T1:** ViewModel durum geçişleri ve `APIClient` hata eşlemesi için testler. Fiyat yuvarlama testi O1 ile eklendi.
+7. **Küçük bulgular (S1–S10) ve T2:** Bozuk plist ve eski arama testleri eklendi. Release derlemesini her PR'dan önceki kontrollere eklemek, bu iki testten sonra en faydalı adım.
 
 ## Bulgular
 
 ### Hatalar ve uç durumlar
 
-#### K1 · Kritik · Release derlemesi başarısız
+#### K1 · Kritik · Release derlemesi başarısız — ✅ düzeltildi
 - **Dosya:** `Utilities/PreviewData.swift:6–50`. Hatalar örneğin `Views/Components/FavoriteButton.swift:35`, `Views/ProductDetail/ProductDetailView.swift:141`, `Views/MainTabView.swift:54`'te.
 - **Sorun:** Örnek veriler (`Product.previewMascara`, `PlistStorage.preview`) `#if DEBUG` içinde. Ancak `#Preview` blokları Release'te de derleniyor. `-configuration Release` ile alınan derleme 22 hatayla başarısız oluyor; Archive ve TestFlight alınamıyor. Sorun PR #4'te ortaya çıktı. Testler ve ⌘R yalnızca Debug derlediği için şimdiye kadar fark edilmedi.
 - **Öneri:** `PreviewData.swift`'teki `#if DEBUG`'ı kaldır; veri küçük olduğu için Release'te kalmasının zararı yok. Alternatif olarak her `#Preview`'ı `#if DEBUG` içine al. Her PR'ın kontrol adımlarına bir Release derlemesi ekle. `CLAUDE.md`'deki "`PreviewData` (yalnızca DEBUG)" notunu da güncelle.
 
-#### O1 · Önemli · Sepet toplamında kuruş farkı
+#### O1 · Önemli · Sepet toplamında kuruş farkı — ✅ düzeltildi
 - **Dosya:** `Models/Product.swift:30–32`, `Models/CartItem.swift:16–18`, `Stores/CartStore.swift:41–43`
 - **Sorun:** `discountedPrice` yuvarlanmıyor; örneğin 9,99 × 0,8952 = 8,943048. Ekranda birim fiyat `$8.94` görünüyor, ama satır ve sepet toplamı yuvarlanmamış değerden hesaplanıyor. Gerçek veriyle kontrol edildi: 194 ürünün 146'sında 2, 3 ya da 5 adette fark çıkıyor. Örnekler:
   - Maskara: 2 × $8.94 = $17.88 olmalı, ekranda **$17.89** görünüyor.
@@ -84,7 +110,7 @@ Doğrulama yöntemi: Release derlemesi, gerçek API verisi, kontrast oranları, 
   - Sepet ekranı açılırken ürünleri id ile tazele; kullanılmayan `ProductService.fetchProduct(id:)` bunun için hazır.
   - Sepetteki adet yeni stoktan fazlaysa adedi stoğa indir.
 
-#### O3 · Önemli · Plist çözülemezse veri sessizce kayboluyor
+#### O3 · Önemli · Plist çözülemezse veri sessizce kayboluyor — ✅ kısmen düzeltildi
 - **Dosya:** `Stores/CartStore.swift:20–24`, `Stores/FavoritesStore.swift:21–25`
 - **Sorun:** Dosya çözülemezse hata yalnızca `print` ile yazılıyor ve store boş başlıyor. İlk değişiklikte boş içerik, eski dosyanın üzerine yazılıyor. Plist'te `Product`'ın tamamı saklandığı için ileride modele zorunlu tek bir alan eklemek bile kullanıcının bütün sepetini ve favorilerini siler.
 - **Öneri:**
@@ -133,7 +159,7 @@ Doğrulama yöntemi: Release derlemesi, gerçek API verisi, kontrast oranları, 
   Bu yük, özellikle eski cihazlarda kaydırma sırasında takılmaya yol açabilir. `CLAUDE.md`'deki "ağ katmanı `nonisolated`" ifadesi ağ katmanının arka planda çalıştığını düşündürüyor, oysa bu ayarla öyle değil.
 - **Öneri:** `get` fonksiyonunu `@concurrent func get<T: Decodable & Sendable>` yap. Tarih biçimlendiricilerini `static let` olarak bir kez oluştur.
 
-#### O5 · Önemli · Eski arama sonucu yenisinin üzerine yazılabiliyor
+#### O5 · Önemli · Eski arama sonucu yenisinin üzerine yazılabiliyor — ✅ düzeltildi
 - **Dosya:** `Views/Home/HomeViewModel.swift:52–53`, `Views/Common/ErrorView.swift:21`, `Views/Home/HomeView.swift:65–67`
 - **Sorun:** Ağ cevabı geldikten sonra görevin iptal edilip edilmediği kontrol edilmiyor. Cevap, iptalle aynı anda gelirse eski sorgunun sonucu `searchState`'e yazılıyor. Yeni sorgunun 400 ms beklemesi sırasında ekranda yanlış sonuç ya da yanlış "Sonuç bulunamadı" görünebiliyor. Ayrıca `ErrorView`'ın "Tekrar Dene" butonu iptal edilmeyen bir `Task {}` başlatıyor. Bu görev eski sorguyla sonradan bitip yeni sonucun üzerine yazabiliyor.
 - **Öneri:**
@@ -161,7 +187,7 @@ Doğrulama yöntemi: Release derlemesi, gerçek API verisi, kontrast oranları, 
   Bu, `CLAUDE.md`'deki "arayüz metinleri Türkçe" kuralına aykırı.
 - **Öneri:** Geliştirme dilini `tr` yap ya da String Catalog ile Türkçe dilini ekle.
 
-#### O7 · Önemli · Renk kontrastı yetersiz
+#### O7 · Önemli · Renk kontrastı yetersiz — ✅ düzeltildi
 - **Dosya:** `Views/ProductDetail/ProductDetailView.swift:97–100`, `Views/ProductDetail/ProductDetailView.swift:73–78`, `Views/Components/ProductCardView.swift:62–69`
 - **Sorun:** Açık temada ölçülen kontrast oranları:
 
@@ -175,7 +201,7 @@ Doğrulama yöntemi: Release derlemesi, gerçek API verisi, kontrast oranları, 
   Küçük metin için WCAG AA en az 4,5:1 istiyor. Koyu temada sorun yok.
 - **Öneri:** Açık ve koyu tema için ayrı, daha koyu tonları Assets'e ekle. Stok durumunu yalnızca renkle değil ikonla da anlat; ikon zaten var.
 
-#### O8 · Önemli · Dokunma alanı küçük
+#### O8 · Önemli · Dokunma alanı küçük — ✅ düzeltildi
 - **Dosya:** `Views/Components/FavoriteButton.swift:24` (34×34), `Views/Cart/CartItemRow.swift:71,84` (32×32)
 - **Sorun:** Apple'ın arayüz yönergeleri (HIG) en az 44×44 pt'lik dokunma alanı öneriyor. Grid'deki kalp ve sepetteki adet butonlarına isabet ettirmek zor.
 - **Öneri:** Görsel boyutu koru, dokunma alanını büyüt: `.frame(minWidth: 44, minHeight: 44)` + `.contentShape(Rectangle())`.

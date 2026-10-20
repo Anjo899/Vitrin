@@ -75,7 +75,7 @@ struct ProductDetailView: View {
                             .foregroundStyle(.white)
                             .padding(.horizontal, 6)
                             .padding(.vertical, 2)
-                            .background(.red, in: Capsule())
+                            .background(Color.discountBadge, in: Capsule())
                         Text(product.price.formattedPrice)
                             .font(.subheadline)
                             .strikethrough()
@@ -94,10 +94,12 @@ struct ProductDetailView: View {
     }
 
     private var stockLabel: some View {
+        // Sistem kırmızı/turuncu/yeşili beyaz zeminde okunaklı değil (2,2–3,5:1); Assets'teki
+        // renkler açık ve koyu temada en az 4,5:1 kontrast verir.
         let (text, color): (String, Color) = switch product.stock {
-        case 0: ("Tükendi", .red)
-        case 1...5: ("Son \(product.stock) ürün!", .orange)
-        default: ("Stokta \(product.stock) adet", .green)
+        case 0: ("Tükendi", .stockOut)
+        case 1...5: ("Son \(product.stock) ürün!", .stockLow)
+        default: ("Stokta \(product.stock) adet", .stockAvailable)
         }
 
         return Label(text, systemImage: product.isInStock ? "shippingbox.fill" : "xmark.circle.fill")

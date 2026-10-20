@@ -24,6 +24,9 @@ struct FavoriteButton: View {
                 .frame(width: 34, height: 34)
                 .background(.regularMaterial, in: Circle())
                 .contentTransition(.symbolEffect(.replace))
+                // Görünen daire 34 pt kalır, dokunma alanı HIG'in önerdiği 44 pt olur.
+                .frame(width: 44, height: 44)
+                .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .sensoryFeedback(.selection, trigger: isFavorite)

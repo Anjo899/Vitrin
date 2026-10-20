@@ -80,7 +80,8 @@ struct ProductDecodingTests {
         let apple = response.products[1]
 
         #expect(mascara.hasDiscount)
-        #expect(abs(mascara.discountedPrice - 8.952) < 0.0001)
+        // 10 × (1 − 0.1048) = 8.952 → kuruşa yuvarlanınca 8.95
+        #expect(abs(mascara.discountedPrice - 8.95) < 0.0001)
         #expect(mascara.discountLabel == "%10")
         #expect(mascara.isInStock)
 

@@ -17,10 +17,11 @@
 | `Views/<Ekran>/` | Ekran view'ları ve varsa ekranın `ViewModel`'i (`Home/`, `Categories/`, `ProductDetail/`, `Favorites/`, `Cart/`) |
 | `Views/Common/` | `LoadState`, `LoadingView`, `ErrorView` |
 | `Views/Components/` | Tekrar kullanılan bileşenler (aşağıda) |
-| `Utilities/` | `PriceFormatter`, `PreviewData` (yalnızca DEBUG) |
+| `Utilities/` | `PriceFormatter`, `PreviewData` (önizleme verisi; `#Preview` blokları Release'te de derlendiği için `#if DEBUG` içine alınmaz) |
 
 - Akış: View → ViewModel → `ProductService` → `APIClient`. View'lar URL bilmez.
 - Projede `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor`. View, ViewModel ve store'lar MainActor'da; modeller, ağ katmanı ve `PlistStorage` `nonisolated` + `Sendable`.
+- `SWIFT_APPROACHABLE_CONCURRENCY` açık (`NonisolatedNonsendingByDefault`): `nonisolated async` bir fonksiyon çağıranın actor'ünde çalışır. Yani ViewModel'den çağrılan `APIClient.get` JSON'u şu an ana thread'de çözüyor; işi arka plana almak için `@concurrent` gerekir (`REVIEW.md` O4).
 
 ## State management
 - **`@State`**: ekrana ait değerler ve ekranın ViewModel'i (`@State private var viewModel = HomeViewModel()`). ViewModel bir parametreye bağlıysa init'te `_viewModel = State(initialValue: …)`.
@@ -44,11 +45,13 @@
 
 ## Git çalışma şekli
 - Branch adları: `feature/<ad>`, `fix/<ad>`, `chore/<ad>`.
-- Stacked PR: yeni branch bir önceki özellik branch'inden açılır, PR'ın base'i o branch olur. `main`'e merge yapılmaz; hoca PR'ları sırayla merge eder (repo'da "Automatically delete head branches" açık).
+- Stacked PR: yeni branch bir önceki özellik branch'inden açılır, PR'ın base'i o branch olur.
+- Push, PR ve merge işlerinin hepsini proje sahibi yapar; hoca yalnızca yönlendirir, merge yapmaz. `main`'e merge yapılabilir.
+- Stacked PR'lar en alttan başlayarak sırayla `--merge` ile merge edilir (squash zinciri bozar). Her merge'den önce bir üstteki PR'ın base'i `main`'e çevrilir; böylece alttaki branch silinince üstteki PR kapanmaz. Repo'da "Automatically delete head branches" açık.
 - Commit mesajları İngilizce Conventional Commits (`feat:`, `fix:`, `refactor:`, `chore:`, `docs:`, `test:`). Her commit tek bir anlamlı adım ve kendi başına derlenir.
 - Her özellik ayrı PR. PR açıklaması Türkçe: Özet, Değişiklikler, Nasıl test edilir.
 - Özellik bitince: `PLAN.md`'de ✅ işaretlenir, test adımları verilir ve sonraki özelliğe geçmeden onay beklenir.
-- Push'tan ve merge'den önce her zaman onay alınır.
+- Her push ve her merge proje sahibinin açık onayıyla yapılır; bir onay yalnızca o işlem için geçerlidir.
 - Remote: `https://github.com/Anjo899/Vitrin`. PR'lar `gh` ile açılır.
 
 ## Build ve test
@@ -66,3 +69,8 @@ xcodebuild -project TrendyolBenzeri.xcodeproj -scheme TrendyolBenzeri \
   - Paralel test kapalı (`parallelizable = "NO"`). Kopya simülatörlerde test çalıştırma takılmıştı.
   - Şablon UI testleri (`TrendyolBenzeriUITests`) scheme'den çıkarıldı; dosyaları duruyor. Geri eklenmez.
 - Xcode'da çalıştırmak için ⌘R, testler için ⌘U.
+
+## Agents
+Tanımlar `.claude/agents/` içinde.
+- Commit işleri `committer` agent'ı ile yapılır: `main`'de commit atmaz, dosyaları adıyla ekler (`xcuserdata`, `.DS_Store` gibi dosyaları eklemez), push yapmaz.
+- Push, PR açma ve merge işleri `pr-manager` agent'ı ile yapılır: `gh` kullanır, push ve merge'den önce açık onay ister, stacked PR'ları alttan başlayarak önce üstteki PR'ın base'ini `main`'e çevirir, sonra `gh pr merge --merge --delete-branch` ile merge eder.

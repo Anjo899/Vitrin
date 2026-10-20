@@ -68,7 +68,7 @@ struct CartItemRow: View {
             } label: {
                 // Adet 1'deyken azaltmak ürünü sepetten çıkarır; ikon bunu belli eder.
                 Image(systemName: item.quantity == 1 ? "trash" : "minus")
-                    .frame(width: 32, height: 32)
+                    .frame(width: 44, height: 44) // HIG: en az 44 pt dokunma alanı
             }
             .accessibilityLabel(item.quantity == 1 ? "Sepetten çıkar" : "Adedi azalt")
 
@@ -81,7 +81,7 @@ struct CartItemRow: View {
                 cartStore.increment(item)
             } label: {
                 Image(systemName: "plus")
-                    .frame(width: 32, height: 32)
+                    .frame(width: 44, height: 44)
             }
             .disabled(!cartStore.canAdd(item.product))
             .accessibilityLabel("Adedi artır")

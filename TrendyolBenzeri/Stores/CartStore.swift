@@ -20,7 +20,9 @@ final class CartStore {
         do {
             items = try storage.load([Int: CartItem].self, from: fileName) ?? [:]
         } catch {
-            print("Sepet yüklenemedi: \(error)")
+            // Bozuk ya da eski formattaki dosya, boş sepet kaydedilirken ezilmesin.
+            print("Sepet yüklenemedi, dosya kenara alınıyor: \(error)")
+            storage.moveAsideCorruptFile(fileName)
         }
     }
 
