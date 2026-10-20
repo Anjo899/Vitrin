@@ -15,7 +15,7 @@ struct TrendyolBenzeriApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            MainTabView()
                 .environment(favoritesStore)
                 .environment(cartStore)
         }

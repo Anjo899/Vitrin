@@ -19,7 +19,7 @@ Trendyol benzeri bir e-ticaret uygulaması (okul projesi, SwiftUI öğrenme ama�
 | 0 | `chore/project-setup` | `main` | ✅ Tamamlandı |
 | 1 | `feature/core-networking` | `chore/project-setup` | ✅ Tamamlandı |
 | 2 | `feature/stores-persistence` | `feature/core-networking` | ✅ Tamamlandı |
-| 3 | `feature/app-shell` | `feature/stores-persistence` | ⬜ |
+| 3 | `feature/app-shell` | `feature/stores-persistence` | ✅ Tamamlandı |
 | 4 | `feature/home-grid` | `feature/app-shell` | ⬜ |
 | 5 | `feature/home-search` | `feature/home-grid` | ⬜ |
 | 6 | `feature/product-detail` | `feature/home-search` | ⬜ |
@@ -46,10 +46,11 @@ Trendyol benzeri bir e-ticaret uygulaması (okul projesi, SwiftUI öğrenme ama�
 - `TrendyolBenzeriApp`: store'lar `@State` ile oluşturulup `.environment(...)` ile verilir.
 - Testler: store mantığı + plist kaydet/yükle.
 
-### 3. feature/app-shell: sekmeler + ortak durum ekranları
+### 3. feature/app-shell ✅: sekmeler + ortak durum ekranları
 - `MainTabView`: Ana Sayfa, Kategoriler, Favoriler, Sepet; Sepet sekmesinde ürün sayısı badge'i (0 iken gizli).
 - Her sekme için `NavigationStack` + geçici ekran. `ContentView.swift` kaldırılır.
-- Ortak görünümler: `LoadingView`, `ErrorView` (mesaj + "Tekrar Dene"), `EmptyStateView`.
+- Ortak görünümler: `LoadingView`, `ErrorView` (mesaj + "Tekrar Dene"). Boş durumlar için ayrı bir view yerine iOS 17'nin hazır `ContentUnavailableView`'u kullanılır.
+- `PreviewData.swift`: sadece DEBUG'da derlenen önizleme örnek ürünleri.
 - `LoadState<T>`: `idle`, `loading`, `loaded(T)`, `failed(String)`.
 
 ### 4. feature/home-grid: ana sayfa
