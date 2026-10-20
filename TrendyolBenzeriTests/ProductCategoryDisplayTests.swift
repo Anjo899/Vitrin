@@ -14,9 +14,10 @@ struct ProductCategoryDisplayTests {
         ProductCategory(slug: slug, name: name, url: URL(string: "https://dummyjson.com/products/category/\(slug)")!)
     }
 
-    @Test func usesTurkishNameForKnownSlug() {
+    @Test func usesTranslatedNameForKnownSlug() {
         let shirts = category("mens-shirts", name: "Mens Shirts")
         #expect(shirts.displayName.resolved(in: Locale(identifier: "tr_TR")) == "Erkek Gömlek")
+        #expect(shirts.displayName.resolved(in: Locale(identifier: "en_US")) == "Men's Shirts")
     }
 
     @Test func fallsBackToApiNameForUnknownSlug() {
