@@ -22,7 +22,7 @@ Trendyol benzeri bir e-ticaret uygulaması (okul projesi, SwiftUI öğrenme ama�
 | 3 | `feature/app-shell` | `feature/stores-persistence` | ✅ Tamamlandı |
 | 4 | `feature/home-grid` | `feature/app-shell` | ✅ Tamamlandı |
 | 5 | `feature/home-search` | `feature/home-grid` | ✅ Tamamlandı |
-| 6 | `feature/product-detail` | `feature/home-search` | ⬜ |
+| 6 | `feature/product-detail` | `feature/home-search` | ✅ Tamamlandı |
 | 7 | `feature/categories` | `feature/product-detail` | ⬜ |
 | 8 | `feature/favorites-screen` | `feature/categories` | ⬜ |
 | 9 | `feature/cart-screen` | `feature/favorites-screen` | ⬜ |
@@ -62,7 +62,7 @@ Trendyol benzeri bir e-ticaret uygulaması (okul projesi, SwiftUI öğrenme ama�
 ### 5. feature/home-search ✅
 `.searchable` ("Ürün, marka ara"), gecikmeli (debounce) `/products/search?q=` isteği, sonuç yoksa boş durum ekranı.
 
-### 6. feature/product-detail
+### 6. feature/product-detail ✅
 - Kaydırmalı fotoğraf galerisi (`TabView` + `.page`), başlık, marka, fiyat/indirim, puan, stok ("Stokta 12 adet" / "Tükendi"), açıklama, yorumlar.
 - Kalp butonu, altta sabit "Sepete Ekle" butonu (stok 0 ise devre dışı), eklenince kısa geri bildirim.
 
