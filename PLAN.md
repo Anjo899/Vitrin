@@ -20,7 +20,7 @@ Trendyol benzeri bir e-ticaret uygulaması (okul projesi, SwiftUI öğrenme ama�
 | 1 | `feature/core-networking` | `chore/project-setup` | ✅ Tamamlandı |
 | 2 | `feature/stores-persistence` | `feature/core-networking` | ✅ Tamamlandı |
 | 3 | `feature/app-shell` | `feature/stores-persistence` | ✅ Tamamlandı |
-| 4 | `feature/home-grid` | `feature/app-shell` | ⬜ |
+| 4 | `feature/home-grid` | `feature/app-shell` | ✅ Tamamlandı |
 | 5 | `feature/home-search` | `feature/home-grid` | ⬜ |
 | 6 | `feature/product-detail` | `feature/home-search` | ⬜ |
 | 7 | `feature/categories` | `feature/product-detail` | ⬜ |
@@ -53,7 +53,7 @@ Trendyol benzeri bir e-ticaret uygulaması (okul projesi, SwiftUI öğrenme ama�
 - `PreviewData.swift`: sadece DEBUG'da derlenen önizleme örnek ürünleri.
 - `LoadState<T>`: `idle`, `loading`, `loaded(T)`, `failed(String)`.
 
-### 4. feature/home-grid: ana sayfa
+### 4. feature/home-grid ✅: ana sayfa
 - `HomeViewModel` (`@Observable`): `LoadState<[Product]>`, `load()`, `refresh()`.
 - `HomeView`: 2 sütunlu `LazyVGrid`, `.task` ile yükleme, `.refreshable` ile aşağı çekip yenileme.
 - `ProductCardView`: görsel, ad, marka, puan, indirim varsa üstü çizili eski fiyat + `%x` rozeti + indirimli fiyat, kalp ikonu.
