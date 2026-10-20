@@ -36,7 +36,7 @@ struct MainTabView: View {
             .tag(Tab.favorites)
 
             NavigationStack {
-                CartView()
+                CartView(selectedTab: $selectedTab)
             }
             .tabItem { Label("Sepet", systemImage: "cart") }
             // Badge 0 olduğunda SwiftUI onu otomatik gizler.
