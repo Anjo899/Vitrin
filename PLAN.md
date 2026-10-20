@@ -23,7 +23,7 @@ Trendyol benzeri bir e-ticaret uygulaması (okul projesi, SwiftUI öğrenme ama�
 | 4 | `feature/home-grid` | `feature/app-shell` | ✅ Tamamlandı |
 | 5 | `feature/home-search` | `feature/home-grid` | ✅ Tamamlandı |
 | 6 | `feature/product-detail` | `feature/home-search` | ✅ Tamamlandı |
-| 7 | `feature/categories` | `feature/product-detail` | ⬜ |
+| 7 | `feature/categories` | `feature/product-detail` | ✅ Tamamlandı |
 | 8 | `feature/favorites-screen` | `feature/categories` | ⬜ |
 | 9 | `feature/cart-screen` | `feature/favorites-screen` | ⬜ |
 
@@ -66,8 +66,8 @@ Trendyol benzeri bir e-ticaret uygulaması (okul projesi, SwiftUI öğrenme ama�
 - Kaydırmalı fotoğraf galerisi (`TabView` + `.page`), başlık, marka, fiyat/indirim, puan, stok ("Stokta 12 adet" / "Tükendi"), açıklama, yorumlar.
 - Kalp butonu, altta sabit "Sepete Ekle" butonu (stok 0 ise devre dışı), eklenince kısa geri bildirim.
 
-### 7. feature/categories
-Kategori listesi → seçilen kategorinin ürünleri. Ana sayfadaki grid ortak `ProductGridView`'e çıkarılır (`refactor:` commit).
+### 7. feature/categories ✅
+Kategori listesi → seçilen kategorinin ürünleri. Ana sayfadaki grid ortak `ProductGridView`'e çıkarılır (`refactor:` commit). API kategori adları İngilizce olduğu için slug → Türkçe ad + SF Symbol ikonu eşlemesi (`ProductCategory+Display.swift`), bilinmeyen kategoride API adı kullanılır.
 
 ### 8. feature/favorites-screen
 Favori ürünlerin grid'i; boşken "Henüz favori ürünün yok" ekranı.
