@@ -30,7 +30,7 @@ struct MainTabView: View {
             .tag(Tab.categories)
 
             NavigationStack {
-                FavoritesView()
+                FavoritesView(selectedTab: $selectedTab)
             }
             .tabItem { Label("Favoriler", systemImage: "heart") }
             .tag(Tab.favorites)
