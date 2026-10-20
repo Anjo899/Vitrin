@@ -9,9 +9,15 @@ import SwiftUI
 
 @main
 struct TrendyolBenzeriApp: App {
+    /// Ekranlar arası paylaşılan store'lar burada bir kez oluşturulur.
+    @State private var favoritesStore = FavoritesStore()
+    @State private var cartStore = CartStore()
+
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environment(favoritesStore)
+                .environment(cartStore)
         }
     }
 }
