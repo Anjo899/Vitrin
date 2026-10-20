@@ -70,19 +70,19 @@ struct ProductDetailView: View {
             VStack(alignment: .leading, spacing: 2) {
                 if product.hasDiscount {
                     HStack(spacing: 6) {
-                        Text(product.discountLabel)
+                        Text(product.discountRate, format: .discount)
                             .font(.caption.bold())
                             .foregroundStyle(.white)
                             .padding(.horizontal, 6)
                             .padding(.vertical, 2)
                             .background(Color.discountBadge, in: Capsule())
-                        Text(product.price.formattedPrice)
+                        Text(product.priceInLira, format: .lira)
                             .font(.subheadline)
                             .strikethrough()
                             .foregroundStyle(.secondary)
                     }
                 }
-                Text(product.discountedPrice.formattedPrice)
+                Text(product.discountedPriceInLira, format: .lira)
                     .font(.title2.bold())
                     .foregroundStyle(product.hasDiscount ? Color.accentColor : .primary)
             }

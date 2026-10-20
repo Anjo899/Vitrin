@@ -7,23 +7,32 @@ import Foundation
 import Testing
 @testable import TrendyolBenzeri
 
-/// Ekranda görünen birim fiyat × adet, satır ve sepet toplamıyla birebir aynı olmalı.
-/// Örnek değerler dummyjson'daki gerçek ürünlerden (maskara ve göz farı paleti).
 struct PriceRoundingTests {
 
     private let mascara = Product.sample(id: 1, price: 9.99, discountPercentage: 10.48)
     private let eyeshadow = Product.sample(id: 2, price: 19.99, discountPercentage: 18.19)
+    private let turkish = Locale(identifier: "tr_TR")
 
     @Test func discountedPriceIsRoundedToCents() {
         // 9.99 × (1 − 0.1048) = 8.943048 → $8.94
         #expect(abs(mascara.discountedPrice - 8.94) < 0.000_001)
-        #expect(mascara.discountedPrice.formattedPrice == "$8.94")
+    }
+
+    @Test func liraPriceUsesFixedRateAfterRounding() {
+        #expect(ExchangeRate.usdToTry == 45)
+        // $8.94 × 45 = 402.30 TL
+        #expect(abs(mascara.discountedPriceInLira - 402.30) < 0.000_001)
+        // $9.99 × 45 = 449.55 TL
+        #expect(abs(mascara.priceInLira - 449.55) < 0.000_001)
+        #expect(mascara.discountedPriceInLira.formatted(.lira.locale(turkish)) == "₺402,30")
     }
 
     @Test func lineTotalEqualsDisplayedUnitPriceTimesQuantity() {
         let item = CartItem(product: mascara, quantity: 2)
-        // 2 × $8.94 = $17.88 (yuvarlanmamış fiyatla $17.89 çıkıyordu)
-        #expect(item.lineTotal.formattedPrice == "$17.88")
+        // Dolar: 2 × $8.94 = $17.88 (yuvarlanmamış fiyatla $17.89 çıkıyordu)
+        #expect(abs(item.lineTotal - 17.88) < 0.000_001)
+        // TL: 2 × 402,30 = 804,60
+        #expect(item.lineTotalInLira.formatted(.lira.locale(turkish)) == "₺804,60")
     }
 
     @MainActor
@@ -34,7 +43,9 @@ struct PriceRoundingTests {
         cartStore.add(eyeshadow)
         cartStore.add(eyeshadow)
 
-        // 2 × $8.94 + 2 × $16.35 = $17.88 + $32.70 = $50.58
-        #expect(cartStore.totalPrice.formattedPrice == "$50.58")
+        // Dolar: 2 × $8.94 + 2 × $16.35 = $50.58
+        #expect(abs(cartStore.totalPrice - 50.58) < 0.000_001)
+        // TL: 2 × 402,30 + 2 × 735,75 = 804,60 + 1.471,50 = 2.276,10
+        #expect(cartStore.totalPriceInLira.formatted(.lira.locale(turkish)) == "₺2.276,10")
     }
 }

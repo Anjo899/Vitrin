@@ -25,9 +25,9 @@ struct CartItemRow: View {
                     .lineLimit(2)
 
                 HStack(spacing: 4) {
-                    Text(item.product.discountedPrice.formattedPrice)
+                    Text(item.product.discountedPriceInLira, format: .lira)
                     if item.product.hasDiscount {
-                        Text(item.product.price.formattedPrice)
+                        Text(item.product.priceInLira, format: .lira)
                             .strikethrough()
                             .foregroundStyle(.secondary)
                     }
@@ -37,7 +37,7 @@ struct CartItemRow: View {
                 HStack {
                     quantityControls
                     Spacer()
-                    Text(item.lineTotal.formattedPrice)
+                    Text(item.lineTotalInLira, format: .lira)
                         .font(.subheadline.bold())
                 }
                 .padding(.top, 4)

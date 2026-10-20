@@ -44,6 +44,11 @@ final class CartStore {
         items.values.reduce(0) { $0 + $1.lineTotal }
     }
 
+    /// Ekranda gösterilen toplam (TL); görünen satır toplamlarının toplamı olduğu için kuruşu kuruşuna tutar.
+    var totalPriceInLira: Double {
+        items.values.reduce(0) { $0 + $1.lineTotalInLira }.roundedToCents
+    }
+
     func quantity(of product: Product) -> Int {
         items[product.id]?.quantity ?? 0
     }

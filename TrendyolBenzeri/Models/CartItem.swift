@@ -12,8 +12,13 @@ nonisolated struct CartItem: Codable, Identifiable, Hashable, Sendable {
 
     var id: Int { product.id }
 
-    /// Satır toplamı, ekranda görünen (kuruşa yuvarlanmış) indirimli fiyat × adet.
+    /// Satır toplamı (dolar), kuruşa yuvarlanmış indirimli fiyat × adet.
     var lineTotal: Double {
         (product.discountedPrice * Double(quantity)).roundedToCents
+    }
+
+    /// Ekranda gösterilen satır toplamı (TL): görünen TL birim fiyat × adet.
+    var lineTotalInLira: Double {
+        (product.discountedPriceInLira * Double(quantity)).roundedToCents
     }
 }

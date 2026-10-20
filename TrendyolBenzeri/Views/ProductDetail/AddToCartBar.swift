@@ -19,7 +19,7 @@ struct AddToCartBar: View {
 
         HStack(spacing: 16) {
             VStack(alignment: .leading, spacing: 2) {
-                Text(product.discountedPrice.formattedPrice)
+                Text(product.discountedPriceInLira, format: .lira)
                     .font(.headline)
                 if quantityInCart > 0 {
                     Text("Sepette \(quantityInCart) adet")

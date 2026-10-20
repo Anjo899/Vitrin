@@ -61,10 +61,10 @@ struct CartView: View {
                 Text("Toplam (\(cartStore.totalQuantity) ürün)")
                     .font(.caption)
                     .foregroundStyle(.secondary)
-                Text(cartStore.totalPrice.formattedPrice)
+                Text(cartStore.totalPriceInLira, format: .lira)
                     .font(.title3.bold())
                     .contentTransition(.numericText())
-                    .animation(.default, value: cartStore.totalPrice)
+                    .animation(.default, value: cartStore.totalPriceInLira)
             }
 
             Button {

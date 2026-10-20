@@ -60,7 +60,7 @@ struct ProductCardView: View {
         .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 8))
         .overlay(alignment: .topLeading) {
             if product.hasDiscount {
-                Text(product.discountLabel)
+                Text(product.discountRate, format: .discount)
                     .font(.caption2.bold())
                     .foregroundStyle(.white)
                     .padding(.horizontal, 6)
@@ -97,12 +97,12 @@ struct PriceView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             if product.hasDiscount {
-                Text(product.price.formattedPrice)
+                Text(product.priceInLira, format: .lira)
                     .font(.caption2)
                     .strikethrough()
                     .foregroundStyle(.secondary)
             }
-            Text(product.discountedPrice.formattedPrice)
+            Text(product.discountedPriceInLira, format: .lira)
                 .font(.subheadline.bold())
                 .foregroundStyle(product.hasDiscount ? Color.accentColor : .primary)
         }

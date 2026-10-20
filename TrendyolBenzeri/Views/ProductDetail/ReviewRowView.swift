@@ -15,7 +15,7 @@ struct ReviewRowView: View {
                 Text(review.reviewerName)
                     .font(.subheadline.weight(.semibold))
                 Spacer()
-                Text(review.date, format: .dateTime.day().month(.wide).year().locale(Locale(identifier: "tr_TR")))
+                Text(review.date, format: .dateTime.day().month(.wide).year())
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
