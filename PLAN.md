@@ -21,7 +21,7 @@ Trendyol benzeri bir e-ticaret uygulaması (okul projesi, SwiftUI öğrenme ama�
 | 2 | `feature/stores-persistence` | `feature/core-networking` | ✅ Tamamlandı |
 | 3 | `feature/app-shell` | `feature/stores-persistence` | ✅ Tamamlandı |
 | 4 | `feature/home-grid` | `feature/app-shell` | ✅ Tamamlandı |
-| 5 | `feature/home-search` | `feature/home-grid` | ⬜ |
+| 5 | `feature/home-search` | `feature/home-grid` | ✅ Tamamlandı |
 | 6 | `feature/product-detail` | `feature/home-search` | ⬜ |
 | 7 | `feature/categories` | `feature/product-detail` | ⬜ |
 | 8 | `feature/favorites-screen` | `feature/categories` | ⬜ |
@@ -59,7 +59,7 @@ Trendyol benzeri bir e-ticaret uygulaması (okul projesi, SwiftUI öğrenme ama�
 - `ProductCardView`: görsel, ad, marka, puan, indirim varsa üstü çizili eski fiyat + `%x` rozeti + indirimli fiyat, kalp ikonu.
 - Detaya geçiş için `NavigationLink(value:)` + `.navigationDestination`.
 
-### 5. feature/home-search
+### 5. feature/home-search ✅
 `.searchable` ("Ürün, marka ara"), gecikmeli (debounce) `/products/search?q=` isteği, sonuç yoksa boş durum ekranı.
 
 ### 6. feature/product-detail
