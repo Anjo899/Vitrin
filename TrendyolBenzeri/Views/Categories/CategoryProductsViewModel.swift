@@ -41,7 +41,7 @@ final class CategoryProductsViewModel {
                 state = .idle
             }
         } catch {
-            state = .failed(error.localizedDescription)
+            state = .failed(error.userMessage)
         }
     }
 }

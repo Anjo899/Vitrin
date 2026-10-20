@@ -14,7 +14,7 @@ nonisolated enum AppTheme: String, CaseIterable, Identifiable, Sendable {
 
     var id: Self { self }
 
-    var title: String {
+    var title: LocalizedStringResource {
         switch self {
         case .system: "Sistem"
         case .light: "Açık"

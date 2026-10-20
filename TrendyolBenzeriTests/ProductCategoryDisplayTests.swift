@@ -15,12 +15,14 @@ struct ProductCategoryDisplayTests {
     }
 
     @Test func usesTurkishNameForKnownSlug() {
-        #expect(category("mens-shirts", name: "Mens Shirts").displayName == "Erkek Gömlek")
+        let shirts = category("mens-shirts", name: "Mens Shirts")
+        #expect(shirts.displayName.resolved(in: Locale(identifier: "tr_TR")) == "Erkek Gömlek")
     }
 
     @Test func fallsBackToApiNameForUnknownSlug() {
         let unknown = category("garden-tools", name: "Garden Tools")
-        #expect(unknown.displayName == "Garden Tools")
+        #expect(unknown.displayName.resolved(in: Locale(identifier: "tr_TR")) == "Garden Tools")
+        #expect(unknown.displayName.resolved(in: Locale(identifier: "en_US")) == "Garden Tools")
         #expect(unknown.iconName == "tag.fill")
     }
 

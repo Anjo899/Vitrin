@@ -5,9 +5,10 @@
 
 import Foundation
 
-/// API kategori adlarını İngilizce döndürür ("Mens Shirts"); arayüzde Türkçe ad ve ikon gösteriyoruz.
+/// API kategori adlarını İngilizce döndürür ("Mens Shirts"); arayüzde seçilen dildeki ad ve ikon gösteriliyor.
+/// Adların çevirileri `Localizable.xcstrings`'te.
 nonisolated extension ProductCategory {
-    private static let displayInfo: [String: (name: String, icon: String)] = [
+    private static let displayInfo: [String: (name: LocalizedStringResource, icon: String)] = [
         "beauty": ("Güzellik", "paintbrush.pointed.fill"),
         "fragrances": ("Parfüm", "sparkles"),
         "furniture": ("Mobilya", "sofa.fill"),
@@ -36,9 +37,9 @@ nonisolated extension ProductCategory {
 
     static let knownSlugs = Set(displayInfo.keys)
 
-    /// Türkçe ad; eşlemede yoksa API'deki ad.
-    var displayName: String {
-        Self.displayInfo[slug]?.name ?? name
+    /// Seçilen dildeki ad; eşlemede yoksa API'deki ad (çevrilmez).
+    var displayName: LocalizedStringResource {
+        Self.displayInfo[slug]?.name ?? LocalizedStringResource(String.LocalizationValue(name))
     }
 
     /// SF Symbol adı; eşlemede yoksa genel bir etiket ikonu.

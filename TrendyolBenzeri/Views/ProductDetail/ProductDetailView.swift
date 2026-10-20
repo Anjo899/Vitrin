@@ -94,17 +94,32 @@ struct ProductDetailView: View {
     }
 
     private var stockLabel: some View {
-        // Sistem kırmızı/turuncu/yeşili beyaz zeminde okunaklı değil (2,2–3,5:1); Assets'teki
-        // renkler açık ve koyu temada en az 4,5:1 kontrast verir.
-        let (text, color): (String, Color) = switch product.stock {
-        case 0: ("Tükendi", .stockOut)
-        case 1...5: ("Son \(product.stock) ürün!", .stockLow)
-        default: ("Stokta \(product.stock) adet", .stockAvailable)
+        Label {
+            stockText
+        } icon: {
+            Image(systemName: product.isInStock ? "shippingbox.fill" : "xmark.circle.fill")
         }
+        .font(.subheadline.weight(.medium))
+        .foregroundStyle(stockColor)
+    }
 
-        return Label(text, systemImage: product.isInStock ? "shippingbox.fill" : "xmark.circle.fill")
-            .font(.subheadline.weight(.medium))
-            .foregroundStyle(color)
+    /// Doğrudan `Text("…")` döndürülür; böylece derleyici metinleri String Catalog için bulabilir.
+    private var stockText: Text {
+        switch product.stock {
+        case 0: Text("Tükendi")
+        case 1...5: Text("Son \(product.stock) ürün!")
+        default: Text("Stokta \(product.stock) adet")
+        }
+    }
+
+    /// Sistem kırmızı/turuncu/yeşili beyaz zeminde okunaklı değil (2,2–3,5:1); Assets'teki
+    /// renkler açık ve koyu temada en az 4,5:1 kontrast verir.
+    private var stockColor: Color {
+        switch product.stock {
+        case 0: .stockOut
+        case 1...5: .stockLow
+        default: .stockAvailable
+        }
     }
 
     private var descriptionSection: some View {

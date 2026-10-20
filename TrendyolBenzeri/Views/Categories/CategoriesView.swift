@@ -7,6 +7,7 @@ import SwiftUI
 
 struct CategoriesView: View {
     @State private var viewModel = CategoriesViewModel()
+    @Environment(\.locale) private var locale
 
     var body: some View {
         content
@@ -35,7 +36,7 @@ struct CategoriesView: View {
         case .loaded(let categories) where categories.isEmpty:
             ContentUnavailableView("Kategori bulunamadı", systemImage: "square.grid.2x2")
         case .loaded(let categories):
-            List(categories) { category in
+            List(sortedByName(categories)) { category in
                 NavigationLink(value: category) {
                     Label {
                         Text(category.displayName)
@@ -48,6 +49,13 @@ struct CategoriesView: View {
             .refreshable {
                 await viewModel.refresh()
             }
+        }
+    }
+
+    /// Ekrandaki adlara göre, seçilen dilin alfabe sırasıyla (Türkçe'de Ç, Ö, Ü doğru yerde).
+    private func sortedByName(_ categories: [ProductCategory]) -> [ProductCategory] {
+        categories.sorted {
+            $0.displayName.resolved(in: locale).compare($1.displayName.resolved(in: locale), locale: locale) == .orderedAscending
         }
     }
 }

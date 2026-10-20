@@ -16,7 +16,7 @@ struct CategoryProductsView: View {
 
     var body: some View {
         content
-            .navigationTitle(viewModel.category.displayName)
+            .navigationTitle(Text(viewModel.category.displayName))
             .task {
                 await viewModel.loadIfNeeded()
             }

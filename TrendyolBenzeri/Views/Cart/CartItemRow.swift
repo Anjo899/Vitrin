@@ -70,9 +70,9 @@ struct CartItemRow: View {
                 Image(systemName: item.quantity == 1 ? "trash" : "minus")
                     .frame(width: 44, height: 44) // HIG: en az 44 pt dokunma alanı
             }
-            .accessibilityLabel(item.quantity == 1 ? "Sepetten çıkar" : "Adedi azalt")
+            .accessibilityLabel(item.quantity == 1 ? Text("Sepetten çıkar") : Text("Adedi azalt"))
 
-            Text("\(item.quantity)")
+            Text(item.quantity, format: .number)
                 .font(.subheadline.monospacedDigit().bold())
                 .frame(minWidth: 28)
                 .contentTransition(.numericText())
@@ -84,7 +84,7 @@ struct CartItemRow: View {
                     .frame(width: 44, height: 44)
             }
             .disabled(!cartStore.canAdd(item.product))
-            .accessibilityLabel("Adedi artır")
+            .accessibilityLabel(Text("Adedi artır"))
         }
         .font(.subheadline.weight(.semibold))
         // List satırında butonların ayrı ayrı basılabilmesi için gerekli;

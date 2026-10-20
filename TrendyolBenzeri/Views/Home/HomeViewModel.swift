@@ -66,7 +66,7 @@ final class HomeViewModel {
             // Kullanıcı yazmaya devam etti; yeni arama zaten başladı.
         } catch {
             guard isLatest() else { return }
-            searchState = .failed(error.localizedDescription)
+            searchState = .failed(error.userMessage)
         }
     }
 
@@ -81,7 +81,7 @@ final class HomeViewModel {
                 state = .idle
             }
         } catch {
-            state = .failed(error.localizedDescription)
+            state = .failed(error.userMessage)
         }
     }
 }

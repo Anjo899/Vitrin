@@ -86,7 +86,7 @@ struct RatingView: View {
         }
         .font(.caption2)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Puan \(rating.formatted(.number.precision(.fractionLength(1))))")
+        .accessibilityLabel(Text("Puan \(rating, format: .number.precision(.fractionLength(1)))"))
     }
 }
 

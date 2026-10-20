@@ -8,7 +8,7 @@ import SwiftUI
 /// İstek başarısız olduğunda hata mesajını ve "Tekrar Dene" butonunu gösterir.
 /// Boş durumlar için ayrıca iOS 17'nin hazır `ContentUnavailableView`'u kullanılır.
 struct ErrorView: View {
-    let message: String
+    let message: LocalizedStringResource
     let retry: () async -> Void
 
     var body: some View {

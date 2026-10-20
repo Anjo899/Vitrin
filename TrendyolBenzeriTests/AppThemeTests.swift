@@ -18,8 +18,9 @@ struct AppThemeTests {
         #expect(AppTheme.dark.colorScheme == .dark)
     }
 
-    @Test func titlesAreTurkish() {
-        #expect(AppTheme.allCases.map(\.title) == ["Sistem", "Açık", "Koyu"])
+    @Test func titlesAreLocalized() {
+        let turkish = AppTheme.allCases.map { $0.title.resolved(in: Locale(identifier: "tr_TR")) }
+        #expect(turkish == ["Sistem", "Açık", "Koyu"])
     }
 
     /// `@AppStorage`'a yazılan değerler değişirse kayıtlı seçim kaybolur.

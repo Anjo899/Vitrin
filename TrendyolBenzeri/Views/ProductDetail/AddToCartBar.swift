@@ -33,7 +33,11 @@ struct AddToCartBar: View {
                 addCount += 1
                 showsAddedFeedback = true
             } label: {
-                Label(buttonTitle, systemImage: buttonIcon)
+                Label {
+                    Text(buttonTitle)
+                } icon: {
+                    Image(systemName: buttonIcon)
+                }
                     .font(.headline)
                     .frame(maxWidth: .infinity)
             }
@@ -62,7 +66,7 @@ struct AddToCartBar: View {
         }
     }
 
-    private var buttonTitle: String {
+    private var buttonTitle: LocalizedStringResource {
         if !product.isInStock {
             "Tükendi"
         } else if showsAddedFeedback {

@@ -32,18 +32,14 @@ final class CategoriesViewModel {
 
     private func fetchCategories() async {
         do {
-            let categories = try await service.fetchCategories()
-            // Türkçe adlara göre, Türkçe alfabe sırasıyla (Ç, Ö, Ü doğru yerde).
-            let turkish = Locale(identifier: "tr_TR")
-            state = .loaded(categories.sorted {
-                $0.displayName.compare($1.displayName, locale: turkish) == .orderedAscending
-            })
+            // Sıralama seçilen dile bağlı olduğu için view'da yapılır.
+            state = .loaded(try await service.fetchCategories())
         } catch is CancellationError {
             if case .loading = state {
                 state = .idle
             }
         } catch {
-            state = .failed(error.localizedDescription)
+            state = .failed(error.userMessage)
         }
     }
 }
