@@ -1,0 +1,27 @@
+# SwiftLint ayarları. Kurallar ARCHITECTURE.md'ye ve REVIEW.md'deki
+# "Lint kurallarıyla otomatik yakalanabilecekler" listesine göre seçildi.
+#
+# Ciddiyet: ARCHITECTURE.md'de "Bugünkü durum: uyulmuyor" notu olan bilinen
+# ihlallere takılan kurallar şimdilik warning; ihlal düzeltilince error'a çekilir.
+# Diğer bütün özel kurallar error: yeni ihlal build'i kırar.
+
+# Uygulama ve unit testler denetlenir. Şablon UI testleri scheme'de yok (CLAUDE.md).
+included:
+  - TrendyolBenzeri
+  - TrendyolBenzeriTests
+
+excluded:
+  - TrendyolBenzeriUITests
+
+opt_in_rules:
+  # 8. Erişilebilirlik: görsellerin VoiceOver etiketi olur ya da dekoratif olarak gizlenir (REVIEW.md lint listesi, O9).
+  - accessibility_label_for_image
+  # 8. Erişilebilirlik: dokunma ile çalışan öğe buton özelliği taşır (REVIEW.md lint listesi, O9).
+  - accessibility_trait_for_button
+  # 3. State management: ekrana ait değerler ve ViewModel `@State private var` ile tutulur.
+  - private_swiftui_state
+  # 5. Concurrency: yapılandırılmamış `Task { }` içindeki hata yutulmaz.
+  - unhandled_throwing_task
+
+# `unused_declaration` (REVIEW.md lint listesi) bir analyzer kuralıdır; derleyici
+# günlüğü ister ve build tool plugin'inde çalışmaz. Bu yüzden açılmadı.
