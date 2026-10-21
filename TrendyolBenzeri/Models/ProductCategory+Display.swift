@@ -32,7 +32,7 @@ nonisolated extension ProductCategory {
         "womens-dresses": ("Kadın Elbise", "hanger"),
         "womens-jewellery": ("Kadın Takı", "diamond.fill"),
         "womens-shoes": ("Kadın Ayakkabı", "shoeprints.fill"),
-        "womens-watches": ("Kadın Saat", "watch.analog"),
+        "womens-watches": ("Kadın Saat", "watch.analog")
     ]
 
     static let knownSlugs = Set(displayInfo.keys)

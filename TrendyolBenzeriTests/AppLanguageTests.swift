@@ -20,7 +20,7 @@ struct AppLanguageTests {
         // Cihaz dili desteklenmiyorsa ikinci dile bakılmaz, Türkçe kullanılır.
         (["de-DE", "en-US"], .turkish),
         (["ja-JP"], .turkish),
-        ([], .turkish),
+        ([], .turkish)
     ])
     func systemResolvesToDeviceLanguage(preferredLanguages: [String], expected: AppLanguage) {
         #expect(AppLanguage.system.resolved(preferredLanguages: preferredLanguages) == expected)
