@@ -74,7 +74,7 @@ Bu turda aşağıdakiler çalıştırılarak kontrol edildi:
 | S5 | Küçük | Görsel önbelleği küçük, 194 ürün tek istekte | ❌ Hâlâ açık | Görsel yeniden deneme (#15) aynı görseli daha sık istiyor |
 | S6 | Küçük | Tekrar eden kod | 🟡 Hâlâ açık (kısmen düzeltildi) | Görsel kodu `ProductImageView`'da birleşti (`01b213e`–`5678294`). ViewModel yükleme mantığı, fiyat ve rozet gösterimi, "n ürün" başlığı hâlâ tekrar ediyor |
 | S7 | Küçük | İsimlendirme ve yerleşim | 🟡 Hâlâ açık (kısmen düzeltildi) | `discountLabel` kalktı (`97c1408`). `MainTabView.Tab`, kullanılmayan `fetchProduct(id:)`, boş `example()` testi ve `print` duruyor |
-| S8 | Küçük | Önizlemeler aynı geçici klasörü kullanıyor | ❌ Hâlâ açık | Bazı önizlemeler kendi klasörünü oluşturuyor; ortak çözüm yok. Ayrıca bkz. S20 |
+| S8 | Küçük | Önizlemeler aynı geçici klasörü kullanıyor | ❌ Hâlâ açık | Bazı önizlemeler kendi klasör yolunu veriyor ama klasörü oluşturmuyor; ortak çözüm yok. Ayrıca bkz. S20 |
 | S9 | Küçük | Yanıltıcı demo ödeme uyarısı | ❌ Hâlâ açık | Mesaj "ürünler korunacak" diyor, başlık hâlâ "Siparişin alındı (demo)" |
 | S10 | Küçük | Karışık sayı biçimleri | ✅ Düzeltildi | `97c1408`: fiyat, indirim, puan ve tarih seçilen dile göre biçimleniyor |
 | T2 | Küçük | Ek test ve kontroller | 🟡 Hâlâ açık (kısmen düzeltildi) | Eski arama ve bozuk plist testleri var. İndirim uç değerleri, yıldız eşikleri, tam API cevabı ve Release derlemesi kontrolü yok |
@@ -96,7 +96,7 @@ Bu turda aşağıdakiler çalıştırılarak kontrol edildi:
 | S17 | Küçük | `ProductImageView`: sınırsız yeniden deneme, ayrı iptal kontrolü, testi yok | Hata yönetimi, performans |
 | S18 | Küçük | Her sepet ve favori değişikliğinde tüm dosya ana thread'de yazılıyor | Performans |
 | S19 | Küçük | `@AppStorage` tanımı iki yerde; `CategoryProductsView` her init'te ViewModel oluşturuyor | State management |
-| S20 | Küçük | Bazı önizlemeler `CartStore` vermiyor; detaya geçince çöküyor | Kod kalitesi |
+| S20 | Küçük | Bazı önizlemeler `CartStore` vermiyor; `HomeView` ve `FavoritesView` ("Dolu") detaya geçince çöküyor | Kod kalitesi |
 | S21 | Küçük | `PLAN.md` ve `CLAUDE.md` koddan ve yeni kurallardan geri kaldı | Belgeler |
 | S22 | Küçük | `ErrorView` "Tekrar Dene" görevi yapılandırılmamış ve iptal edilmiyor | Concurrency |
 | T3 | Küçük | Yeni kodun test edilmeyen kısımları | Test kapsamı |
@@ -107,12 +107,12 @@ Her başlıkta önce açık kalan eski bulgular, sonra yeni bulgular var. Dosya 
 
 ### Mimari ve katman ihlalleri
 
-Katman sınırlarında bir ihlal yok:
+View, ViewModel ve servis arasındaki sınırlarda ihlal yok:
 - View'lar URL bilmiyor.
 - ViewModel'ler yalnızca `ProductService`'i kullanıyor.
-- Store'lar yalnızca `PlistStorage`'ı kullanıyor.
+- Store'lar ağ katmanını kullanmıyor; dosyaya `PlistStorage` ile yazıyor.
 
-Tek pürüz, model hesaplarının SwiftUI içeren bir yardımcı dosyada durması.
+Güncelleme (21 Ekim 2026): `ARCHITECTURE.md` artık Models → Utilities bağımlılığını yasaklıyor ve para birimi tiplerini Models'e yerleştiriyor. Buna göre `Product`, `CartItem`, `AppLanguage` ve `CartStore`'un `Utilities/PriceFormatter.swift`'teki `Currency` ve `roundedToCents`'e bağlı olması katman ihlali sayılıyor; hepsi S12'ye bağlı.
 
 #### S12 · Küçük · `PriceFormatter.swift` birden fazla iş yapıyor
 - **Dosya:** `Utilities/PriceFormatter.swift:6–69`
@@ -415,26 +415,26 @@ Koda gömülü metin kalmadı (Doğrulama'ya bakın). Kalan sorunlar seçilen di
   - `fetchProduct(id:)`'yi O2 ile kullan ya da kaldır.
 
 #### S13 · Küçük · Kullanılmayan dolar toplamları
-- **Dosya:** `Models/CartItem.swift:15–18`, `Stores/CartStore.swift:43–45`, `CLAUDE.md:43`
+- **Dosya:** `Models/CartItem.swift:15–18`, `Stores/CartStore.swift:43–45`, `CLAUDE.md` "Kod kuralları" › Fiyatlar maddesi
 - **Sorun:**
   - `CartItem.lineTotal` ve `CartStore.totalPrice` (dolar) uygulama kodunda hiçbir yerde kullanılmıyor; yalnızca birbirinde ve testlerde geçiyor. Stok ve sepet mantığı adet ile `product.stock`'u kullanıyor.
-  - `CLAUDE.md:43` ise "Dolar hesapları (`discountedPrice`, `lineTotal`, `totalPrice`) stok ve sepet mantığı için kalır" diyor. Bu yalnızca `discountedPrice` için doğru.
+  - `CLAUDE.md`'nin Fiyatlar maddesi "Dolar hesapları (`discountedPrice`, `lineTotal`, `totalPrice`) stok ve sepet mantığı için kalır" diyordu. Bu yalnızca `discountedPrice` için doğruydu. Güncelleme (21 Ekim 2026): `CLAUDE.md` düzeltildi; madde artık ikisinin yalnızca testlerde geçtiğini ve yeni kodda kullanılmadığını söylüyor.
   - `totalPrice` ile `totalPrice(in:)` aynı adı taşıdığı için, yanlış olanın seçilmesi kolay.
 - **Neden önemli:** Ölü kod ve yanlış belge, sonraki değişikliklerde yanlış toplamın kullanılmasına yol açabilir.
 - **Öneri:**
   - İkisini kaldır; testler `lineTotal(in: .dollar)` ve `totalPrice(in: .dollar)` kullansın.
-  - `CLAUDE.md:43`'ü düzelt.
+  - ~~`CLAUDE.md`'nin Fiyatlar maddesini düzelt.~~ Yapıldı.
 
 ### Belgeler
 
 #### S21 · Küçük · `PLAN.md` ve `CLAUDE.md` koddan ve yeni kurallardan geri kaldı
-- **Dosya:** `PLAN.md:12,40,55,56,100`, `PLAN.md` adımlar tablosu (satır 17–30), `CLAUDE.md:28,43`
+- **Dosya:** `PLAN.md:12,40,55,56,100`, `PLAN.md` adımlar tablosu (satır 17–30), `CLAUDE.md` "State management" › ViewModel ve "Kod kuralları" › Fiyatlar maddeleri
 - **Sorun:**
   - **`PLAN.md`:**
     - Satır 12 ve 100: "main'e merge yok (hoca merge edecek). Push öncesi her zaman sorulur." `CLAUDE.md`'deki güncel kural ise push, PR ve merge'ün onay beklemeden yapılması.
     - Satır 40: "en_US". Satır 55: "sadece DEBUG". Satır 56: "`failed(String)`". Üçü de artık doğru değil.
     - Görsel yükleme düzeltmesi (#15) adımlar tablosunda yok.
-  - **`CLAUDE.md`:** Satır 28 (O11) ve satır 43 (S13) kodla çelişiyor.
+  - **`CLAUDE.md`:** ViewModel maddesi (O11) ve Fiyatlar maddesi (S13) kodla çelişiyordu. Güncelleme (21 Ekim 2026): ikisi de düzeltildi; ViewModel maddesi O11'i "Bugünkü durum: uyulmuyor" diye işaretliyor, Fiyatlar maddesi S13'ü doğru anlatıyor. `CLAUDE.md` satır numaraları değiştiği için atıflar bölüm adıyla veriliyor.
 - **Neden önemli:** İki dosya da kalıcı bağlam olarak okunuyor; çelişen kurallar yanlış bir push, PR ya da merge kararına yol açabilir.
 - **Öneri:**
   - `PLAN.md`'nin "Genel kurallar" ve "Her branch için iş akışı" bölümlerini `CLAUDE.md`'ye yönlendir ya da güncelle.
@@ -445,15 +445,20 @@ Koda gömülü metin kalmadı (Doğrulama'ya bakın). Kalan sorunlar seçilen di
 
 #### S8 · Küçük · Önizlemeler aynı geçici klasörü kullanıyor (birinci turdan, açık)
 - **Dosya:** `Utilities/PreviewData.swift:44–48`, `Views/Favorites/FavoritesView.swift:55–58`
-- **Sorun:** `PlistStorage.preview` her seferinde aynı geçici klasörü veriyor. Bu yüzden önizlemeler arasında veri birikiyor. `FavoritesView` önizlemesindeki `if` bunu telafi etmek için yazılmış; bazı önizlemeler de kendi klasörünü ayrıca oluşturuyor.
+- **Sorun:** `PlistStorage.preview` her seferinde aynı geçici klasörü veriyor. Bu yüzden önizlemeler arasında veri birikiyor. `FavoritesView` önizlemesindeki `if` bunu telafi etmek için yazılmış.
+  - `CartView` ("Dolu" ve "Boş") ve `FavoritesView` ("Boş") önizlemeleri `PlistStorage(directory:)` ile UUID'li bir klasör yolu veriyor ama klasörü oluşturmuyor. Kayıt yalnızca `CartView` "Dolu" önizlemesinde deneniyor ve başarısız oluyor; hata `CartStore`'da `print` ediliyor.
+  - Güncelleme (21 Ekim 2026, architect denetimi): birinci turdaki "kendi klasörünü oluşturuyor" ifadesi yanlıştı.
 - **Neden önemli:** Önizleme sonuçları önceki önizlemelere bağlı oluyor; aynı önizleme farklı zamanlarda farklı görünüyor.
-- **Öneri:** `preview`, her çağrıda `UUID` ile yeni bir klasör versin; elle yazılan klasörler kalksın.
+- **Öneri:** `preview`, her çağrıda `UUID`'li yeni bir klasör oluştursun (`createDirectory`) ve onu versin; elle yazılan klasörler kalksın.
 
 #### S20 · Küçük · Bazı önizlemeler `CartStore` vermiyor
-- **Dosya:** `Views/Home/HomeView.swift:94–99`, `Views/Categories/CategoryProductsView.swift:52–61`, `Views/Components/ProductGridView.swift:39–46`
-- **Sorun:** Bu önizlemeler yalnızca `FavoritesStore` veriyor. Önizlemede bir karta basılırsa açılan `ProductDetailView` → `AddToCartBar`, `@Environment(CartStore.self)` bulamadığı için çöküyor.
+- **Dosya:** `Views/Home/HomeView.swift:94–99`, `Views/Favorites/FavoritesView.swift:54–64` ("Dolu"); çökmeyenler: `Views/Categories/CategoryProductsView.swift:52–61`, `Views/Components/ProductGridView.swift:39–46`
+- **Sorun:** Bu önizlemeler yalnızca `FavoritesStore` veriyor.
+  - `HomeView` ve `FavoritesView` ("Dolu") önizlemelerinin stack'inde `Product` hedefi var. Bir karta basılınca açılan `ProductDetailView` → `AddToCartBar`, `@Environment(CartStore.self)` bulamadığı için çöküyor.
+  - `CategoryProductsView` ve `ProductGridView` önizlemelerinde `Product` hedefi yok (hedef `CategoriesView`'da tanımlı). Karta basınca detaya gidilmiyor, bu yüzden bugün çökmüyorlar; ama `CartStore` vermedikleri için ortak yardımcı kuralına yine uymuyorlar.
+- **Güncelleme (21 Ekim 2026, architect denetimi):** Birinci turdaki liste `FavoritesView`'ı içermiyordu ve `CategoryProductsView` ile `ProductGridView`'ı çöken önizlemeler arasında sayıyordu.
 - **Neden önemli:** Önizlemede gezinmek, uygulamanın kendisinde olmayan bir çökme üretiyor ve önizlemeye güveni azaltıyor.
-- **Öneri:** Önizlemeler için iki store'u ve dili birlikte veren bir `.previewEnvironment()` modifier'ı yaz ve her önizlemede onu kullan.
+- **Öneri:** `ARCHITECTURE.md` 3. State management'taki `.previewEnvironment(theme:language:)` yardımcısını `Views/Common/PreviewEnvironment.swift`'te yaz ve her önizlemede onu kullan.
 
 ### Test kapsamı
 

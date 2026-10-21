@@ -18,10 +18,11 @@
 | `Networking/` | `APIClient` (generic `get`, tarih çözen `JSONDecoder.dummyJSON`), `APIError` (Türkçe hata mesajları), `ProductService` (endpoint'leri bilen tek yer) |
 | `Persistence/` | `PlistStorage`: `Codable` değerleri Documents'a plist olarak yazar ve okur |
 | `Stores/` | Paylaşılan state: `FavoritesStore`, `CartStore` |
+| `Views/` (kök) | Uygulama iskeleti: `MainTabView` |
 | `Views/<Ekran>/` | Ekran view'ları ve varsa ekranın `ViewModel`'i (`Home/`, `Categories/`, `ProductDetail/`, `Favorites/`, `Cart/`, `Settings/`) |
-| `Views/Common/` | `LoadState`, `LoadingView`, `ErrorView` |
+| `Views/Common/` | `LoadState`, `LoadingView`, `ErrorView`; önizleme yardımcısı `PreviewEnvironment` (henüz yok) |
 | `Views/Components/` | Tekrar kullanılan bileşenler (aşağıda) |
-| `Utilities/` | `PriceFormatter` (`ExchangeRate`, `Currency` ve `\.currency` environment değeri, para birimine göre tutarlar, `.discount` biçimi), `LocalizedStringResource+Locale` (`resolved(in:)`), `PreviewData` (önizleme verisi; `#Preview` blokları Release'te de derlendiği için `#if DEBUG` içine alınmaz) |
+| `Utilities/` | SwiftUI'sız yardımcılar; yalnızca Foundation import eder, Models'i kullanabilir (Models Utilities'i kullanamaz): `PriceFormatter` (`.discount` biçimi), `LocalizedStringResource+Locale` (`resolved(in:)`), `PreviewData` (önizleme verisi ve `PlistStorage.preview`; `#Preview` blokları Release'te de derlendiği için `#if DEBUG` içine alınmaz). Bugünkü durum: `PriceFormatter` SwiftUI import ediyor; `Currency`, `ExchangeRate`, `roundedToCents`, `Product`'ın fiyat hesapları (`price(in:)`, `discountedPrice(in:)`, `discountRate`) ve `\.currency` environment değerini de içeriyor. Hedef yerleri Models ve `Views/` (`ARCHITECTURE.md` 1. Katmanlar) |
 
 - Akış: View → ViewModel → `ProductService` → `APIClient`. View'lar URL bilmez.
 - Projede `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor`. View, ViewModel ve store'lar MainActor'da; modeller, ağ katmanı ve `PlistStorage` `nonisolated` + `Sendable`.
@@ -31,7 +32,7 @@
 - **`@State`**: ekrana ait değerler ve ekranın ViewModel'i (`@State private var viewModel = HomeViewModel()`). ViewModel bir parametreye bağlıysa init'te `_viewModel = State(initialValue: …)`.
 - **ViewModel**: `@Observable final class`, durum `private(set) var state: LoadState<T>`, bağımlılıklar `@ObservationIgnored`. Kalıp: `loadIfNeeded()` (`.task`), `load()` (ilk yükleme / Tekrar Dene), `refresh()` (`.refreshable`, `.loading`'e geçmez). Kural: yenileme başarısız olursa mevcut liste silinmez. Bugünkü durum: uyulmuyor, yenileme hatası `state = .failed` yazıyor (`REVIEW.md` O11). `CancellationError` hata sayılmaz; yükleme iptal olursa durum `.idle`'a döner.
 - **`LoadState`** (`idle` / `loading` / `loaded` / `failed(LocalizedStringResource)`; ViewModel'ler `error.userMessage` verir): View `switch` ile `LoadingView`, `ErrorView(message:retry:)`, boşsa `ContentUnavailableView` ya da içeriği gösterir.
-- **`.environment`**: `FavoritesStore` ve `CartStore`, `TrendyolBenzeriApp` içinde bir kez `@State` olarak oluşturulur ve `.environment(...)` ile verilir; view'lar `@Environment(CartStore.self)` ile okur. View içinde yeni store örneği oluşturulmaz.
+- **`.environment`**: `FavoritesStore` ve `CartStore`, `TrendyolBenzeriApp` içinde bir kez `@State` olarak oluşturulur ve `.environment(...)` ile verilir; view'lar `@Environment(CartStore.self)` ile okur. View içinde yeni store örneği oluşturulmaz. Yazılı istisna: `#Preview` blokları store'ları `.previewEnvironment` üzerinden alır ve yardımcı önizleme için store oluşturur (`ARCHITECTURE.md` 3. State management).
 - **Store'lar**: ürün id'sine bağlı dictionary (`[Int: Product]`, `[Int: CartItem]`) tutar ve her değişiklikte `favorites.plist` / `cart.plist`'e kaydeder. Sepete stoktan fazla ürün eklenemez, adet 0'a inince satır silinir, toplamlar indirimli fiyatla hesaplanır.
 - **`@AppStorage`**: tema (`AppTheme.storageKey` = `"appTheme"`) ve dil (`AppLanguage.storageKey` = `"appLanguage"`). `TrendyolBenzeriApp` kökte `.preferredColorScheme` ve `.environment(\.locale, language.locale())` uygular; `SettingsView` aynı anahtarları yazar. "Sistem" dili cihazın birinci dilini takip eder; o dil `tr` ya da `en` değilse Türkçe.
 - **`@Binding`**: seçili sekme `MainTabView`'a ait; `FavoritesView` ve `CartView`'a binding olarak verilir (boş durum butonları Ana Sayfa'ya geçirir).
@@ -51,7 +52,7 @@
   - `ProductImageView`: her ürün görseli (kart, sepet satırı, detay galerisi). Doğrudan `AsyncImage` kullanılmaz. Boyutu dışarıdan verilir (`.aspectRatio(1, contentMode: .fit)` ya da `.frame(width:height:)`); yükleniyor, başarılı ve hata durumlarında alan aynı kalır. İptal edilen istek (`NSURLErrorCancelled`) hata sayılmaz, yeniden denenir; başarısız görsel view tekrar ekrana gelince yeniden istenir.
   - `FavoriteButton`: favori kalbi; arayüzde favori ekleyip çıkarmanın tek yolu.
   - `LoadingView`, `ErrorView`, `ContentUnavailableView`: yükleniyor, hata ve boş durumlar.
-- Önizlemeler `PreviewData` örneklerini ve `PlistStorage.preview`'u kullanır; gerçek favori ve sepet dosyalarına yazılmaz.
+- Önizlemeler `PreviewData` örneklerini ve `PlistStorage.preview`'u kullanır; gerçek favori ve sepet dosyalarına yazılmaz. Environment değerlerini ortak `.previewEnvironment(theme:language:)` modifier'ından alır (varsayılan `theme: .system`, `language: .turkish`; `Views/Common/PreviewEnvironment.swift`, `#if DEBUG` içine alınmaz). Bugünkü durum: yardımcı henüz yok.
 - Testler Swift Testing ile yazılır. `TestHelpers.swift` içindeki `Product.sample(...)` ve `PlistStorage.temporary()` kullanılır; store testleri `@MainActor`.
 
 ## Git çalışma şekli

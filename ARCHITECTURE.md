@@ -11,30 +11,50 @@ Bu belge, uygulamanın bugünkü yapısını ve yeni kodun uyması gereken kural
 ## 1. Katmanlar ve bağımlılık yönü
 
 ```
-Models  ←  Networking (APIClient)  ←  ProductService  ←  ViewModel  ←  View
-   ↑                                                         ↑
-   └──── Persistence (PlistStorage)  ←  Stores ──────────────┘ (environment ile)
+View ─→ ViewModel ─→ ProductService ─→ Networking (APIClient) ─→ Models
+ │                                                                 ↑
+ ├─(environment)─→ Stores ─→ Persistence (PlistStorage) ───────────┤
+ │                                                                 │
+ └─→ Utilities ────────────────────────────────────────────────────┘
+        └┄→ Persistence (yalnızca PlistStorage.preview)
 ```
 
-Bağımlılık her zaman soldan sağa doğrudur: bir katman yalnızca kendinden önceki katmanları bilir. Store'lar ağ katmanını değil, kalıcılık katmanını kullanır.
+Ok, kullanan katmandan kullanılan katmana doğrudur (`A ─→ B`: A, B'yi kullanır). Bağımlılık her zaman soldan sağa akar: bir katman yalnızca sağındaki katmanları bilir, solundakini bilmez. En sağdaki Models hiçbir katmanı bilmez. Store'lar ağ katmanını değil, kalıcılık katmanını kullanır.
+
+Diyagram ana akışı gösterir; her katmanın doğrudan kullanabildikleri aşağıdaki tablodadır (ör. ViewModel ve Stores Models'i doğrudan kullanır). Kesikli ok (`┄→`) yalnızca önizleme verisi içindir: Utilities, `PlistStorage.preview` için Persistence'ı kullanır.
+
+Tek istisna `LoadState`: `Views/Common/`'ta, yani View katmanında durur ama SwiftUI'sız bir enum'dur ve ViewModel'in kullanabildiği tek View katmanı tipidir (tabloda ViewModel satırı).
 
 | Katman | Klasör | Kullanabilir | Kullanamaz |
 | --- | --- | --- | --- |
-| Models | `Models/` | Foundation | Diğer bütün katmanlar, SwiftUI |
+| Models | `Models/` | Foundation | Diğer bütün katmanlar (Utilities dahil), SwiftUI |
 | API client | `Networking/APIClient.swift`, `APIError.swift` | Models | Servis, store, ViewModel, View |
 | Service | `Networking/ProductService.swift` | `APIClient`, Models | Store, ViewModel, View |
 | Persistence | `Persistence/` | Models | Ağ, store, ViewModel, View |
 | Stores | `Stores/` | `PlistStorage`, Models | Ağ katmanı, View |
 | ViewModel | `Views/<Ekran>/*ViewModel.swift` | `ProductService`, Models, `LoadState` | `APIClient`, URL, View, SwiftUI |
-| View | `Views/` | ViewModel, store'lar (environment), bileşenler, Models | `APIClient`, `ProductService`, `PlistStorage`, URL |
+| View | `Views/` | ViewModel, store'lar (environment), bileşenler, Models, Utilities | `APIClient`, `ProductService`, `PlistStorage`, URL |
+| Utilities | `Utilities/` | Foundation, Models; önizleme verisi için `PlistStorage` (`PreviewData`) | SwiftUI, environment, `AppLanguage`, store, ViewModel, View |
 
 **Kurallar**
 - View URL bilmez ve ağ isteği atmaz; veriyi ViewModel'den ya da store'dan alır.
 - Endpoint'leri yalnızca `ProductService` bilir. Yeni bir endpoint `ProductService`'e fonksiyon olarak eklenir.
 - ViewModel `APIClient`'ı değil `ProductService`'i kullanır; servis init'te parametre olarak alınır (testte sahte oturumla verilebilsin diye).
 - Dosyaya yalnızca store'lar `PlistStorage` ile yazar.
-- `Models/`, `Networking/`, `Persistence/` ve `Stores/` SwiftUI import etmez. SwiftUI'a ait şeyler (environment anahtarları, `ColorScheme`) `Views/` ya da `Utilities/` altında durur.
+- `Models/`, `Networking/`, `Persistence/`, `Stores/` ve `Utilities/` SwiftUI import etmez. SwiftUI'a ait şeyler (environment anahtarları, `ColorScheme`) `Views/` altında durur.
   - Bugünkü durum: uyulmuyor. `Models/AppTheme.swift` `ColorScheme` için SwiftUI import ediyor. `Utilities/PriceFormatter.swift` hem SwiftUI import ediyor hem de `Product`'ın fiyat hesaplarını içeriyor; bkz. `REVIEW.md` S12.
+    - Notta geçmeyen yerler: `Utilities/`'teki tiplere bağlı olanlar:
+      - `Models/Product.swift`: `roundedToCents` (`discountedPrice`).
+      - `Models/CartItem.swift`: `Currency` ve `roundedToCents`.
+      - `Models/AppLanguage.swift`: `Currency` (`currency()`).
+      - `Stores/CartStore.swift`: `Currency` ve `roundedToCents` (`totalPrice(in:)`).
+      - Tabloya göre Models yalnızca Foundation'ı, Stores yalnızca `PlistStorage` ve Models'i kullanabilir. Bu tipler Models'e taşınınca (aşağıdaki kural) Models → Utilities bağımlılığı kalkar, `CartStore`'unki de kurala uyar.
+- Para birimi tipleri Models'te durur: `Currency`, `ExchangeRate` ve `Double.roundedToCents` (`Currency`, `Product`, `CartItem` ve `CartStore` kullanır) yalnızca Foundation kullanır. Bağımlılık tek yönlüdür: Utilities → Models serbest, Models → Utilities yasak.
+  - Bugünkü durum: uyulmuyor. Üçü de `Utilities/PriceFormatter.swift`'te; `Product`, `CartItem` ve `AppLanguage.currency()` bunlar için Utilities'e bağlı. Bkz. `REVIEW.md` S12.
+- Fiyat hesapları Models'te, ilgili tipin üzerinde durur: `Product.price(in:)`, `discountedPrice(in:)`, `discountRate`, `CartItem.lineTotal(in:)`. Para birimini ve kuru parametre olarak alır (`Currency`, `ExchangeRate`); hangi para biriminin geçerli olduğunu kendisi seçmez.
+  - Bugünkü durum: uyulmuyor. `Product.price(in:)`, `discountedPrice(in:)` ve `discountRate` `Utilities/PriceFormatter.swift`'te; bkz. `REVIEW.md` S12.
+- `Utilities/` framework olarak yalnızca Foundation import eder; SwiftUI import etmez. Proje içinden Models'i, önizleme verisi için (`PreviewData`'daki `PlistStorage.preview`) `PlistStorage`'ı kullanabilir. Locale'i ve para birimini parametre olarak alır (ör. `resolved(in: locale)`); `AppLanguage`'ı ya da environment'ı kendisi okumaz. Hangi dilin ve para biriminin geçerli olduğuna View karar verir ve parametreyle iletir.
+  - Bugünkü durum: uyulmuyor. `Utilities/PriceFormatter.swift` SwiftUI import ediyor ve `\.currency` environment anahtarını (`@Entry`) tanımlıyor; anahtar `Views/` altına taşınmalı. Bkz. `REVIEW.md` S12, architect denetimi, 21 Ekim 2026.
 
 ```swift
 // ✅ View, ViewModel üzerinden ister
@@ -69,14 +89,15 @@ Xcode projesi "synchronized folder" yapısında: `TrendyolBenzeri/` altına ekle
 
 | Klasör | İçerik |
 | --- | --- |
-| `Models/` | `Codable` veri tipleri ve onların saf hesapları: `Product`, `Review`, `ProductsResponse`, `ProductCategory` (+ `+Display`), `CartItem`, `AppTheme`, `AppLanguage` |
+| `Models/` | `Codable` veri tipleri ve onların saf hesapları: `Product`, `Review`, `ProductsResponse`, `ProductCategory` (+ `+Display`), `CartItem`, `AppTheme`, `AppLanguage`; para birimi tipleri `Currency`, `ExchangeRate`, `roundedToCents` ve `Product`'ın fiyat hesapları (bugün `Utilities/PriceFormatter.swift`'te, bkz. 1. Katmanlar) |
 | `Networking/` | `APIClient`, `APIError`, `ProductService` |
 | `Persistence/` | `PlistStorage` |
 | `Stores/` | Ekranlar arası paylaşılan state: `FavoritesStore`, `CartStore` |
+| `Views/` (kök) | Uygulama iskeleti: `MainTabView` (sekmeler ve her sekmenin `NavigationStack`'i) |
 | `Views/<Ekran>/` | Bir ekranın view'ları ve ViewModel'i: `Home/`, `Categories/`, `ProductDetail/`, `Favorites/`, `Cart/`, `Settings/` |
-| `Views/Common/` | Ekran durumları: `LoadState`, `LoadingView`, `ErrorView` |
+| `Views/Common/` | Ekranlar arası ortak, ekrana ait olmayan parçalar: ekran durumları (`LoadState`, `LoadingView`, `ErrorView`) ve önizleme yardımcısı `PreviewEnvironment` (henüz yok, bkz. 3. State management) |
 | `Views/Components/` | Birden fazla ekranda kullanılan bileşenler: `ProductGridView`, `ProductCardView` (+ `PriceView`, `RatingView`), `ProductImageView`, `StarRatingView`, `FavoriteButton` |
-| `Utilities/` | Biçimlendirme ve yardımcılar: `PriceFormatter`, `LocalizedStringResource+Locale`, `PreviewData` |
+| `Utilities/` | SwiftUI'sız biçimlendirme ve yardımcılar: `PriceFormatter` (hedefte yalnızca `.discount` biçimi), `LocalizedStringResource+Locale`, `PreviewData` |
 | `Localizable.xcstrings` | Bütün arayüz metinleri |
 | `TrendyolBenzeriTests/` | Unit testler; `TestHelpers.swift` ortak örnekleri verir |
 
@@ -88,11 +109,14 @@ Xcode projesi "synchronized folder" yapısında: `TrendyolBenzeri/` altına ekle
 | Bir tipin arayüzde gösterim bilgisi (ad, ikon) | `Models/<Tip>+Display.swift` |
 | Yeni endpoint | `ProductService` içine fonksiyon (yeni bir servis gerekiyorsa `Networking/<Ad>Service.swift`) |
 | Yeni ekran | `Views/<Ekran>/<Ekran>View.swift`, veri yüklüyorsa yanına `<Ekran>ViewModel.swift` |
+| Uygulama iskeleti (sekme yapısı, ekranları bir araya getiren kök view) | `Views/` kökü (ör. `Views/MainTabView.swift`) |
 | Bir ekranın alt parçası | O ekranın klasörü (ör. `Views/ProductDetail/AddToCartBar.swift`) |
 | İki ya da daha fazla ekranda kullanılan view | `Views/Components/` |
 | Birden fazla ekranın paylaştığı, kalıcı state | `Stores/<Ad>Store.swift` |
 | Kullanıcı ayarı (tema, dil gibi) | `Models/App<Ad>.swift` (enum) + `@AppStorage` |
 | Test | `TrendyolBenzeriTests/<Konu>Tests.swift` |
+
+`MainTabView` neden `Views/` kökünde? Tek bir ekran değil, bütün ekranları kapsar; bu yüzden `Views/<Ekran>/` klasörlerinden birine ait değil. Ekran durumu ya da önizleme yardımcısı gibi ortak bir parça değil, bütün ekranları bir araya getiren iskelet olduğu için `Views/Common/`'a, yeniden kullanılan bir bileşen olmadığı için (view'u yalnızca `TrendyolBenzeriApp` kullanır; `MainTabView.Tab` tipini `FavoritesView` ve `CartView` da kullanır) `Views/Components/`'a da uymaz. `TrendyolBenzeriApp`'in uygulama kökünde durması gibi, `MainTabView` da view'ların kökünde durur. `MainTabView.Tab` aynı dosyada kalır.
 
 ```
 // ✅ Sepet satırı yalnızca Sepet ekranında kullanılıyor
@@ -116,11 +140,19 @@ Models/HomeViewModel.swift
 
 **Kurallar**
 - Store'lar yalnızca `TrendyolBenzeriApp` içinde bir kez oluşturulur; view'lar `@Environment(CartStore.self)` ile okur. View içinde yeni store oluşturulmaz.
+  - Yazılı istisna: `.previewEnvironment` önizleme için store örneği oluşturur. İstisna yalnızca `#Preview` bloklarında geçerlidir; uygulama kodu `.previewEnvironment`'ı kullanmaz.
 - ViewModel `@Observable final class`'tır; durumu `private(set) var` ile dışarıya salt okunur verir, bağımlılıkları `@ObservationIgnored` tutar.
 - ViewModel bir parametreye bağlıysa init'te `_viewModel = State(initialValue: …)` ile kurulur. Init hafif tutulur; istek `.task`'ta başlar.
 - Türetilmiş state saklanmaz, hesaplanır. Toplam adet, toplam tutar, sıralı liste, "favori mi" gibi değerler kaynak veriden (`items`) her seferinde hesaplanan özellik ya da fonksiyondur. Böylece kaynak değişince eski kalamazlar.
 - Aynı `@AppStorage` anahtarı birden fazla yerde okunursa anahtar tipin `storageKey` sabitinden gelir.
   - Bugünkü durum: uyulmuyor. Varsayılan değer (`.system`) iki yerde ayrı yazılmış; bkz. `REVIEW.md` S19.
+- **Önizlemeler:** Her önizleme, uygulamanın kökte verdiği bütün environment değerlerini tek bir ortak modifier'dan alır: `.previewEnvironment(theme:language:)`. Varsayılanlar `theme: .system`, `language: .turkish`; önizleme cihaz dilinden bağımsız olarak Türkçe açılır, başka dil ya da tema parametreyle verilir.
+  - Yer: `Views/Common/PreviewEnvironment.swift`. SwiftUI modifier'ı olduğu için `Utilities/`'te değil `Views/`'tadır; önizleme verisi (`PreviewData`) `Utilities/`'te kalır.
+  - Store'lar: `FavoritesStore` ve `CartStore` örneklerini `PlistStorage.preview` ile oluşturup verir (bkz. 7. Kalıcılık ve yukarıdaki store istisnası).
+  - Tema ve dil: kökteki yöntemle uygulanır: `.preferredColorScheme(theme.colorScheme)`, `.environment(\.locale, language.locale())`, `.environment(\.currency, language.currency())`.
+  - `#if DEBUG` içine alınmaz. `#Preview` blokları Release'te de derlendiği için, yardımcı DEBUG'a kapatılırsa onu kullanan her önizleme Release derlemesini kırar; bkz. `REVIEW.md` K1.
+  - Önizleme yardımcısı ve `#Preview` blokları, View'ın `PlistStorage` kullanamaz kuralından yalnızca `PlistStorage.preview` için muaftır.
+  - Bugünkü durum: uyulmuyor. `.previewEnvironment` yok; her önizleme environment'ı kendisi kuruyor. `HomeView` ve `FavoritesView` ("Dolu") önizlemeleri `CartStore` vermiyor ve detaya geçince çöküyor. `CategoryProductsView` ve `ProductGridView` önizlemeleri de `CartStore` vermiyor; stack'lerinde `Product` hedefi olmadığı için bugün detaya geçilmiyor ve çökmüyor. Bkz. `REVIEW.md` S20. Kendi klasörünü kuran önizlemeler için bkz. `REVIEW.md` S8.
 
 ```swift
 // ✅ Türetilmiş değer hesaplanır
@@ -212,7 +244,7 @@ Proje ayarları:
 | Store ve ViewModel testleri | `@MainActor` |
 
 **Kurallar**
-- Asenkron iş `async`/`await` ile yapılır. Completion handler, `DispatchQueue` ve `Combine` kullanılmaz.
+- Asenkron iş `async`/`await` ile yapılır. Completion handler, `DispatchQueue` ve `Combine` kullanılmaz. Kural test kodunu da kapsar (bkz. 9. Testler).
 - Görevler view'un yaşam döngüsüne bağlanır: `.task`, `.task(id:)`, `.refreshable`. View kapanınca görev iptal olur. Yapılandırılmamış `Task { }` yalnızca bir butondan iş başlatmak gerektiğinde kullanılır.
   - Bugünkü durum: `ErrorView`'daki "Tekrar Dene" `Task { }` ile başlıyor ve iptal edilmiyor; bkz. `REVIEW.md` S22.
 - Actor sınırından geçen her tip `Sendable`'dır. Yeni model, servis ve kalıcılık tipleri `nonisolated` ve `Sendable` yazılır.
@@ -257,7 +289,7 @@ DispatchQueue.main.async { self.state = .loaded(products) }
 
 **Fiyatlar**
 - API dolar verir. Türkçede sabit kurla (`ExchangeRate.usdToTry` = 45) TL, İngilizcede dolar gösterilir.
-- Fiyatlar tek bir yerden hesaplanır ve biçimlenir (`Utilities/PriceFormatter.swift`): view `@Environment(\.currency)` okur, tutarı `price(in:)` / `discountedPrice(in:)` / `lineTotal(in:)` / `totalPrice(in:)` ile alır ve `Text(tutar, format: currency.format)` ile gösterir.
+- Tutarlar Models'teki fiyat hesaplarından gelir: `Product.price(in:)`, `discountedPrice(in:)`, `CartItem.lineTotal(in:)`; sepet toplamı `CartStore.totalPrice(in:)`. View `@Environment(\.currency)` okur, tutarı bunlarla alır ve `Text(tutar, format: currency.format)` ile gösterir. Bugün bir kısmı `Utilities/PriceFormatter.swift`'te; bkz. 1. Katmanlar.
 - Satır toplamı görünen birim fiyat × adet, sepet toplamı görünen satırların toplamıdır; kuruşa yuvarlanır.
 - İndirim rozeti `Text(product.discountRate, format: .discount)`.
 - Elle biçimlendirme, sabit para birimi kodu ve sabit locale yazılmaz.
@@ -290,6 +322,7 @@ Text(product.price, format: .currency(code: "USD"))
 - Dosya yoksa (ilk açılış) store boş başlar.
 - Dosya çözülemezse (bozuk ya da eski biçim) store boş başlar ve dosya `<ad>.plist.corrupt` olarak kenara alınır; böylece ilk kayıt eski veriyi ezmez.
 - Testler ve önizlemeler gerçek dosyalara yazmaz: testler `PlistStorage.temporary()`, önizlemeler `PlistStorage.preview` kullanır.
+  - Bugünkü durum: uyulmuyor. `PlistStorage.preview` her çağrıda aynı geçici klasörü veriyor, bu yüzden önizlemeler arasında veri birikiyor. `Views/Cart/CartView.swift` ("Dolu" ve "Boş") ve `Views/Favorites/FavoritesView.swift` ("Boş") önizlemeleri `.preview` yerine `PlistStorage(directory:)` ile UUID'li bir klasör yolu veriyor ama klasörü oluşturmuyor. Kayıt yalnızca `CartView` "Dolu" önizlemesinde deneniyor ve başarısız oluyor; hata `CartStore`'da `print` ediliyor. Bkz. `REVIEW.md` S8.
 - Plist'e API modeli (`Product`) değil, sürümlü ve küçük bir kayıt tipi (id, adet) yazılır; ürün bilgisi açılışta API'den tazelenir. Şema değişince göç ya da yedek zorunludur.
   - Bugünkü durum: uyulmuyor. Plist'te `Product`'ın tamamı saklanıyor ve tazelenmiyor; ikinci bozulmada eski `.corrupt` yedeği siliniyor; bkz. `REVIEW.md` O2, O3, S18.
 
@@ -317,13 +350,18 @@ let store = CartStore()
 
 - **Kontrast:** Metin ile zemini arasında en az 4,5:1, büyük metin (≥ 18 pt ya da ≥ 14 pt kalın) ve ikonlarda en az 3:1. Bu oran açık ve koyu temada ayrı ayrı sağlanır.
   - Anlam taşıyan renkler Assets'ten, Xcode'un ürettiği adlarla gelir: `.discountBadge`, `.stockAvailable`, `.stockLow`, `.stockOut`, `.brandAccent`. Metin ya da dolgu için `.green`, `.red`, `.orange` gibi sistem renkleri kullanılmaz.
+  - Anlam taşıyan her ikon (kalp, yıldız, rozet) zeminiyle en az 3:1 kontrast verir. İkonlarda da `.red` dahil sistem renkleri yerine Assets renkleri kullanılır.
+  - Bugünkü durum: uyulmuyor. Kalp (`Views/Components/FavoriteButton.swift`) favorideyken `.red`, değilken `.secondary`, zemini `.regularMaterial`. Hesaplanan değerler (cihazda ölçülmedi; material yarı saydam olduğu için arkadaki görsele göre değişir): dolu kalp açık temada ≈3,2–3,5:1, koyu temada ≈4–5:1; boş kalp açık temada ≈3,1–3,5:1. Eşiği geçiyor ama payı küçük; sistem rengi (`.red`) kullandığı için kurala uymuyor. Bkz. architect denetimi, 21 Ekim 2026.
   - Bilgi yalnızca renkle verilmez; yanında metin ya da ikon olur.
   - Bugünkü durum: uyulmuyor. "Sepete Eklendi" butonu `.green` üzerinde beyaz yazı kullanıyor (≈2:1); bkz. `REVIEW.md` O12.
+  - Bugünkü durum: uyulmuyor. Puan yıldızları `.orange` ile çiziliyor (`Views/Components/StarRatingView.swift`, `Views/Components/ProductCardView.swift`); sistem turuncusu açık temada beyaz zeminde ≈2,2:1. Değerlendirme satırlarında puanı gösteren tek şey bu yıldızlar. Bkz. architect denetimi, 21 Ekim 2026.
 - **Dokunma alanı:** Her dokunulabilir öğe en az 44×44 pt'dir. Görünen şekil küçükse alan `.frame(width: 44, height: 44)` + `.contentShape(Rectangle())` ile büyütülür (`FavoriteButton`, sepet adet butonları).
 - **VoiceOver:** Yalnızca ikondan oluşan butonların etiketi vardır; tekrar eden butonların (kalp, adet) etiketi ürün adını içerir; dekoratif görseller gizlenir.
   - Bugünkü durum: kısmen uyuluyor. Kalp etiketi ürün adını içermiyor, kart tek öğe değil; bkz. `REVIEW.md` O9.
+    - Notta geçmeyen yerler: sepet adet butonlarının etiketi ürün adını içermiyor ve adet değeri bağlamsız okunuyor (`Views/Cart/CartItemRow.swift`); başarıyla yüklenen ürün görseli ne etiketli ne gizli (`Views/Components/ProductImageView.swift`).
 - **Dynamic Type:** Yazılar metin stilleriyle (`.headline`, `.caption`) verilir; ikon ve sabit boyutlar `@ScaledMetric` ile büyür.
   - Bugünkü durum: uyulmuyor. `.system(size:)` ve sabit çerçeveler var; bkz. `REVIEW.md` O10.
+    - Notta geçmeyen yerler: `.system(size:)` `FavoriteButton` ve `StarRatingView`'da; sabit boyutlar `StarRatingView`, `CartItemRow` ve `ProductImageGallery`'de; `StarRatingView`'a sabit `size:` veren çağrılar `ProductDetailView` ve `ReviewRowView`'da.
 
 ```swift
 // ✅ 44 pt dokunma alanı, Assets rengi, etiket
@@ -357,6 +395,13 @@ Testler Swift Testing ile yazılır ve ağa çıkmaz. Ortak örnekler `TestHelpe
 - Bir hata düzeltilince onu yakalayan bir test eklenir.
 - Store ve ViewModel testleri `@MainActor`'dır.
 - Ağ isteği gereken testler `URLProtocol` tabanlı sahte bir oturumla (`APIClient(session:)`) yazılır.
+- Unit testler gerçek ağa çıkmaz. İstek atmaması beklenen testler de gerçek `URLSession` yerine `URLProtocol` stub'ı kullanır; böylece kod bozulsa bile test ağa çıkamaz.
+- Testler ve test yardımcıları (stub'lar dahil) `DispatchQueue` ya da `sleep` / `Task.sleep` ile beklemez; `async`/`await` kullanır (bkz. 5. Concurrency).
+  - Bugünkü durum: uyulmuyor. `TrendyolBenzeriTests/HomeViewModelTests.swift`:
+    - Boş arama testi gerçek `URLSession`'lı bir `APIClient` (`https://invalid.example`) kullanıyor. Bugün istek atılmadığı için ağa çıkmıyor, ama kod bozulursa çıkar.
+    - Eski arama testi `Task.sleep(for: .milliseconds(100))` ile bekliyor.
+    - `SearchStubURLProtocol` yanıtı `DispatchQueue.global().asyncAfter` ile geciktiriyor.
+    - Bkz. architect denetimi, 21 Ekim 2026.
 - View içinde test edilmesi gereken bir kural varsa (sıralama, yeniden deneme) test edilebilir bir tipe ya da fonksiyona çıkarılır.
 - Bugünkü durum: uyulmuyor. ViewModel'lerin yükleme, yenileme ve iptal geçişleri ile `APIClient` hata eşlemesi test edilmiyor; yalnızca aramanın testi var; bkz. `REVIEW.md` T1, T3.
 
