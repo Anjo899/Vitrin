@@ -10,6 +10,8 @@ struct CartItemRow: View {
     let item: CartItem
 
     @Environment(CartStore.self) private var cartStore
+    /// Kökte seçilen dile göre verilir; dil değişince fiyatlar anında yeni para birimine geçer.
+    @Environment(\.currency) private var currency
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
@@ -25,9 +27,9 @@ struct CartItemRow: View {
                     .lineLimit(2)
 
                 HStack(spacing: 4) {
-                    Text(item.product.discountedPriceInLira, format: .lira)
+                    Text(item.product.discountedPrice(in: currency), format: currency.format)
                     if item.product.hasDiscount {
-                        Text(item.product.priceInLira, format: .lira)
+                        Text(item.product.price(in: currency), format: currency.format)
                             .strikethrough()
                             .foregroundStyle(.secondary)
                     }
@@ -37,7 +39,7 @@ struct CartItemRow: View {
                 HStack {
                     quantityControls
                     Spacer()
-                    Text(item.lineTotalInLira, format: .lira)
+                    Text(item.lineTotal(in: currency), format: currency.format)
                         .font(.subheadline.bold())
                 }
                 .padding(.top, 4)

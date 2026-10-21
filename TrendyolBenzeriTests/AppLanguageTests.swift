@@ -37,6 +37,17 @@ struct AppLanguageTests {
         #expect(AppLanguage.turkish.locale(preferredLanguages: ["en-US"]).identifier == "tr_TR")
     }
 
+    /// Para birimi dile bağlı: Türkçe TL, İngilizce dolar; "Sistem" çözümlendiği dile göre.
+    @Test func currencyFollowsResolvedLanguage() {
+        #expect(AppLanguage.turkish.currency(preferredLanguages: ["en-US"]) == .lira)
+        #expect(AppLanguage.english.currency(preferredLanguages: ["tr-TR"]) == .dollar)
+        #expect(AppLanguage.system.currency(preferredLanguages: ["en-GB"]) == .dollar)
+        #expect(AppLanguage.system.currency(preferredLanguages: ["tr-TR"]) == .lira)
+        #expect(AppLanguage.system.currency(preferredLanguages: ["de-DE"]) == .lira)
+        #expect(Currency.lira.rawValue == "TRY")
+        #expect(Currency.dollar.rawValue == "USD")
+    }
+
     // MARK: - Kalıcılık
 
     /// `@AppStorage`'a yazılan değerler değişirse kayıtlı seçim kaybolur.

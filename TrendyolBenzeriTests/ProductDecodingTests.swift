@@ -104,10 +104,10 @@ struct ProductDecodingTests {
         #expect(categories[1].name == "Mens Shirts")
     }
 
-    /// Fiyat ve indirim biçimi seçilen dile göre değişir. iOS sembolle tutar arasına bölünmez boşluk koyar.
-    @Test func formatsPriceInLiraForSelectedLanguage() {
-        #expect(1299.9.formatted(.lira.locale(Locale(identifier: "tr_TR"))) == "₺1.299,90")
-        #expect(1299.9.formatted(.lira.locale(Locale(identifier: "en_US"))) == "TRY\u{00A0}1,299.90")
+    /// Fiyat ve indirim biçimi seçilen dile göre değişir: Türkçe TL, İngilizce dolar.
+    @Test func formatsPriceForSelectedLanguage() {
+        #expect(1299.9.formatted(Currency.lira.format.locale(Locale(identifier: "tr_TR"))) == "₺1.299,90")
+        #expect(1299.9.formatted(Currency.dollar.format.locale(Locale(identifier: "en_US"))) == "$1,299.90")
     }
 
     @Test func formatsDiscountForSelectedLanguage() {

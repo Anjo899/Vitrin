@@ -93,16 +93,18 @@ struct RatingView: View {
 /// İndirim varsa üstü çizili eski fiyat ve indirimli fiyat, yoksa sadece fiyat.
 struct PriceView: View {
     let product: Product
+    /// Kökte seçilen dile göre verilir; dil değişince fiyatlar anında yeni para birimine geçer.
+    @Environment(\.currency) private var currency
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             if product.hasDiscount {
-                Text(product.priceInLira, format: .lira)
+                Text(product.price(in: currency), format: currency.format)
                     .font(.caption2)
                     .strikethrough()
                     .foregroundStyle(.secondary)
             }
-            Text(product.discountedPriceInLira, format: .lira)
+            Text(product.discountedPrice(in: currency), format: currency.format)
                 .font(.subheadline.bold())
                 .foregroundStyle(product.hasDiscount ? Color.accentColor : .primary)
         }

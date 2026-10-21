@@ -26,6 +26,8 @@ struct TrendyolBenzeriApp: App {
                 .preferredColorScheme(theme.colorScheme)
                 // Metinler, fiyatlar, sayılar ve tarihler bu locale'e göre çözülür.
                 .environment(\.locale, language.locale())
+                // Fiyatlar dile bağlı para biriminde gösterilir: Türkçe TL, İngilizce dolar.
+                .environment(\.currency, language.currency())
         }
     }
 }

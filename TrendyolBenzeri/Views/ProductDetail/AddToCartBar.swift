@@ -10,6 +10,8 @@ struct AddToCartBar: View {
     let product: Product
 
     @Environment(CartStore.self) private var cartStore
+    /// Kökte seçilen dile göre verilir; dil değişince fiyatlar anında yeni para birimine geçer.
+    @Environment(\.currency) private var currency
     /// Her eklemede artar; geri bildirim (titreşim + yeşil buton) bunu tetikler.
     @State private var addCount = 0
     @State private var showsAddedFeedback = false
@@ -19,7 +21,7 @@ struct AddToCartBar: View {
 
         HStack(spacing: 16) {
             VStack(alignment: .leading, spacing: 2) {
-                Text(product.discountedPriceInLira, format: .lira)
+                Text(product.discountedPrice(in: currency), format: currency.format)
                     .font(.headline)
                 if quantityInCart > 0 {
                     Text("Sepette \(quantityInCart) adet")

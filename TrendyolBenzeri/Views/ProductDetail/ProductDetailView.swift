@@ -9,6 +9,8 @@ import SwiftUI
 /// Ürün listeden geldiği için tüm bilgiler elimizde; ayrıca istek atmaya gerek yok.
 struct ProductDetailView: View {
     let product: Product
+    /// Kökte seçilen dile göre verilir; dil değişince fiyatlar anında yeni para birimine geçer.
+    @Environment(\.currency) private var currency
 
     /// Bazı ürünlerde `images` boş olabilir; o zaman küçük görseli galeride gösteririz.
     private var galleryImages: [URL] {
@@ -76,13 +78,13 @@ struct ProductDetailView: View {
                             .padding(.horizontal, 6)
                             .padding(.vertical, 2)
                             .background(Color.discountBadge, in: Capsule())
-                        Text(product.priceInLira, format: .lira)
+                        Text(product.price(in: currency), format: currency.format)
                             .font(.subheadline)
                             .strikethrough()
                             .foregroundStyle(.secondary)
                     }
                 }
-                Text(product.discountedPriceInLira, format: .lira)
+                Text(product.discountedPrice(in: currency), format: currency.format)
                     .font(.title2.bold())
                     .foregroundStyle(product.hasDiscount ? Color.accentColor : .primary)
             }

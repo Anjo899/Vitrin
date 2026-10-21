@@ -88,7 +88,7 @@ Sepet satırları (görsel, ad, fiyat, `−` / adet / `+`; adet 1'deyken `−` �
 - `TrendyolBenzeriApp` kökte `.environment(\.locale, ...)` uygular; dil yeniden başlatmadan anında değişir (tab bar, arama kutusu, açık sheet dahil).
 - `Localizable.xcstrings`: arayüzdeki tüm metinler, kategori adları ve hata mesajları; `en` ve `tr`, sayılı metinlerde İngilizce tekil/çoğul.
 - `String` üreten metinler `LocalizedStringResource`'a çevrildi (`APIError`, `LoadState.failed`, `AppTheme.title`, kategori adları, sepet butonu, stok etiketi).
-- Fiyatlar sabit kurla TL (1 $ = 45 TL); fiyat, indirim, puan ve tarih biçimleri seçilen dile göre.
+- Para birimi dile bağlı: Türkçede sabit kurla TL (1 $ = 45 TL), İngilizcede API'deki dolar fiyatı; fiyat, indirim, puan ve tarih biçimleri seçilen dile göre.
 - Sınırlar: iOS'un kendi metinleri (geri butonu, aramadaki "Cancel") cihaz dilinde kalır; açık bir alert dil değişince güncellenmez, sonraki açılışta yeni dilde gelir.
 
 ## Her branch için iş akışı

@@ -17,8 +17,8 @@ nonisolated struct CartItem: Codable, Identifiable, Hashable, Sendable {
         (product.discountedPrice * Double(quantity)).roundedToCents
     }
 
-    /// Ekranda gösterilen satır toplamı (TL): görünen TL birim fiyat × adet.
-    var lineTotalInLira: Double {
-        (product.discountedPriceInLira * Double(quantity)).roundedToCents
+    /// Ekranda gösterilen satır toplamı: görünen birim fiyat × adet, aynı para biriminde.
+    func lineTotal(in currency: Currency) -> Double {
+        (product.discountedPrice(in: currency) * Double(quantity)).roundedToCents
     }
 }

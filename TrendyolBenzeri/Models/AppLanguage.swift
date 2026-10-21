@@ -40,4 +40,12 @@ nonisolated enum AppLanguage: String, CaseIterable, Identifiable, Sendable {
         default: Locale(identifier: "tr_TR")
         }
     }
+
+    /// Fiyatların para birimi: İngilizcede API'deki dolar, Türkçede sabit kurla TL.
+    func currency(preferredLanguages: [String] = Locale.preferredLanguages) -> Currency {
+        switch resolved(preferredLanguages: preferredLanguages) {
+        case .english: .dollar
+        default: .lira
+        }
+    }
 }

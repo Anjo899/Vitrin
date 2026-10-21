@@ -17,7 +17,7 @@
 | `Views/<Ekran>/` | Ekran view'ları ve varsa ekranın `ViewModel`'i (`Home/`, `Categories/`, `ProductDetail/`, `Favorites/`, `Cart/`, `Settings/`) |
 | `Views/Common/` | `LoadState`, `LoadingView`, `ErrorView` |
 | `Views/Components/` | Tekrar kullanılan bileşenler (aşağıda) |
-| `Utilities/` | `PriceFormatter` (`ExchangeRate`, TL tutarları, `.lira` / `.discount` biçimleri), `LocalizedStringResource+Locale` (`resolved(in:)`), `PreviewData` (önizleme verisi; `#Preview` blokları Release'te de derlendiği için `#if DEBUG` içine alınmaz) |
+| `Utilities/` | `PriceFormatter` (`ExchangeRate`, `Currency` ve `\.currency` environment değeri, para birimine göre tutarlar, `.discount` biçimi), `LocalizedStringResource+Locale` (`resolved(in:)`), `PreviewData` (önizleme verisi; `#Preview` blokları Release'te de derlendiği için `#if DEBUG` içine alınmaz) |
 
 - Akış: View → ViewModel → `ProductService` → `APIClient`. View'lar URL bilmez.
 - Projede `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor`. View, ViewModel ve store'lar MainActor'da; modeller, ağ katmanı ve `PlistStorage` `nonisolated` + `Sendable`.
@@ -40,7 +40,7 @@
   - `String` gerekiyorsa (sıralama, test) `resource.resolved(in: locale)` kullanılır. `String(localized:locale:)` metni yine cihaz dilinde arar.
   - `switch` içindeki interpolasyonlu `LocalizedStringResource`'u derleyici catalog için bulamıyor; o durumda her dalda doğrudan `Text("…")` döndürülür.
   - API'den gelen ürün adı, açıklama, marka ve yorumlar çevrilmez.
-- Fiyatlar: API dolar verir, ekranda sabit kurla (`ExchangeRate.usdToTry` = 45) TL gösterilir. Her zaman `priceInLira` / `discountedPriceInLira` / `lineTotalInLira` / `totalPriceInLira` ve `Text(value, format: .lira)` (Türkçe `₺1.299,90`, İngilizce `TRY 1,299.90`). İndirim rozeti `Text(product.discountRate, format: .discount)` (`%10` / `10%`). Biçimler ekrandaki locale'i kullanır; elle biçimlendirme ve sabit locale yapılmaz. Dolar hesapları (`discountedPrice`, `lineTotal`, `totalPrice`) stok ve sepet mantığı için kalır.
+- Fiyatlar: API dolar verir. Para birimi dile bağlı (`AppLanguage.currency()`): Türkçede sabit kurla (`ExchangeRate.usdToTry` = 45) TL, İngilizcede API'deki dolar değeri. Kök view `.environment(\.currency, …)` verir; fiyat gösteren view `@Environment(\.currency)` okur ve her zaman `price(in:)` / `discountedPrice(in:)` / `lineTotal(in:)` / `totalPrice(in:)` ile `Text(value, format: currency.format)` kullanır (Türkçe `₺1.299,90`, İngilizce `$1,299.90`). Satır toplamı görünen birim fiyat × adet, sepet toplamı görünen satırların toplamı; iki para biriminde de kuruşa yuvarlanır. İndirim rozeti `Text(product.discountRate, format: .discount)` (`%10` / `10%`). Biçimler ekrandaki locale'i kullanır; elle biçimlendirme, sabit para birimi ve sabit locale yapılmaz. Dolar hesapları (`discountedPrice`, `lineTotal`, `totalPrice`) stok ve sepet mantığı için kalır.
 - Önce var olan bileşen kullanılır:
   - `ProductGridView`: her ürün grid'i. Bulunduğu stack'te `Product` hedefi tanımlı olmalı.
   - `ProductCardView`, `PriceView`, `RatingView`, `StarRatingView`: kart, fiyat ve puan gösterimi.
