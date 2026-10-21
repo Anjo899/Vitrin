@@ -10,14 +10,14 @@
 ## Mimari
 | Klasör | Sorumluluk |
 | --- | --- |
-| `Models/` | `Codable` veri tipleri: `Product`, `Review`, `ProductsResponse`, `ProductCategory` (+ `+Display`: slug → Türkçe ad ve SF Symbol), `CartItem`, `AppTheme` |
+| `Models/` | `Codable` veri tipleri: `Product`, `Review`, `ProductsResponse`, `ProductCategory` (+ `+Display`: slug → çevrilen ad ve SF Symbol), `CartItem`, `AppTheme`, `AppLanguage` |
 | `Networking/` | `APIClient` (generic `get`, tarih çözen `JSONDecoder.dummyJSON`), `APIError` (Türkçe hata mesajları), `ProductService` (endpoint'leri bilen tek yer) |
 | `Persistence/` | `PlistStorage`: `Codable` değerleri Documents'a plist olarak yazar ve okur |
 | `Stores/` | Paylaşılan state: `FavoritesStore`, `CartStore` |
 | `Views/<Ekran>/` | Ekran view'ları ve varsa ekranın `ViewModel`'i (`Home/`, `Categories/`, `ProductDetail/`, `Favorites/`, `Cart/`, `Settings/`) |
 | `Views/Common/` | `LoadState`, `LoadingView`, `ErrorView` |
 | `Views/Components/` | Tekrar kullanılan bileşenler (aşağıda) |
-| `Utilities/` | `PriceFormatter`, `PreviewData` (önizleme verisi; `#Preview` blokları Release'te de derlendiği için `#if DEBUG` içine alınmaz) |
+| `Utilities/` | `PriceFormatter` (`ExchangeRate`, `Currency` ve `\.currency` environment değeri, para birimine göre tutarlar, `.discount` biçimi), `LocalizedStringResource+Locale` (`resolved(in:)`), `PreviewData` (önizleme verisi; `#Preview` blokları Release'te de derlendiği için `#if DEBUG` içine alınmaz) |
 
 - Akış: View → ViewModel → `ProductService` → `APIClient`. View'lar URL bilmez.
 - Projede `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor`. View, ViewModel ve store'lar MainActor'da; modeller, ağ katmanı ve `PlistStorage` `nonisolated` + `Sendable`.
@@ -26,16 +26,21 @@
 ## State management
 - **`@State`**: ekrana ait değerler ve ekranın ViewModel'i (`@State private var viewModel = HomeViewModel()`). ViewModel bir parametreye bağlıysa init'te `_viewModel = State(initialValue: …)`.
 - **ViewModel**: `@Observable final class`, durum `private(set) var state: LoadState<T>`, bağımlılıklar `@ObservationIgnored`. Kalıp: `loadIfNeeded()` (`.task`), `load()` (ilk yükleme / Tekrar Dene), `refresh()` (`.refreshable`, eski liste ekranda kalır). `CancellationError` hata sayılmaz; yükleme iptal olursa durum `.idle`'a döner.
-- **`LoadState`** (`idle` / `loading` / `loaded` / `failed(String)`): View `switch` ile `LoadingView`, `ErrorView(message:retry:)`, boşsa `ContentUnavailableView` ya da içeriği gösterir.
+- **`LoadState`** (`idle` / `loading` / `loaded` / `failed(LocalizedStringResource)`; ViewModel'ler `error.userMessage` verir): View `switch` ile `LoadingView`, `ErrorView(message:retry:)`, boşsa `ContentUnavailableView` ya da içeriği gösterir.
 - **`.environment`**: `FavoritesStore` ve `CartStore`, `TrendyolBenzeriApp` içinde bir kez `@State` olarak oluşturulur ve `.environment(...)` ile verilir; view'lar `@Environment(CartStore.self)` ile okur. View içinde yeni store örneği oluşturulmaz.
 - **Store'lar**: ürün id'sine bağlı dictionary (`[Int: Product]`, `[Int: CartItem]`) tutar ve her değişiklikte `favorites.plist` / `cart.plist`'e kaydeder. Sepete stoktan fazla ürün eklenemez, adet 0'a inince satır silinir, toplamlar indirimli fiyatla hesaplanır.
-- **`@AppStorage`**: tema seçimi (`AppTheme.storageKey` = `"appTheme"`). `TrendyolBenzeriApp` kökte `.preferredColorScheme` uygular; `SettingsView` aynı anahtarı yazar.
+- **`@AppStorage`**: tema (`AppTheme.storageKey` = `"appTheme"`) ve dil (`AppLanguage.storageKey` = `"appLanguage"`). `TrendyolBenzeriApp` kökte `.preferredColorScheme` ve `.environment(\.locale, language.locale())` uygular; `SettingsView` aynı anahtarları yazar. "Sistem" dili cihazın birinci dilini takip eder; o dil `tr` ya da `en` değilse Türkçe.
 - **`@Binding`**: seçili sekme `MainTabView`'a ait; `FavoritesView` ve `CartView`'a binding olarak verilir (boş durum butonları Ana Sayfa'ya geçirir).
 - **Navigasyon**: her sekmenin kendi `NavigationStack`'i var. Geçişler `NavigationLink(value:)` ile, hedefler sekmenin kök view'unda `.navigationDestination(for: Product.self)` (Kategoriler'de ayrıca `ProductCategory.self`) ile tanımlı.
 
 ## Kod kuralları
-- Tip, değişken, fonksiyon ve dosya adları İngilizce; arayüz metinleri (hata ve erişilebilirlik metinleri dahil) Türkçe. Kod yorumları Türkçe.
-- Fiyatlar dolar cinsinden: her zaman `Double.formattedPrice` (`$1,234.50`); indirim rozeti `product.discountLabel` (`%10`). Elle biçimlendirme yapılmaz.
+- Tip, değişken, fonksiyon ve dosya adları İngilizce. Kod yorumları Türkçe.
+- Arayüz metinleri (hata ve erişilebilirlik metinleri dahil) kodda Türkçe yazılır ve `Localizable.xcstrings`'te anahtar olur; her anahtarın `en` ve `tr` karşılığı vardır. Yeni metin eklenince catalog'a da eklenir.
+  - Metin `Text("…")`, `Label("…", …)`, `Button("…")` gibi `LocalizedStringKey` alan API'lerle ya da `LocalizedStringResource` olarak taşınır. Arayüz metni `String` olarak üretilmez: `String` cihaz dilinde çözülür, seçilen dile uymaz.
+  - `String` gerekiyorsa (sıralama, test) `resource.resolved(in: locale)` kullanılır. `String(localized:locale:)` metni yine cihaz dilinde arar.
+  - `switch` içindeki interpolasyonlu `LocalizedStringResource`'u derleyici catalog için bulamıyor; o durumda her dalda doğrudan `Text("…")` döndürülür.
+  - API'den gelen ürün adı, açıklama, marka ve yorumlar çevrilmez.
+- Fiyatlar: API dolar verir. Para birimi dile bağlı (`AppLanguage.currency()`): Türkçede sabit kurla (`ExchangeRate.usdToTry` = 45) TL, İngilizcede API'deki dolar değeri. Kök view `.environment(\.currency, …)` verir; fiyat gösteren view `@Environment(\.currency)` okur ve her zaman `price(in:)` / `discountedPrice(in:)` / `lineTotal(in:)` / `totalPrice(in:)` ile `Text(value, format: currency.format)` kullanır (Türkçe `₺1.299,90`, İngilizce `$1,299.90`). Satır toplamı görünen birim fiyat × adet, sepet toplamı görünen satırların toplamı; iki para biriminde de kuruşa yuvarlanır. İndirim rozeti `Text(product.discountRate, format: .discount)` (`%10` / `10%`). Biçimler ekrandaki locale'i kullanır; elle biçimlendirme, sabit para birimi ve sabit locale yapılmaz. Dolar hesapları (`discountedPrice`, `lineTotal`, `totalPrice`) stok ve sepet mantığı için kalır.
 - Önce var olan bileşen kullanılır:
   - `ProductGridView`: her ürün grid'i. Bulunduğu stack'te `Product` hedefi tanımlı olmalı.
   - `ProductCardView`, `PriceView`, `RatingView`, `StarRatingView`: kart, fiyat ve puan gösterimi.

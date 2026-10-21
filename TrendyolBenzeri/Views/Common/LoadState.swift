@@ -11,5 +11,6 @@ enum LoadState<Value> {
     case idle
     case loading
     case loaded(Value)
-    case failed(String)
+    /// Mesaj `String` değil, dil değişince yeniden çözülebilen bir kaynak.
+    case failed(LocalizedStringResource)
 }

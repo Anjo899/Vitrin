@@ -10,6 +10,8 @@ struct AddToCartBar: View {
     let product: Product
 
     @Environment(CartStore.self) private var cartStore
+    /// Kökte seçilen dile göre verilir; dil değişince fiyatlar anında yeni para birimine geçer.
+    @Environment(\.currency) private var currency
     /// Her eklemede artar; geri bildirim (titreşim + yeşil buton) bunu tetikler.
     @State private var addCount = 0
     @State private var showsAddedFeedback = false
@@ -19,7 +21,7 @@ struct AddToCartBar: View {
 
         HStack(spacing: 16) {
             VStack(alignment: .leading, spacing: 2) {
-                Text(product.discountedPrice.formattedPrice)
+                Text(product.discountedPrice(in: currency), format: currency.format)
                     .font(.headline)
                 if quantityInCart > 0 {
                     Text("Sepette \(quantityInCart) adet")
@@ -33,7 +35,11 @@ struct AddToCartBar: View {
                 addCount += 1
                 showsAddedFeedback = true
             } label: {
-                Label(buttonTitle, systemImage: buttonIcon)
+                Label {
+                    Text(buttonTitle)
+                } icon: {
+                    Image(systemName: buttonIcon)
+                }
                     .font(.headline)
                     .frame(maxWidth: .infinity)
             }
@@ -62,7 +68,7 @@ struct AddToCartBar: View {
         }
     }
 
-    private var buttonTitle: String {
+    private var buttonTitle: LocalizedStringResource {
         if !product.isInStock {
             "Tükendi"
         } else if showsAddedFeedback {

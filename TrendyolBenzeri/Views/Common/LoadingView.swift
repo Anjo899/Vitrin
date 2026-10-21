@@ -7,7 +7,7 @@ import SwiftUI
 
 /// Veri yüklenirken ekranın ortasında gösterilen gösterge.
 struct LoadingView: View {
-    var message: String = "Yükleniyor…"
+    var message: LocalizedStringKey = "Yükleniyor…"
 
     var body: some View {
         ProgressView(message)

@@ -10,6 +10,8 @@ struct CartView: View {
     @Binding var selectedTab: MainTabView.Tab
 
     @Environment(CartStore.self) private var cartStore
+    /// Kökte seçilen dile göre verilir; dil değişince fiyatlar anında yeni para birimine geçer.
+    @Environment(\.currency) private var currency
     @State private var showsCheckoutAlert = false
 
     var body: some View {
@@ -61,10 +63,10 @@ struct CartView: View {
                 Text("Toplam (\(cartStore.totalQuantity) ürün)")
                     .font(.caption)
                     .foregroundStyle(.secondary)
-                Text(cartStore.totalPrice.formattedPrice)
+                Text(cartStore.totalPrice(in: currency), format: currency.format)
                     .font(.title3.bold())
                     .contentTransition(.numericText())
-                    .animation(.default, value: cartStore.totalPrice)
+                    .animation(.default, value: cartStore.totalPrice(in: currency))
             }
 
             Button {

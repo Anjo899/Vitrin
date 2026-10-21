@@ -19,7 +19,7 @@ struct StarRatingView: View {
             }
         }
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("5 üzerinden \(rating.formatted(.number.precision(.fractionLength(1)))) puan")
+        .accessibilityLabel(Text("5 üzerinden \(rating, format: .number.precision(.fractionLength(1))) puan"))
     }
 
     private func symbolName(for index: Int) -> String {

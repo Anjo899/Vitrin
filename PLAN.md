@@ -27,6 +27,7 @@ Trendyol benzeri bir e-ticaret uygulaması (okul projesi, SwiftUI öğrenme ama�
 | 8 | `feature/favorites-screen` | `feature/categories` | ✅ Tamamlandı |
 | 9 | `feature/cart-screen` | `feature/favorites-screen` | ✅ Tamamlandı |
 | 10 | `feature/theme-selection` | `fix/code-review-findings` | ✅ Tamamlandı |
+| 11 | `feature/language-setting` | `feature/theme-selection` | ✅ Tamamlandı |
 
 ### 0. chore/project-setup ✅
 `.gitignore`, deployment target iOS 17.0, görünen ad Vitrin, `AccentColor` + `BrandAccent` renkleri, `PLAN.md`.
@@ -81,6 +82,14 @@ Sepet satırları (görsel, ad, fiyat, `−` / adet / `+`; adet 1'deyken `−` �
 - Seçim `@AppStorage("appTheme")` ile kalıcı; `TrendyolBenzeriApp` kök view'a `.preferredColorScheme` uygular.
 - `Views/Settings/SettingsView.swift`: Ana Sayfa'daki dişli butonuyla açılan sheet, "Görünüm" bölümünde segmented `Picker`.
 - Renk denetimi: arka planlar zaten sistem renkleri, asset renklerinin koyu varyantları var; indirim rozetindeki beyaz yazı kırmızı zeminde iki modda da okunuyor.
+
+### 11. feature/language-setting ✅
+- `Models/AppLanguage.swift`: Sistem / Türkçe / English, `@AppStorage("appLanguage")`. "Sistem" cihazın birinci dilini takip eder, `tr` ya da `en` değilse Türkçe.
+- `TrendyolBenzeriApp` kökte `.environment(\.locale, ...)` uygular; dil yeniden başlatmadan anında değişir (tab bar, arama kutusu, açık sheet dahil).
+- `Localizable.xcstrings`: arayüzdeki tüm metinler, kategori adları ve hata mesajları; `en` ve `tr`, sayılı metinlerde İngilizce tekil/çoğul.
+- `String` üreten metinler `LocalizedStringResource`'a çevrildi (`APIError`, `LoadState.failed`, `AppTheme.title`, kategori adları, sepet butonu, stok etiketi).
+- Para birimi dile bağlı: Türkçede sabit kurla TL (1 $ = 45 TL), İngilizcede API'deki dolar fiyatı; fiyat, indirim, puan ve tarih biçimleri seçilen dile göre.
+- Sınırlar: iOS'un kendi metinleri (geri butonu, aramadaki "Cancel") cihaz dilinde kalır; açık bir alert dil değişince güncellenmez, sonraki açılışta yeni dilde gelir.
 
 ## Her branch için iş akışı
 1. Bir önceki branch'ten yeni branch aç

@@ -30,7 +30,7 @@ struct FavoriteButton: View {
         }
         .buttonStyle(.plain)
         .sensoryFeedback(.selection, trigger: isFavorite)
-        .accessibilityLabel(isFavorite ? "Favorilerden çıkar" : "Favorilere ekle")
+        .accessibilityLabel(isFavorite ? Text("Favorilerden çıkar") : Text("Favorilere ekle"))
     }
 }
 

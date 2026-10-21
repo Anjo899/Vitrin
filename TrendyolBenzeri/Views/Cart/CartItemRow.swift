@@ -10,6 +10,8 @@ struct CartItemRow: View {
     let item: CartItem
 
     @Environment(CartStore.self) private var cartStore
+    /// Kökte seçilen dile göre verilir; dil değişince fiyatlar anında yeni para birimine geçer.
+    @Environment(\.currency) private var currency
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
@@ -25,9 +27,9 @@ struct CartItemRow: View {
                     .lineLimit(2)
 
                 HStack(spacing: 4) {
-                    Text(item.product.discountedPrice.formattedPrice)
+                    Text(item.product.discountedPrice(in: currency), format: currency.format)
                     if item.product.hasDiscount {
-                        Text(item.product.price.formattedPrice)
+                        Text(item.product.price(in: currency), format: currency.format)
                             .strikethrough()
                             .foregroundStyle(.secondary)
                     }
@@ -37,7 +39,7 @@ struct CartItemRow: View {
                 HStack {
                     quantityControls
                     Spacer()
-                    Text(item.lineTotal.formattedPrice)
+                    Text(item.lineTotal(in: currency), format: currency.format)
                         .font(.subheadline.bold())
                 }
                 .padding(.top, 4)
@@ -70,9 +72,9 @@ struct CartItemRow: View {
                 Image(systemName: item.quantity == 1 ? "trash" : "minus")
                     .frame(width: 44, height: 44) // HIG: en az 44 pt dokunma alanı
             }
-            .accessibilityLabel(item.quantity == 1 ? "Sepetten çıkar" : "Adedi azalt")
+            .accessibilityLabel(item.quantity == 1 ? Text("Sepetten çıkar") : Text("Adedi azalt"))
 
-            Text("\(item.quantity)")
+            Text(item.quantity, format: .number)
                 .font(.subheadline.monospacedDigit().bold())
                 .frame(minWidth: 28)
                 .contentTransition(.numericText())
@@ -84,7 +86,7 @@ struct CartItemRow: View {
                     .frame(width: 44, height: 44)
             }
             .disabled(!cartStore.canAdd(item.product))
-            .accessibilityLabel("Adedi artır")
+            .accessibilityLabel(Text("Adedi artır"))
         }
         .font(.subheadline.weight(.semibold))
         // List satırında butonların ayrı ayrı basılabilmesi için gerekli;

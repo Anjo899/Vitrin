@@ -82,7 +82,8 @@ struct ProductDecodingTests {
         #expect(mascara.hasDiscount)
         // 10 × (1 − 0.1048) = 8.952 → kuruşa yuvarlanınca 8.95
         #expect(abs(mascara.discountedPrice - 8.95) < 0.0001)
-        #expect(mascara.discountLabel == "%10")
+        // Rozet tam yüzde gösterir: 10.48 → %10.
+        #expect(mascara.discountRate == 0.10)
         #expect(mascara.isInStock)
 
         #expect(!apple.hasDiscount)
@@ -103,7 +104,14 @@ struct ProductDecodingTests {
         #expect(categories[1].name == "Mens Shirts")
     }
 
-    @Test func formatsPriceInUSDollars() {
-        #expect(1234.5.formattedPrice == "$1,234.50")
+    /// Fiyat ve indirim biçimi seçilen dile göre değişir: Türkçe TL, İngilizce dolar.
+    @Test func formatsPriceForSelectedLanguage() {
+        #expect(1299.9.formatted(Currency.lira.format.locale(Locale(identifier: "tr_TR"))) == "₺1.299,90")
+        #expect(1299.9.formatted(Currency.dollar.format.locale(Locale(identifier: "en_US"))) == "$1,299.90")
+    }
+
+    @Test func formatsDiscountForSelectedLanguage() {
+        #expect(0.10.formatted(.discount.locale(Locale(identifier: "tr_TR"))) == "%10")
+        #expect(0.10.formatted(.discount.locale(Locale(identifier: "en_US"))) == "10%")
     }
 }

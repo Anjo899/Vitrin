@@ -11,8 +11,8 @@ nonisolated enum APIError: LocalizedError {
     case badStatus(Int)
     case decoding(Error)
 
-    /// Ekranlarda kullanıcıya gösterilecek Türkçe mesajlar.
-    var errorDescription: String? {
+    /// Ekranlarda gösterilen mesaj. `String` yerine kaynak tutulur ki dil değişince metin de değişsin.
+    var message: LocalizedStringResource {
         switch self {
         case .invalidURL:
             "İstek adresi geçersiz."
@@ -23,5 +23,16 @@ nonisolated enum APIError: LocalizedError {
         case .decoding:
             "Gelen veri okunamadı."
         }
+    }
+
+    var errorDescription: String? {
+        String(localized: message)
+    }
+}
+
+nonisolated extension Error {
+    /// ViewModel'lerin `LoadState.failed` için kullandığı mesaj.
+    var userMessage: LocalizedStringResource {
+        (self as? APIError)?.message ?? "Beklenmeyen bir hata oluştu."
     }
 }
