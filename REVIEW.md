@@ -96,7 +96,7 @@ Bu turda aşağıdakiler çalıştırılarak kontrol edildi:
 | S17 | Küçük | `ProductImageView`: sınırsız yeniden deneme, ayrı iptal kontrolü, testi yok | Hata yönetimi, performans |
 | S18 | Küçük | Her sepet ve favori değişikliğinde tüm dosya ana thread'de yazılıyor | Performans |
 | S19 | Küçük | `@AppStorage` tanımı iki yerde; `CategoryProductsView` her init'te ViewModel oluşturuyor | State management |
-| S20 | Küçük | Bazı önizlemeler `CartStore` vermiyor; detaya geçince çöküyor | Kod kalitesi |
+| S20 | Küçük | Bazı önizlemeler `CartStore` vermiyor; `HomeView` ve `FavoritesView` ("Dolu") detaya geçince çöküyor | Kod kalitesi |
 | S21 | Küçük | `PLAN.md` ve `CLAUDE.md` koddan ve yeni kurallardan geri kaldı | Belgeler |
 | S22 | Küçük | `ErrorView` "Tekrar Dene" görevi yapılandırılmamış ve iptal edilmiyor | Concurrency |
 | T3 | Küçük | Yeni kodun test edilmeyen kısımları | Test kapsamı |
@@ -450,10 +450,13 @@ Koda gömülü metin kalmadı (Doğrulama'ya bakın). Kalan sorunlar seçilen di
 - **Öneri:** `preview`, her çağrıda `UUID` ile yeni bir klasör versin; elle yazılan klasörler kalksın.
 
 #### S20 · Küçük · Bazı önizlemeler `CartStore` vermiyor
-- **Dosya:** `Views/Home/HomeView.swift:94–99`, `Views/Categories/CategoryProductsView.swift:52–61`, `Views/Components/ProductGridView.swift:39–46`
-- **Sorun:** Bu önizlemeler yalnızca `FavoritesStore` veriyor. Önizlemede bir karta basılırsa açılan `ProductDetailView` → `AddToCartBar`, `@Environment(CartStore.self)` bulamadığı için çöküyor.
+- **Dosya:** `Views/Home/HomeView.swift:94–99`, `Views/Favorites/FavoritesView.swift:54–64` ("Dolu"); çökmeyenler: `Views/Categories/CategoryProductsView.swift:52–61`, `Views/Components/ProductGridView.swift:39–46`
+- **Sorun:** Bu önizlemeler yalnızca `FavoritesStore` veriyor.
+  - `HomeView` ve `FavoritesView` ("Dolu") önizlemelerinin stack'inde `Product` hedefi var. Bir karta basılınca açılan `ProductDetailView` → `AddToCartBar`, `@Environment(CartStore.self)` bulamadığı için çöküyor.
+  - `CategoryProductsView` ve `ProductGridView` önizlemelerinde `Product` hedefi yok (hedef `CategoriesView`'da tanımlı). Karta basınca detaya gidilmiyor, bu yüzden bugün çökmüyorlar; ama `CartStore` vermedikleri için ortak yardımcı kuralına yine uymuyorlar.
+- **Güncelleme (21 Ekim 2026, architect denetimi):** Birinci turdaki liste `FavoritesView`'ı içermiyordu ve `CategoryProductsView` ile `ProductGridView`'ı çöken önizlemeler arasında sayıyordu.
 - **Neden önemli:** Önizlemede gezinmek, uygulamanın kendisinde olmayan bir çökme üretiyor ve önizlemeye güveni azaltıyor.
-- **Öneri:** Önizlemeler için iki store'u ve dili birlikte veren bir `.previewEnvironment()` modifier'ı yaz ve her önizlemede onu kullan.
+- **Öneri:** `ARCHITECTURE.md` 3. State management'taki `.previewEnvironment(theme:language:)` yardımcısını `Views/Common/PreviewEnvironment.swift`'te yaz ve her önizlemede onu kullan.
 
 ### Test kapsamı
 
