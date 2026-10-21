@@ -11,12 +11,16 @@ Bu belge, uygulamanın bugünkü yapısını ve yeni kodun uyması gereken kural
 ## 1. Katmanlar ve bağımlılık yönü
 
 ```
-Models  ←  Networking (APIClient)  ←  ProductService  ←  ViewModel  ←  View
-   ↑                                                         ↑
-   └──── Persistence (PlistStorage)  ←  Stores ──────────────┘ (environment ile)
+View ─→ ViewModel ─→ ProductService ─→ Networking (APIClient) ─→ Models
+ │                                                                 ↑
+ ├─(environment)─→ Stores ─→ Persistence (PlistStorage) ───────────┤
+ │                                                                 │
+ └─→ Utilities ────────────────────────────────────────────────────┘
 ```
 
-Bağımlılık her zaman soldan sağa doğrudur: bir katman yalnızca kendinden önceki katmanları bilir. Store'lar ağ katmanını değil, kalıcılık katmanını kullanır.
+Ok, kullanan katmandan kullanılan katmana doğrudur (`A ─→ B`: A, B'yi kullanır). Bağımlılık her zaman soldan sağa akar: bir katman yalnızca sağındaki katmanları bilir, solundakini bilmez. En sağdaki Models hiçbir katmanı bilmez. Store'lar ağ katmanını değil, kalıcılık katmanını kullanır.
+
+Diyagram ana akışı gösterir; her katmanın doğrudan kullanabildikleri aşağıdaki tablodadır (ör. ViewModel ve Stores Models'i doğrudan kullanır). Utilities → Persistence yalnızca önizleme verisi (`PlistStorage.preview`) içindir.
 
 | Katman | Klasör | Kullanabilir | Kullanamaz |
 | --- | --- | --- | --- |
