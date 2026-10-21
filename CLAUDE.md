@@ -8,6 +8,10 @@
 - Xcode projesi "synchronized folder" yapısında: `TrendyolBenzeri/` altına eklenen dosya target'a otomatik girer, `project.pbxproj` elle düzenlenmez.
 
 ## Mimari
+**Kodda değişiklik yapmadan önce `ARCHITECTURE.md` okunur.** Katmanlar ve bağımlılık yönü, yeni dosyanın yeri, state, yükleme ve hata durumları, concurrency, yerelleştirme ve para birimi, kalıcılık, erişilebilirlik ve test kuralları doğru/yanlış örnekleriyle orada. Bu dosya ile çelişirse `ARCHITECTURE.md` geçerlidir. Kodun henüz uymadığı kurallar orada "Bugünkü durum: uyulmuyor" notuyla işaretli; yeni kod kurala uyar.
+
+Özet:
+
 | Klasör | Sorumluluk |
 | --- | --- |
 | `Models/` | `Codable` veri tipleri: `Product`, `Review`, `ProductsResponse`, `ProductCategory` (+ `+Display`: slug → çevrilen ad ve SF Symbol), `CartItem`, `AppTheme`, `AppLanguage` |
@@ -25,7 +29,7 @@
 
 ## State management
 - **`@State`**: ekrana ait değerler ve ekranın ViewModel'i (`@State private var viewModel = HomeViewModel()`). ViewModel bir parametreye bağlıysa init'te `_viewModel = State(initialValue: …)`.
-- **ViewModel**: `@Observable final class`, durum `private(set) var state: LoadState<T>`, bağımlılıklar `@ObservationIgnored`. Kalıp: `loadIfNeeded()` (`.task`), `load()` (ilk yükleme / Tekrar Dene), `refresh()` (`.refreshable`, eski liste ekranda kalır). `CancellationError` hata sayılmaz; yükleme iptal olursa durum `.idle`'a döner.
+- **ViewModel**: `@Observable final class`, durum `private(set) var state: LoadState<T>`, bağımlılıklar `@ObservationIgnored`. Kalıp: `loadIfNeeded()` (`.task`), `load()` (ilk yükleme / Tekrar Dene), `refresh()` (`.refreshable`, `.loading`'e geçmez). Kural: yenileme başarısız olursa mevcut liste silinmez. Bugünkü durum: uyulmuyor, yenileme hatası `state = .failed` yazıyor (`REVIEW.md` O11). `CancellationError` hata sayılmaz; yükleme iptal olursa durum `.idle`'a döner.
 - **`LoadState`** (`idle` / `loading` / `loaded` / `failed(LocalizedStringResource)`; ViewModel'ler `error.userMessage` verir): View `switch` ile `LoadingView`, `ErrorView(message:retry:)`, boşsa `ContentUnavailableView` ya da içeriği gösterir.
 - **`.environment`**: `FavoritesStore` ve `CartStore`, `TrendyolBenzeriApp` içinde bir kez `@State` olarak oluşturulur ve `.environment(...)` ile verilir; view'lar `@Environment(CartStore.self)` ile okur. View içinde yeni store örneği oluşturulmaz.
 - **Store'lar**: ürün id'sine bağlı dictionary (`[Int: Product]`, `[Int: CartItem]`) tutar ve her değişiklikte `favorites.plist` / `cart.plist`'e kaydeder. Sepete stoktan fazla ürün eklenemez, adet 0'a inince satır silinir, toplamlar indirimli fiyatla hesaplanır.
@@ -40,7 +44,7 @@
   - `String` gerekiyorsa (sıralama, test) `resource.resolved(in: locale)` kullanılır. `String(localized:locale:)` metni yine cihaz dilinde arar.
   - `switch` içindeki interpolasyonlu `LocalizedStringResource`'u derleyici catalog için bulamıyor; o durumda her dalda doğrudan `Text("…")` döndürülür.
   - API'den gelen ürün adı, açıklama, marka ve yorumlar çevrilmez.
-- Fiyatlar: API dolar verir. Para birimi dile bağlı (`AppLanguage.currency()`): Türkçede sabit kurla (`ExchangeRate.usdToTry` = 45) TL, İngilizcede API'deki dolar değeri. Kök view `.environment(\.currency, …)` verir; fiyat gösteren view `@Environment(\.currency)` okur ve her zaman `price(in:)` / `discountedPrice(in:)` / `lineTotal(in:)` / `totalPrice(in:)` ile `Text(value, format: currency.format)` kullanır (Türkçe `₺1.299,90`, İngilizce `$1,299.90`). Satır toplamı görünen birim fiyat × adet, sepet toplamı görünen satırların toplamı; iki para biriminde de kuruşa yuvarlanır. İndirim rozeti `Text(product.discountRate, format: .discount)` (`%10` / `10%`). Biçimler ekrandaki locale'i kullanır; elle biçimlendirme, sabit para birimi ve sabit locale yapılmaz. Dolar hesapları (`discountedPrice`, `lineTotal`, `totalPrice`) stok ve sepet mantığı için kalır.
+- Fiyatlar: API dolar verir. Para birimi dile bağlı (`AppLanguage.currency()`): Türkçede sabit kurla (`ExchangeRate.usdToTry` = 45) TL, İngilizcede API'deki dolar değeri. Kök view `.environment(\.currency, …)` verir; fiyat gösteren view `@Environment(\.currency)` okur ve her zaman `price(in:)` / `discountedPrice(in:)` / `lineTotal(in:)` / `totalPrice(in:)` ile `Text(value, format: currency.format)` kullanır (Türkçe `₺1.299,90`, İngilizce `$1,299.90`). Satır toplamı görünen birim fiyat × adet, sepet toplamı görünen satırların toplamı; iki para biriminde de kuruşa yuvarlanır. İndirim rozeti `Text(product.discountRate, format: .discount)` (`%10` / `10%`). Biçimler ekrandaki locale'i kullanır; elle biçimlendirme, sabit para birimi ve sabit locale yapılmaz. Dolar cinsinden `discountedPrice`, para birimine göre tutarların kaynağıdır. Dolar cinsinden `CartItem.lineTotal` ve `CartStore.totalPrice` uygulamada kullanılmıyor, yalnızca testlerde geçiyor (`REVIEW.md` S13); yeni kodda kullanılmaz.
 - Önce var olan bileşen kullanılır:
   - `ProductGridView`: her ürün grid'i. Bulunduğu stack'te `Product` hedefi tanımlı olmalı.
   - `ProductCardView`, `PriceView`, `RatingView`, `StarRatingView`: kart, fiyat ve puan gösterimi.
@@ -51,14 +55,14 @@
 - Testler Swift Testing ile yazılır. `TestHelpers.swift` içindeki `Product.sample(...)` ve `PlistStorage.temporary()` kullanılır; store testleri `@MainActor`.
 
 ## Git çalışma şekli
-- Branch adları: `feature/<ad>`, `fix/<ad>`, `chore/<ad>`.
+- Branch adları: `feature/<ad>`, `fix/<ad>`, `chore/<ad>`, yalnızca belge değişikliği için `docs/<ad>`.
 - Stacked PR: yeni branch bir önceki özellik branch'inden açılır, PR'ın base'i o branch olur.
-- Push, PR ve merge işlerinin hepsini proje sahibi yapar; hoca yalnızca yönlendirir, merge yapmaz. `main`'e merge yapılabilir.
-- Stacked PR'lar en alttan başlayarak sırayla `--merge` ile merge edilir (squash zinciri bozar). Her merge'den önce bir üstteki PR'ın base'i `main`'e çevrilir; böylece alttaki branch silinince üstteki PR kapanmaz. Repo'da "Automatically delete head branches" açık.
+- Push ve PR açmayı agent'lar onay beklemeden yapar (`pr-manager`). Merge'leri proje sahibi GitHub'da elle yapar; agent'lar merge etmez. Hoca yalnızca yönlendirir.
+- Proje sahibi için merge notu: stacked PR'lar en alttan başlayarak sırayla "Create a merge commit" ile merge edilir (squash zinciri bozar). Her merge'den önce bir üstteki PR'ın base'i `main`'e çevrilir; böylece alttaki branch silinince üstteki PR kapanmaz. Repo'da "Automatically delete head branches" açık.
 - Commit mesajları İngilizce Conventional Commits (`feat:`, `fix:`, `refactor:`, `chore:`, `docs:`, `test:`). Her commit tek bir anlamlı adım ve kendi başına derlenir.
 - Her özellik ayrı PR. PR açıklaması Türkçe: Özet, Değişiklikler, Nasıl test edilir.
 - Özellik bitince: `PLAN.md`'de ✅ işaretlenir, test adımları verilir ve sonraki özelliğe geçmeden onay beklenir.
-- Push, PR açma ve merge onay beklemeden yapılır. Çakışma ya da başarısız kontrol olursa iş durur ve raporlanır. Force push, `reset --hard`, rebase ve squash yasaktır.
+- Çakışma ya da başarısız kontrol olursa iş durur ve raporlanır. Force push, `reset --hard`, rebase ve squash yasaktır.
 - Remote: `https://github.com/Anjo899/Vitrin`. PR'lar `gh` ile açılır.
 
 ## Build ve test
@@ -78,11 +82,11 @@ xcodebuild -project TrendyolBenzeri.xcodeproj -scheme TrendyolBenzeri \
 - Xcode'da çalıştırmak için ⌘R, testler için ⌘U.
 
 ## Agents
-Tanımlar kullanıcı seviyesinde, `~/.claude/agents/` içinde; Vitrin'e özel kurallar bu dosyada ve agent tanımlarıyla çelişirse bu dosya geçerlidir.
+Tanımlar projede, `.claude/agents/` içinde. Kullanıcı seviyesinde (`~/.claude/agents/`) aynı adla kopya tutulmaz. Agent tanımlarıyla çelişirse bu dosya geçerlidir.
 
 ### `committer`
 Commit işlerini yapar; push yapmaz, PR açmaz.
-- Branch `main` ise commit atmaz; durur ve uygun branch (`feature/<ad>`, `fix/<ad>`, `chore/<ad>`) açılması gerektiğini bildirir.
+- Branch `main` ise commit atmaz; durur ve uygun branch (`feature/<ad>`, `fix/<ad>`, `chore/<ad>`, `docs/<ad>`) açılması gerektiğini bildirir.
 - Önce `git status --short` ve `git diff` ile değişiklikleri inceler. Görevle ilgisi olmayan değişiklikleri commit'e katmaz, raporda belirtir.
 - Dosyaları adıyla ekler (`git add <yol>`). `git add -A`, `git add .` ve `git commit -a` kullanılmaz.
 - Asla eklenmeyenler: `xcuserdata/`, `*.xcuserstate`, `.DS_Store`, `DerivedData/`, `build/`, `.swiftpm/` kullanıcı dosyaları, sırlar (`.env`, token, sertifika). `project.pbxproj` yalnızca görevle ilgili bir değişiklik varsa eklenir; emin olunmazsa eklenmez ve raporlanır.
@@ -92,16 +96,11 @@ Commit işlerini yapar; push yapmaz, PR açmaz.
 - Rapor: her commit'in hash'i ve mesajı, commit dışında kalan değişiklikler, derleme sonucu.
 
 ### `pr-manager`
-Push, PR açma ve merge işlerini `gh` (`/opt/homebrew/bin/gh`) ile onay beklemeden yapar; commit atmaz. Commit'lenmemiş değişiklik varsa bildirir.
+Push ve PR açma işlerini `gh` (`/opt/homebrew/bin/gh`) ile onay beklemeden yapar. Merge etmez (`gh pr merge` çalıştırmaz); merge'leri proje sahibi GitHub'da yapar. Commit atmaz. Commit'lenmemiş değişiklik varsa bildirir.
 - Push: `git push -u origin <branch>`. `main`'e push yapılmaz.
 - PR açma: base, branch'in açıldığı önceki özellik branch'idir (`git log` ve `gh pr list` ile belirlenir). Base belirlenemezse ya da zincirin ilk PR'ı olmadığı hâlde `main` çıkıyorsa durur ve raporlar. PR bu branch için zaten varsa `gh pr edit` ile güncellenir.
   - Başlık İngilizce Conventional Commits biçiminde.
   - Açıklama Türkçe; bölümler `## Özet`, `## Değişiklikler`, `## Nasıl test edilir`. Sonuna `🤖 Generated with [Claude Code](https://claude.com/claude-code)` satırı eklenir.
   - Komut: `gh pr create --base <base> --head <branch> --title … --body-file <dosya>`.
-- Merge: zincir `gh pr list --json number,headRefName,baseRefName` ile çıkarılır, en alttan başlanır (ilk PR'ın base'i `main`). Her PR için:
-  1. `gh pr view <no> --json state,mergeable,baseRefName,statusCheckRollup` ile kontrol edilir. Çakışma ya da başarısız kontrol varsa merge edilmez, durulur ve raporlanır.
-  2. Bu branch'i base alan üst PR varsa `gh pr edit <üst-no> --base main`, sonra `gh pr view <üst-no> --json state,baseRefName` ile açık olduğu ve base'inin `main` olduğu doğrulanır. Doğrulanamazsa merge edilmez.
-  3. `gh pr merge <no> --merge --delete-branch`. `--squash` ve `--rebase` kullanılmaz.
-  4. Merge'ün tamamlandığı doğrulanır, sonra üstteki PR'a geçilir.
-- Bir PR kapanmışsa, çakışma çıkarsa ya da bir kontrol başarısızsa durur ve raporlar. Force push, `reset --hard`, rebase ve squash yapılmaz.
-- Rapor: push edilen branch, PR linkleri, merge sonuçları ya da durma nedeni.
+- Base PR'ı kapanmışsa ya da push reddedilirse durur ve raporlar. Force push, `reset --hard`, rebase ve squash yapılmaz.
+- Rapor: push edilen branch, PR linki ve merge sırası (hangi PR'ın önce merge edilmesi gerektiği) ya da durma nedeni.
