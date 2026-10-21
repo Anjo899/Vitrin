@@ -25,3 +25,123 @@ opt_in_rules:
 
 # `unused_declaration` (REVIEW.md lint listesi) bir analyzer kuralıdır; derleyici
 # günlüğü ister ve build tool plugin'inde çalışmaz. Bu yüzden açılmadı.
+
+# Özel kurallar. Her kuralın üstünde ARCHITECTURE.md'deki bölümü yazılı.
+#
+# Önizleme istisnası: projede `#Preview` blokları her zaman dosyanın sonunda durur.
+# `(?<!#Preview[\s\S]{0,30000})` öneki, eşleşmeyi yalnızca dosyadaki ilk
+# `#Preview`'dan önceki uygulama kodunda arar (30000 karakter, en büyük view
+# dosyasının birkaç katı). Önizlemeleri kapsaması gereken kurallarda bu önek yok.
+#
+# Test istisnası: uygulama kuralları `included` ile `TrendyolBenzeri/` altına
+# sınırlı; testler sabit locale ve para birimi kullanabilir. Testlere özel kural
+# yalnızca `no_waiting_in_tests`.
+custom_rules:
+  # 1. Katmanlar ve bağımlılık yönü: Networking, Persistence ve Stores SwiftUI import etmez.
+  # Bugün ihlal yok: error.
+  no_swiftui_import_in_core:
+    name: "SwiftUI importu yasak (Networking, Persistence, Stores)"
+    included: '/TrendyolBenzeri/(Networking|Persistence|Stores)/'
+    regex: '^import SwiftUI\b'
+    message: "Bu katman SwiftUI import etmez; SwiftUI'a ait şeyler Views/ altında durur (ARCHITECTURE.md 1)."
+    severity: error
+
+  # 1. Katmanlar ve bağımlılık yönü: Models ve Utilities SwiftUI import etmez.
+  # Warning: bilinen ihlal. `Models/AppTheme.swift` ve `Utilities/PriceFormatter.swift`
+  # SwiftUI import ediyor ("Bugünkü durum: uyulmuyor", REVIEW.md S12).
+  no_swiftui_import_in_models_utilities:
+    name: "SwiftUI importu yasak (Models, Utilities)"
+    included: '/TrendyolBenzeri/(Models|Utilities)/'
+    regex: '^import SwiftUI\b'
+    message: "Models ve Utilities yalnızca Foundation import eder (ARCHITECTURE.md 1)."
+    severity: warning
+
+  # 1. Katmanlar ve bağımlılık yönü: View URL bilmez ve ağ isteği atmaz.
+  # Önizlemeler hariç (ör. `ProductImageView` önizlemesindeki geçersiz URL). Bugün ihlal yok: error.
+  no_networking_in_views:
+    name: "View'da ağ kodu yasak"
+    included: '/TrendyolBenzeri/Views/'
+    regex: '(?<!#Preview[\s\S]{0,30000})\b(APIClient|URLSession|URL\()'
+    message: "View URL bilmez ve ağ isteği atmaz; veriyi ViewModel'den ya da store'dan alır (ARCHITECTURE.md 1)."
+    severity: error
+
+  # 8. Erişilebilirlik: anlam taşıyan renkler Assets'ten gelir; metin, dolgu ve ikonda sistem renkleri kullanılmaz.
+  # Warning: bilinen ihlaller. "Sepete Eklendi" `.green` (O12), yıldızlar `.orange`,
+  # kalp `.red` ("Bugünkü durum: uyulmuyor", architect denetimi 21 Ekim 2026).
+  no_system_colors_in_views:
+    name: "Sistem rengi yasak"
+    included: '/TrendyolBenzeri/Views/'
+    regex: '(?<![\w.])(?:Color)?\.(red|orange|green|yellow|blue|pink|purple|teal|mint|cyan|indigo|brown)\b'
+    message: "Sistem rengi yerine Assets rengi kullanın (ör. .stockAvailable, .brandAccent) (ARCHITECTURE.md 8)."
+    severity: warning
+
+  # 8. Erişilebilirlik (Dynamic Type): yazılar metin stilleriyle verilir, ikon ve sabit boyutlar @ScaledMetric ile büyür.
+  # Warning: bilinen ihlal ("Bugünkü durum: uyulmuyor", REVIEW.md O10).
+  # REVIEW.md'deki `frame(width: <sayı>` önerisi alınmadı: ARCHITECTURE.md 8 dokunma alanı
+  # için `.frame(width: 44, height: 44)` yazılmasını istiyor.
+  no_fixed_font_size:
+    name: "Sabit punto yasak"
+    included: '/TrendyolBenzeri/Views/'
+    regex: '\.system\(size:|\bsize:\s*\d'
+    message: "Metin stili (.headline, .caption) ya da @ScaledMetric kullanın (ARCHITECTURE.md 8)."
+    severity: warning
+
+  # 3. State management: `.previewEnvironment` store oluşturur; bu yalnızca `#Preview` bloklarında geçerli bir istisnadır.
+  # Yardımcının kendi dosyası hariç. Bugün ihlal yok: error.
+  preview_environment_only_in_previews:
+    name: ".previewEnvironment yalnızca #Preview'da"
+    included: '/TrendyolBenzeri/'
+    excluded: '/Views/Common/PreviewEnvironment\.swift$'
+    regex: '(?<!#Preview[\s\S]{0,30000})\.previewEnvironment\('
+    message: "Uygulama kodu .previewEnvironment kullanmaz; yalnızca #Preview blokları (ARCHITECTURE.md 3)."
+    severity: error
+
+  # 9. Testler: testler ve test yardımcıları DispatchQueue ya da sleep ile beklemez; async/await kullanır.
+  # Warning: bilinen ihlal. `HomeViewModelTests` `Task.sleep` ve `DispatchQueue` kullanıyor
+  # ("Bugünkü durum: uyulmuyor", architect denetimi 21 Ekim 2026).
+  no_waiting_in_tests:
+    name: "Testte DispatchQueue/sleep yasak"
+    included: '/TrendyolBenzeriTests/'
+    regex: '\bDispatchQueue\b|\b(usleep|sleep)\(|\bTask\.sleep\b'
+    message: "Testler async/await ile bekler; DispatchQueue ve sleep kullanılmaz (ARCHITECTURE.md 9)."
+    severity: warning
+
+  # 2. Klasör yapısı / CLAUDE.md bileşen kuralı: ürün görseli yalnızca ProductImageView ile gösterilir (REVIEW.md lint listesi, S17).
+  # Bugün ihlal yok: error.
+  async_image_only_in_product_image_view:
+    name: "AsyncImage yalnızca ProductImageView'da"
+    included: '/TrendyolBenzeri/'
+    excluded: '/Views/Components/ProductImageView\.swift$'
+    regex: '\bAsyncImage\b'
+    message: "Ürün görseli için ProductImageView kullanın (ARCHITECTURE.md 2, CLAUDE.md)."
+    severity: error
+
+  # 6. Yerelleştirme ve para birimi: arayüz metni String olarak üretilmez (REVIEW.md lint listesi, S16).
+  # S16'nın bugünkü ihlali Networking'de (`APIError`); Views'ta ihlal yok: error.
+  no_string_localized_in_views:
+    name: "View'da String(localized:) yasak"
+    included: '/TrendyolBenzeri/Views/'
+    regex: '\bString\(localized:'
+    message: "Metni Text(\"…\") ya da LocalizedStringResource ile taşıyın; String gerekiyorsa resolved(in:) (ARCHITECTURE.md 6)."
+    severity: error
+
+  # 6. Yerelleştirme ve para birimi: sabit para birimi kodu ve sabit locale yazılmaz (REVIEW.md lint listesi, S10, S15).
+  # Para birimi ve locale yalnızca `Currency` (bugün Utilities/PriceFormatter.swift) ve
+  # `AppLanguage` içinde tanımlanır. `Currency` Models'e taşınınca istisna güncellenir.
+  # Bugün bu iki dosya dışında ihlal yok: error.
+  no_hardcoded_currency_or_locale:
+    name: "Sabit para birimi ya da locale yasak"
+    included: '/TrendyolBenzeri/'
+    excluded: '/(Utilities/PriceFormatter|Models/AppLanguage)\.swift$'
+    regex: '\.currency\(code:|"TRY"|"USD"|\bLocale\(identifier:'
+    message: "Para birimi ve locale kökteki \\.currency ve \\.locale'den gelir (ARCHITECTURE.md 6)."
+    severity: error
+
+  # 4. Yükleme ve hata durumları: hatalar print ile değil Logger ile kaydedilir (REVIEW.md lint listesi, S7).
+  # Warning: bilinen ihlal. Store'lar ve PlistStorage print kullanıyor ("Bugünkü durum: uyulmuyor", REVIEW.md S7).
+  no_print:
+    name: "print yasak"
+    included: '/TrendyolBenzeri/'
+    regex: '\bprint\('
+    message: "print yerine Logger(subsystem:category:) kullanın (ARCHITECTURE.md 4)."
+    severity: warning
