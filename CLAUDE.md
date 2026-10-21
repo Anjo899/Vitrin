@@ -18,10 +18,11 @@
 | `Networking/` | `APIClient` (generic `get`, tarih çözen `JSONDecoder.dummyJSON`), `APIError` (Türkçe hata mesajları), `ProductService` (endpoint'leri bilen tek yer) |
 | `Persistence/` | `PlistStorage`: `Codable` değerleri Documents'a plist olarak yazar ve okur |
 | `Stores/` | Paylaşılan state: `FavoritesStore`, `CartStore` |
+| `Views/` (kök) | Uygulama iskeleti: `MainTabView` |
 | `Views/<Ekran>/` | Ekran view'ları ve varsa ekranın `ViewModel`'i (`Home/`, `Categories/`, `ProductDetail/`, `Favorites/`, `Cart/`, `Settings/`) |
-| `Views/Common/` | `LoadState`, `LoadingView`, `ErrorView` |
+| `Views/Common/` | `LoadState`, `LoadingView`, `ErrorView`; önizleme yardımcısı `PreviewEnvironment` (henüz yok) |
 | `Views/Components/` | Tekrar kullanılan bileşenler (aşağıda) |
-| `Utilities/` | `PriceFormatter` (`ExchangeRate`, `Currency` ve `\.currency` environment değeri, para birimine göre tutarlar, `.discount` biçimi), `LocalizedStringResource+Locale` (`resolved(in:)`), `PreviewData` (önizleme verisi; `#Preview` blokları Release'te de derlendiği için `#if DEBUG` içine alınmaz) |
+| `Utilities/` | SwiftUI'sız yardımcılar; yalnızca Foundation import eder, Models'i kullanabilir (Models Utilities'i kullanamaz): `PriceFormatter` (para birimine göre tutarlar, `.discount` biçimi), `LocalizedStringResource+Locale` (`resolved(in:)`), `PreviewData` (önizleme verisi ve `PlistStorage.preview`; `#Preview` blokları Release'te de derlendiği için `#if DEBUG` içine alınmaz). Bugünkü durum: `PriceFormatter` SwiftUI import ediyor ve `Currency`, `ExchangeRate`, `roundedToCents` ile `\.currency` environment değerini de içeriyor; hedef yerleri Models ve `Views/` (`ARCHITECTURE.md` 1. Katmanlar) |
 
 - Akış: View → ViewModel → `ProductService` → `APIClient`. View'lar URL bilmez.
 - Projede `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor`. View, ViewModel ve store'lar MainActor'da; modeller, ağ katmanı ve `PlistStorage` `nonisolated` + `Sendable`.
