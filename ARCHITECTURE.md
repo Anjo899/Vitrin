@@ -81,7 +81,7 @@ Xcode projesi "synchronized folder" yapısında: `TrendyolBenzeri/` altına ekle
 | `Stores/` | Ekranlar arası paylaşılan state: `FavoritesStore`, `CartStore` |
 | `Views/` (kök) | Uygulama iskeleti: `MainTabView` (sekmeler ve her sekmenin `NavigationStack`'i) |
 | `Views/<Ekran>/` | Bir ekranın view'ları ve ViewModel'i: `Home/`, `Categories/`, `ProductDetail/`, `Favorites/`, `Cart/`, `Settings/` |
-| `Views/Common/` | Ekran durumları: `LoadState`, `LoadingView`, `ErrorView` |
+| `Views/Common/` | Ekran durumları: `LoadState`, `LoadingView`, `ErrorView`; önizleme yardımcısı `PreviewEnvironment` (henüz yok, bkz. 3. State management) |
 | `Views/Components/` | Birden fazla ekranda kullanılan bileşenler: `ProductGridView`, `ProductCardView` (+ `PriceView`, `RatingView`), `ProductImageView`, `StarRatingView`, `FavoriteButton` |
 | `Utilities/` | SwiftUI'sız biçimlendirme ve yardımcılar: `PriceFormatter`, `LocalizedStringResource+Locale`, `PreviewData` |
 | `Localizable.xcstrings` | Bütün arayüz metinleri |
@@ -131,8 +131,13 @@ Models/HomeViewModel.swift
 - Türetilmiş state saklanmaz, hesaplanır. Toplam adet, toplam tutar, sıralı liste, "favori mi" gibi değerler kaynak veriden (`items`) her seferinde hesaplanan özellik ya da fonksiyondur. Böylece kaynak değişince eski kalamazlar.
 - Aynı `@AppStorage` anahtarı birden fazla yerde okunursa anahtar tipin `storageKey` sabitinden gelir.
   - Bugünkü durum: uyulmuyor. Varsayılan değer (`.system`) iki yerde ayrı yazılmış; bkz. `REVIEW.md` S19.
-- **Önizlemeler:** Her önizleme, uygulamanın kökte verdiği bütün environment değerlerini (`FavoritesStore`, `CartStore`, `\.locale`, `\.currency`, tema) tek bir ortak önizleme yardımcısından alır. Kalıcılıkta `PlistStorage.preview` kullanılır (bkz. 7. Kalıcılık). Yardımcı bir SwiftUI modifier'ı olduğu için `Views/` altında durur. Önizleme yardımcısı ve `#Preview` blokları, View'ın `PlistStorage` kullanamaz kuralından yalnızca `PlistStorage.preview` için muaftır.
-  - Bugünkü durum: uyulmuyor. Ortak yardımcı yok; her önizleme environment'ı kendisi kuruyor. `HomeView` ve `FavoritesView` ("Dolu") önizlemeleri `CartStore` vermiyor ve detaya geçince çöküyor. `CategoryProductsView` ve `ProductGridView` önizlemeleri de `CartStore` vermiyor; stack'lerinde `Product` hedefi olmadığı için bugün detaya geçilmiyor ve çökmüyor. Bkz. `REVIEW.md` S20. Kendi klasörünü kuran önizlemeler için bkz. `REVIEW.md` S8.
+- **Önizlemeler:** Her önizleme, uygulamanın kökte verdiği bütün environment değerlerini tek bir ortak modifier'dan alır: `.previewEnvironment(theme:language:)`.
+  - Yer: `Views/Common/PreviewEnvironment.swift`. SwiftUI modifier'ı olduğu için `Utilities/`'te değil `Views/`'tadır; önizleme verisi (`PreviewData`) `Utilities/`'te kalır.
+  - Store'lar: `FavoritesStore` ve `CartStore`'u `PlistStorage.preview` ile verir (bkz. 7. Kalıcılık).
+  - Tema ve dil: kökteki yöntemle uygulanır: `.preferredColorScheme(theme.colorScheme)`, `.environment(\.locale, language.locale())`, `.environment(\.currency, language.currency())`.
+  - `#if DEBUG` içine alınmaz. `#Preview` blokları Release'te de derlendiği için, yardımcı DEBUG'a kapatılırsa onu kullanan her önizleme Release derlemesini kırar; bkz. `REVIEW.md` K1.
+  - Önizleme yardımcısı ve `#Preview` blokları, View'ın `PlistStorage` kullanamaz kuralından yalnızca `PlistStorage.preview` için muaftır.
+  - Bugünkü durum: uyulmuyor. `.previewEnvironment` yok; her önizleme environment'ı kendisi kuruyor. `HomeView` ve `FavoritesView` ("Dolu") önizlemeleri `CartStore` vermiyor ve detaya geçince çöküyor. `CategoryProductsView` ve `ProductGridView` önizlemeleri de `CartStore` vermiyor; stack'lerinde `Product` hedefi olmadığı için bugün detaya geçilmiyor ve çökmüyor. Bkz. `REVIEW.md` S20. Kendi klasörünü kuran önizlemeler için bkz. `REVIEW.md` S8.
 
 ```swift
 // ✅ Türetilmiş değer hesaplanır
