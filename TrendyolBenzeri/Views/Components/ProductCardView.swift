@@ -32,6 +32,8 @@ struct ProductCardView: View {
 
             PriceView(product: product)
         }
+        // Kart her zaman sütunun tamamını kaplar; genişliği içeriğe bağlı değil.
+        .frame(maxWidth: .infinity, alignment: .leading)
         .padding(8)
         .background(Color(.systemBackground), in: RoundedRectangle(cornerRadius: 12))
         .overlay {
@@ -41,35 +43,21 @@ struct ProductCardView: View {
     }
 
     private var productImage: some View {
-        AsyncImage(url: product.thumbnail) { phase in
-            switch phase {
-            case .success(let image):
-                image
-                    .resizable()
-                    .scaledToFit()
-            case .failure:
-                Image(systemName: "photo")
-                    .font(.largeTitle)
-                    .foregroundStyle(.tertiary)
-            default:
-                ProgressView()
+        // Kare alan görselin durumundan bağımsız; yüklenmese de kart küçülmez.
+        ProductImageView(url: product.thumbnail)
+            .aspectRatio(1, contentMode: .fit)
+            .overlay(alignment: .topLeading) {
+                if product.hasDiscount {
+                    Text(product.discountRate, format: .discount)
+                        .font(.caption2.bold())
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 3)
+                        // Beyaz metin için yeterli kontrast (6:1); sistem kırmızısı 3,5:1 kalıyor.
+                        .background(Color.discountBadge, in: Capsule())
+                        .padding(6)
+                }
             }
-        }
-        .frame(maxWidth: .infinity)
-        .aspectRatio(1, contentMode: .fit)
-        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 8))
-        .overlay(alignment: .topLeading) {
-            if product.hasDiscount {
-                Text(product.discountRate, format: .discount)
-                    .font(.caption2.bold())
-                    .foregroundStyle(.white)
-                    .padding(.horizontal, 6)
-                    .padding(.vertical, 3)
-                    // Beyaz metin için yeterli kontrast (6:1); sistem kırmızısı 3,5:1 kalıyor.
-                    .background(Color.discountBadge, in: Capsule())
-                    .padding(6)
-            }
-        }
     }
 }
 

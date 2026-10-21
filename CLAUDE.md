@@ -44,6 +44,7 @@
 - Önce var olan bileşen kullanılır:
   - `ProductGridView`: her ürün grid'i. Bulunduğu stack'te `Product` hedefi tanımlı olmalı.
   - `ProductCardView`, `PriceView`, `RatingView`, `StarRatingView`: kart, fiyat ve puan gösterimi.
+  - `ProductImageView`: her ürün görseli (kart, sepet satırı, detay galerisi). Doğrudan `AsyncImage` kullanılmaz. Boyutu dışarıdan verilir (`.aspectRatio(1, contentMode: .fit)` ya da `.frame(width:height:)`); yükleniyor, başarılı ve hata durumlarında alan aynı kalır. İptal edilen istek (`NSURLErrorCancelled`) hata sayılmaz, yeniden denenir; başarısız görsel view tekrar ekrana gelince yeniden istenir.
   - `FavoriteButton`: favori kalbi; arayüzde favori ekleyip çıkarmanın tek yolu.
   - `LoadingView`, `ErrorView`, `ContentUnavailableView`: yükleniyor, hata ve boş durumlar.
 - Önizlemeler `PreviewData` örneklerini ve `PlistStorage.preview`'u kullanır; gerçek favori ve sepet dosyalarına yazılmaz.
@@ -57,7 +58,7 @@
 - Commit mesajları İngilizce Conventional Commits (`feat:`, `fix:`, `refactor:`, `chore:`, `docs:`, `test:`). Her commit tek bir anlamlı adım ve kendi başına derlenir.
 - Her özellik ayrı PR. PR açıklaması Türkçe: Özet, Değişiklikler, Nasıl test edilir.
 - Özellik bitince: `PLAN.md`'de ✅ işaretlenir, test adımları verilir ve sonraki özelliğe geçmeden onay beklenir.
-- Her push ve her merge proje sahibinin açık onayıyla yapılır; bir onay yalnızca o işlem için geçerlidir.
+- Push, PR açma ve merge onay beklemeden yapılır. Çakışma ya da başarısız kontrol olursa iş durur ve raporlanır. Force push, `reset --hard`, rebase ve squash yasaktır.
 - Remote: `https://github.com/Anjo899/Vitrin`. PR'lar `gh` ile açılır.
 
 ## Build ve test
@@ -77,6 +78,30 @@ xcodebuild -project TrendyolBenzeri.xcodeproj -scheme TrendyolBenzeri \
 - Xcode'da çalıştırmak için ⌘R, testler için ⌘U.
 
 ## Agents
-Tanımlar `.claude/agents/` içinde.
-- Commit işleri `committer` agent'ı ile yapılır: `main`'de commit atmaz, dosyaları adıyla ekler (`xcuserdata`, `.DS_Store` gibi dosyaları eklemez), push yapmaz.
-- Push, PR açma ve merge işleri `pr-manager` agent'ı ile yapılır: `gh` kullanır, push ve merge'den önce açık onay ister, stacked PR'ları alttan başlayarak önce üstteki PR'ın base'ini `main`'e çevirir, sonra `gh pr merge --merge --delete-branch` ile merge eder.
+Tanımlar kullanıcı seviyesinde, `~/.claude/agents/` içinde; Vitrin'e özel kurallar bu dosyada ve agent tanımlarıyla çelişirse bu dosya geçerlidir.
+
+### `committer`
+Commit işlerini yapar; push yapmaz, PR açmaz.
+- Branch `main` ise commit atmaz; durur ve uygun branch (`feature/<ad>`, `fix/<ad>`, `chore/<ad>`) açılması gerektiğini bildirir.
+- Önce `git status --short` ve `git diff` ile değişiklikleri inceler. Görevle ilgisi olmayan değişiklikleri commit'e katmaz, raporda belirtir.
+- Dosyaları adıyla ekler (`git add <yol>`). `git add -A`, `git add .` ve `git commit -a` kullanılmaz.
+- Asla eklenmeyenler: `xcuserdata/`, `*.xcuserstate`, `.DS_Store`, `DerivedData/`, `build/`, `.swiftpm/` kullanıcı dosyaları, sırlar (`.env`, token, sertifika). `project.pbxproj` yalnızca görevle ilgili bir değişiklik varsa eklenir; emin olunmazsa eklenmez ve raporlanır.
+- Swift dosyası değiştiyse commit'ten önce "Build ve test" bölümündeki `xcodebuild … build` komutuyla derler. Derleme başarısızsa commit atmaz, hatayı bildirir.
+- Commit mesajının sonuna boş bir satır ve `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>` eklenir.
+- `--amend`, rebase, `reset --hard`, `--no-verify` ve `--force` kullanılmaz.
+- Rapor: her commit'in hash'i ve mesajı, commit dışında kalan değişiklikler, derleme sonucu.
+
+### `pr-manager`
+Push, PR açma ve merge işlerini `gh` (`/opt/homebrew/bin/gh`) ile onay beklemeden yapar; commit atmaz. Commit'lenmemiş değişiklik varsa bildirir.
+- Push: `git push -u origin <branch>`. `main`'e push yapılmaz.
+- PR açma: base, branch'in açıldığı önceki özellik branch'idir (`git log` ve `gh pr list` ile belirlenir). Base belirlenemezse ya da zincirin ilk PR'ı olmadığı hâlde `main` çıkıyorsa durur ve raporlar. PR bu branch için zaten varsa `gh pr edit` ile güncellenir.
+  - Başlık İngilizce Conventional Commits biçiminde.
+  - Açıklama Türkçe; bölümler `## Özet`, `## Değişiklikler`, `## Nasıl test edilir`. Sonuna `🤖 Generated with [Claude Code](https://claude.com/claude-code)` satırı eklenir.
+  - Komut: `gh pr create --base <base> --head <branch> --title … --body-file <dosya>`.
+- Merge: zincir `gh pr list --json number,headRefName,baseRefName` ile çıkarılır, en alttan başlanır (ilk PR'ın base'i `main`). Her PR için:
+  1. `gh pr view <no> --json state,mergeable,baseRefName,statusCheckRollup` ile kontrol edilir. Çakışma ya da başarısız kontrol varsa merge edilmez, durulur ve raporlanır.
+  2. Bu branch'i base alan üst PR varsa `gh pr edit <üst-no> --base main`, sonra `gh pr view <üst-no> --json state,baseRefName` ile açık olduğu ve base'inin `main` olduğu doğrulanır. Doğrulanamazsa merge edilmez.
+  3. `gh pr merge <no> --merge --delete-branch`. `--squash` ve `--rebase` kullanılmaz.
+  4. Merge'ün tamamlandığı doğrulanır, sonra üstteki PR'a geçilir.
+- Bir PR kapanmışsa, çakışma çıkarsa ya da bir kontrol başarısızsa durur ve raporlar. Force push, `reset --hard`, rebase ve squash yapılmaz.
+- Rapor: push edilen branch, PR linkleri, merge sonuçları ya da durma nedeni.
