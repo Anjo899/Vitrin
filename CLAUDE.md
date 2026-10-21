@@ -60,7 +60,7 @@
 - Push ve PR açmayı agent'lar onay beklemeden yapar (`pr-manager`). Merge'leri proje sahibi GitHub'da elle yapar; agent'lar merge etmez. Hoca yalnızca yönlendirir.
 - Proje sahibi için merge notu: stacked PR'lar en alttan başlayarak sırayla "Create a merge commit" ile merge edilir (squash zinciri bozar). Her merge'den önce bir üstteki PR'ın base'i `main`'e çevrilir; böylece alttaki branch silinince üstteki PR kapanmaz. Repo'da "Automatically delete head branches" açık.
 - Commit mesajları İngilizce Conventional Commits (`feat:`, `fix:`, `refactor:`, `chore:`, `docs:`, `test:`). Her commit tek bir anlamlı adım ve kendi başına derlenir.
-- Her özellik ayrı PR. PR açıklaması Türkçe: Özet, Değişiklikler, Nasıl test edilir.
+- Her özellik ayrı PR. PR açıklaması Türkçe: Özet, Değişiklikler, Nasıl test edilir, Mimari kontrol.
 - Özellik bitince: `PLAN.md`'de ✅ işaretlenir, test adımları verilir ve sonraki özelliğe geçmeden onay beklenir.
 - Çakışma ya da başarısız kontrol olursa iş durur ve raporlanır. Force push, `reset --hard`, rebase ve squash yasaktır.
 - Remote: `https://github.com/Anjo899/Vitrin`. PR'lar `gh` ile açılır.
@@ -98,9 +98,17 @@ Commit işlerini yapar; push yapmaz, PR açmaz.
 ### `pr-manager`
 Push ve PR açma işlerini `gh` (`/opt/homebrew/bin/gh`) ile onay beklemeden yapar. Merge etmez (`gh pr merge` çalıştırmaz); merge'leri proje sahibi GitHub'da yapar. Commit atmaz. Commit'lenmemiş değişiklik varsa bildirir.
 - Push: `git push -u origin <branch>`. `main`'e push yapılmaz.
+- Mimari kontrol: PR açmadan ya da güncellemeden önce ana oturum `architect`'i çalıştırır ve raporu `pr-manager`'a verir (subagent başka subagent çalıştıramaz). Rapor yoksa ya da Kritik bulgu varsa PR açılmaz, durum raporlanır. Diğer bulgular ya da "Mimariye uygun" sonucu PR açıklamasına `## Mimari kontrol` başlığıyla eklenir.
 - PR açma: base, branch'in açıldığı önceki özellik branch'idir (`git log` ve `gh pr list` ile belirlenir). Base belirlenemezse ya da zincirin ilk PR'ı olmadığı hâlde `main` çıkıyorsa durur ve raporlar. PR bu branch için zaten varsa `gh pr edit` ile güncellenir.
   - Başlık İngilizce Conventional Commits biçiminde.
-  - Açıklama Türkçe; bölümler `## Özet`, `## Değişiklikler`, `## Nasıl test edilir`. Sonuna `🤖 Generated with [Claude Code](https://claude.com/claude-code)` satırı eklenir.
+  - Açıklama Türkçe; bölümler `## Özet`, `## Değişiklikler`, `## Nasıl test edilir`, `## Mimari kontrol`. Sonuna `🤖 Generated with [Claude Code](https://claude.com/claude-code)` satırı eklenir.
   - Komut: `gh pr create --base <base> --head <branch> --title … --body-file <dosya>`.
 - Base PR'ı kapanmışsa ya da push reddedilirse durur ve raporlar. Force push, `reset --hard`, rebase ve squash yapılmaz.
-- Rapor: push edilen branch, PR linki ve merge sırası (hangi PR'ın önce merge edilmesi gerektiği) ya da durma nedeni.
+- Rapor: push edilen branch, PR linki, mimari kontrol sonucu ve merge sırası (hangi PR'ın önce merge edilmesi gerektiği) ya da durma nedeni.
+
+### `architect`
+Değişiklikleri (`git diff main...HEAD`) ya da istenirse tüm projeyi `ARCHITECTURE.md` kurallarına göre denetler. Salt okunur: hiçbir dosyayı değiştirmez.
+- Araçlar: Read, Grep, Glob ve yalnızca okuma amaçlı Bash (`git diff`, `git log`, `git status`, `git show`, `grep`, `ls`).
+- "Bugünkü durum: uyulmuyor" notlu bilinen ihlalleri yeni bulgu gibi raporlamaz; yalnızca değişiklik bu ihlali büyütüyorsa ya da yenisini ekliyorsa raporlar.
+- Kural belirsizse kendi yorumunu kural gibi sunmaz; "ARCHITECTURE.md bu konuda net değil" der.
+- Her bulgu: ihlal edilen kural (`ARCHITECTURE.md` bölüm adıyla), `dosya:satır`, neden ihlal, nasıl düzeltilir, önem (Kritik / Önemli / Küçük). İhlal yoksa "Mimariye uygun".
