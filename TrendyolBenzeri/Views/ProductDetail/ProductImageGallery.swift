@@ -15,21 +15,8 @@ struct ProductImageGallery: View {
     var body: some View {
         TabView(selection: $selectedIndex) {
             ForEach(Array(images.enumerated()), id: \.offset) { index, url in
-                AsyncImage(url: url) { phase in
-                    switch phase {
-                    case .success(let image):
-                        image
-                            .resizable()
-                            .scaledToFit()
-                    case .failure:
-                        Image(systemName: "photo")
-                            .font(.largeTitle)
-                            .foregroundStyle(.tertiary)
-                    default:
-                        ProgressView()
-                    }
-                }
-                .padding(.bottom, 32) // noktalar görselin üstüne binmesin
+                ProductImageView(url: url, cornerRadius: 0)
+                    .padding(.bottom, 32) // noktalar görselin üstüne binmesin
                 .tag(index)
             }
         }

@@ -44,6 +44,7 @@
 - Önce var olan bileşen kullanılır:
   - `ProductGridView`: her ürün grid'i. Bulunduğu stack'te `Product` hedefi tanımlı olmalı.
   - `ProductCardView`, `PriceView`, `RatingView`, `StarRatingView`: kart, fiyat ve puan gösterimi.
+  - `ProductImageView`: her ürün görseli (kart, sepet satırı, detay galerisi). Doğrudan `AsyncImage` kullanılmaz. Boyutu dışarıdan verilir (`.aspectRatio(1, contentMode: .fit)` ya da `.frame(width:height:)`); yükleniyor, başarılı ve hata durumlarında alan aynı kalır. İptal edilen istek (`NSURLErrorCancelled`) hata sayılmaz, yeniden denenir; başarısız görsel view tekrar ekrana gelince yeniden istenir.
   - `FavoriteButton`: favori kalbi; arayüzde favori ekleyip çıkarmanın tek yolu.
   - `LoadingView`, `ErrorView`, `ContentUnavailableView`: yükleniyor, hata ve boş durumlar.
 - Önizlemeler `PreviewData` örneklerini ve `PlistStorage.preview`'u kullanır; gerçek favori ve sepet dosyalarına yazılmaz.

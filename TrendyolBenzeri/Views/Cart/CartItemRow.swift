@@ -49,18 +49,8 @@ struct CartItemRow: View {
     }
 
     private var thumbnail: some View {
-        AsyncImage(url: item.product.thumbnail) { phase in
-            if let image = phase.image {
-                image
-                    .resizable()
-                    .scaledToFit()
-            } else {
-                Image(systemName: "photo")
-                    .foregroundStyle(.tertiary)
-            }
-        }
-        .frame(width: 72, height: 72)
-        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 8))
+        ProductImageView(url: item.product.thumbnail)
+            .frame(width: 72, height: 72)
     }
 
     private var quantityControls: some View {
