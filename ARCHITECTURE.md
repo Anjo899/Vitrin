@@ -43,7 +43,9 @@ Diyagram ana akışı gösterir; her katmanın doğrudan kullanabildikleri aşa�
     - Notta geçmeyen yerler: `Models/CartItem.swift` ve `Models/Product.swift` `Utilities/`'teki `Currency` ve `roundedToCents`'e, `Models/AppLanguage.swift` (`currency()`) ve `Stores/CartStore.swift` `Currency`'ye bağlı. Tabloya göre Models yalnızca Foundation'ı, Stores yalnızca `PlistStorage` ve Models'i kullanabilir. Bu tipler Models'e taşınınca (aşağıdaki kural) Models → Utilities bağımlılığı kalkar, `CartStore`'unki de kurala uyar.
 - Para birimi tipleri Models'te durur: `Currency`, `ExchangeRate` ve ikisinin de kullandığı `Double.roundedToCents` yalnızca Foundation kullanır. Bağımlılık tek yönlüdür: Utilities → Models serbest, Models → Utilities yasak.
   - Bugünkü durum: uyulmuyor. Üçü de `Utilities/PriceFormatter.swift`'te; `Product`, `CartItem` ve `AppLanguage.currency()` bunlar için Utilities'e bağlı. Bkz. `REVIEW.md` S12.
-- `Utilities/` framework olarak yalnızca Foundation import eder; SwiftUI import etmez. Proje içinden Models'i, önizleme verisi için (`PreviewData`'daki `PlistStorage.preview`) `PlistStorage`'ı kullanabilir. Locale ve para birimini parametre olarak alır (`resolved(in: locale)`, `price(in: currency)`); `AppLanguage`'ı ya da environment'ı kendisi okumaz. Hangi dilin ve para biriminin geçerli olduğuna View karar verir ve parametreyle iletir.
+- Fiyat hesapları Models'te, ilgili tipin üzerinde durur: `Product.price(in:)`, `discountedPrice(in:)`, `discountRate`, `CartItem.lineTotal(in:)`. Para birimini ve kuru parametre olarak alır (`Currency`, `ExchangeRate`); hangi para biriminin geçerli olduğunu kendisi seçmez.
+  - Bugünkü durum: uyulmuyor. `Product.price(in:)`, `discountedPrice(in:)` ve `discountRate` `Utilities/PriceFormatter.swift`'te; bkz. `REVIEW.md` S12.
+- `Utilities/` framework olarak yalnızca Foundation import eder; SwiftUI import etmez. Proje içinden Models'i, önizleme verisi için (`PreviewData`'daki `PlistStorage.preview`) `PlistStorage`'ı kullanabilir. Locale'i ve para birimini parametre olarak alır (ör. `resolved(in: locale)`); `AppLanguage`'ı ya da environment'ı kendisi okumaz. Hangi dilin ve para biriminin geçerli olduğuna View karar verir ve parametreyle iletir.
   - Bugünkü durum: uyulmuyor. `Utilities/PriceFormatter.swift` SwiftUI import ediyor ve `\.currency` environment anahtarını (`@Entry`) tanımlıyor; anahtar `Views/` altına taşınmalı. Bkz. `REVIEW.md` S12, architect denetimi, 21 Ekim 2026.
 
 ```swift
@@ -79,7 +81,7 @@ Xcode projesi "synchronized folder" yapısında: `TrendyolBenzeri/` altına ekle
 
 | Klasör | İçerik |
 | --- | --- |
-| `Models/` | `Codable` veri tipleri ve onların saf hesapları: `Product`, `Review`, `ProductsResponse`, `ProductCategory` (+ `+Display`), `CartItem`, `AppTheme`, `AppLanguage`; para birimi tipleri `Currency`, `ExchangeRate` (bugün `Utilities/PriceFormatter.swift`'te, bkz. 1. Katmanlar) |
+| `Models/` | `Codable` veri tipleri ve onların saf hesapları: `Product`, `Review`, `ProductsResponse`, `ProductCategory` (+ `+Display`), `CartItem`, `AppTheme`, `AppLanguage`; para birimi tipleri `Currency`, `ExchangeRate`, `roundedToCents` ve `Product`'ın fiyat hesapları (bugün `Utilities/PriceFormatter.swift`'te, bkz. 1. Katmanlar) |
 | `Networking/` | `APIClient`, `APIError`, `ProductService` |
 | `Persistence/` | `PlistStorage` |
 | `Stores/` | Ekranlar arası paylaşılan state: `FavoritesStore`, `CartStore` |
@@ -87,7 +89,7 @@ Xcode projesi "synchronized folder" yapısında: `TrendyolBenzeri/` altına ekle
 | `Views/<Ekran>/` | Bir ekranın view'ları ve ViewModel'i: `Home/`, `Categories/`, `ProductDetail/`, `Favorites/`, `Cart/`, `Settings/` |
 | `Views/Common/` | Ekran durumları: `LoadState`, `LoadingView`, `ErrorView`; önizleme yardımcısı `PreviewEnvironment` (henüz yok, bkz. 3. State management) |
 | `Views/Components/` | Birden fazla ekranda kullanılan bileşenler: `ProductGridView`, `ProductCardView` (+ `PriceView`, `RatingView`), `ProductImageView`, `StarRatingView`, `FavoriteButton` |
-| `Utilities/` | SwiftUI'sız biçimlendirme ve yardımcılar: `PriceFormatter`, `LocalizedStringResource+Locale`, `PreviewData` |
+| `Utilities/` | SwiftUI'sız biçimlendirme ve yardımcılar: `PriceFormatter` (hedefte yalnızca `.discount` biçimi), `LocalizedStringResource+Locale`, `PreviewData` |
 | `Localizable.xcstrings` | Bütün arayüz metinleri |
 | `TrendyolBenzeriTests/` | Unit testler; `TestHelpers.swift` ortak örnekleri verir |
 
@@ -130,14 +132,15 @@ Models/HomeViewModel.swift
 
 **Kurallar**
 - Store'lar yalnızca `TrendyolBenzeriApp` içinde bir kez oluşturulur; view'lar `@Environment(CartStore.self)` ile okur. View içinde yeni store oluşturulmaz.
+  - Yazılı istisna: `.previewEnvironment` önizleme için store örneği oluşturur. İstisna yalnızca `#Preview` bloklarında geçerlidir; uygulama kodu `.previewEnvironment`'ı kullanmaz.
 - ViewModel `@Observable final class`'tır; durumu `private(set) var` ile dışarıya salt okunur verir, bağımlılıkları `@ObservationIgnored` tutar.
 - ViewModel bir parametreye bağlıysa init'te `_viewModel = State(initialValue: …)` ile kurulur. Init hafif tutulur; istek `.task`'ta başlar.
 - Türetilmiş state saklanmaz, hesaplanır. Toplam adet, toplam tutar, sıralı liste, "favori mi" gibi değerler kaynak veriden (`items`) her seferinde hesaplanan özellik ya da fonksiyondur. Böylece kaynak değişince eski kalamazlar.
 - Aynı `@AppStorage` anahtarı birden fazla yerde okunursa anahtar tipin `storageKey` sabitinden gelir.
   - Bugünkü durum: uyulmuyor. Varsayılan değer (`.system`) iki yerde ayrı yazılmış; bkz. `REVIEW.md` S19.
-- **Önizlemeler:** Her önizleme, uygulamanın kökte verdiği bütün environment değerlerini tek bir ortak modifier'dan alır: `.previewEnvironment(theme:language:)`.
+- **Önizlemeler:** Her önizleme, uygulamanın kökte verdiği bütün environment değerlerini tek bir ortak modifier'dan alır: `.previewEnvironment(theme:language:)`. Varsayılanlar `theme: .system`, `language: .turkish`; önizleme cihaz dilinden bağımsız olarak Türkçe açılır, başka dil ya da tema parametreyle verilir.
   - Yer: `Views/Common/PreviewEnvironment.swift`. SwiftUI modifier'ı olduğu için `Utilities/`'te değil `Views/`'tadır; önizleme verisi (`PreviewData`) `Utilities/`'te kalır.
-  - Store'lar: `FavoritesStore` ve `CartStore`'u `PlistStorage.preview` ile verir (bkz. 7. Kalıcılık).
+  - Store'lar: `FavoritesStore` ve `CartStore` örneklerini `PlistStorage.preview` ile oluşturup verir (bkz. 7. Kalıcılık ve yukarıdaki store istisnası).
   - Tema ve dil: kökteki yöntemle uygulanır: `.preferredColorScheme(theme.colorScheme)`, `.environment(\.locale, language.locale())`, `.environment(\.currency, language.currency())`.
   - `#if DEBUG` içine alınmaz. `#Preview` blokları Release'te de derlendiği için, yardımcı DEBUG'a kapatılırsa onu kullanan her önizleme Release derlemesini kırar; bkz. `REVIEW.md` K1.
   - Önizleme yardımcısı ve `#Preview` blokları, View'ın `PlistStorage` kullanamaz kuralından yalnızca `PlistStorage.preview` için muaftır.
@@ -278,7 +281,7 @@ DispatchQueue.main.async { self.state = .loaded(products) }
 
 **Fiyatlar**
 - API dolar verir. Türkçede sabit kurla (`ExchangeRate.usdToTry` = 45) TL, İngilizcede dolar gösterilir.
-- Fiyatlar tek bir yerden hesaplanır ve biçimlenir (`Utilities/PriceFormatter.swift`): view `@Environment(\.currency)` okur, tutarı `price(in:)` / `discountedPrice(in:)` / `lineTotal(in:)` / `totalPrice(in:)` ile alır ve `Text(tutar, format: currency.format)` ile gösterir.
+- Tutarlar Models'teki fiyat hesaplarından gelir: `Product.price(in:)`, `discountedPrice(in:)`, `CartItem.lineTotal(in:)`; sepet toplamı `CartStore.totalPrice(in:)`. View `@Environment(\.currency)` okur, tutarı bunlarla alır ve `Text(tutar, format: currency.format)` ile gösterir. Bugün bir kısmı `Utilities/PriceFormatter.swift`'te; bkz. 1. Katmanlar.
 - Satır toplamı görünen birim fiyat × adet, sepet toplamı görünen satırların toplamıdır; kuruşa yuvarlanır.
 - İndirim rozeti `Text(product.discountRate, format: .discount)`.
 - Elle biçimlendirme, sabit para birimi kodu ve sabit locale yazılmaz.
