@@ -35,6 +35,7 @@ Bağımlılık her zaman soldan sağa doğrudur: bir katman yalnızca kendinden 
 - Dosyaya yalnızca store'lar `PlistStorage` ile yazar.
 - `Models/`, `Networking/`, `Persistence/` ve `Stores/` SwiftUI import etmez. SwiftUI'a ait şeyler (environment anahtarları, `ColorScheme`) `Views/` ya da `Utilities/` altında durur.
   - Bugünkü durum: uyulmuyor. `Models/AppTheme.swift` `ColorScheme` için SwiftUI import ediyor. `Utilities/PriceFormatter.swift` hem SwiftUI import ediyor hem de `Product`'ın fiyat hesaplarını içeriyor; bkz. `REVIEW.md` S12.
+    - Notta geçmeyen yerler: `Models/CartItem.swift` ve `Models/Product.swift` `Utilities/`'teki `Currency` ve `roundedToCents`'e, `Stores/CartStore.swift` `Currency`'ye bağlı. Tabloya göre Models yalnızca Foundation'ı, Stores yalnızca `PlistStorage` ve Models'i kullanabilir.
 
 ```swift
 // ✅ View, ViewModel üzerinden ister
@@ -290,6 +291,7 @@ Text(product.price, format: .currency(code: "USD"))
 - Dosya yoksa (ilk açılış) store boş başlar.
 - Dosya çözülemezse (bozuk ya da eski biçim) store boş başlar ve dosya `<ad>.plist.corrupt` olarak kenara alınır; böylece ilk kayıt eski veriyi ezmez.
 - Testler ve önizlemeler gerçek dosyalara yazmaz: testler `PlistStorage.temporary()`, önizlemeler `PlistStorage.preview` kullanır.
+  - Bugünkü durum: uyulmuyor. `PlistStorage.preview` her çağrıda aynı geçici klasörü veriyor, bu yüzden önizlemeler arasında veri birikiyor. `Views/Cart/CartView.swift` (iki önizleme) ve `Views/Favorites/FavoritesView.swift` `.preview` yerine `PlistStorage(directory:)` ile kendi klasörünü kuruyor; klasörü oluşturmadıkları için kayıt sessizce başarısız oluyor. Bkz. `REVIEW.md` S8.
 - Plist'e API modeli (`Product`) değil, sürümlü ve küçük bir kayıt tipi (id, adet) yazılır; ürün bilgisi açılışta API'den tazelenir. Şema değişince göç ya da yedek zorunludur.
   - Bugünkü durum: uyulmuyor. Plist'te `Product`'ın tamamı saklanıyor ve tazelenmiyor; ikinci bozulmada eski `.corrupt` yedeği siliniyor; bkz. `REVIEW.md` O2, O3, S18.
 
@@ -319,11 +321,14 @@ let store = CartStore()
   - Anlam taşıyan renkler Assets'ten, Xcode'un ürettiği adlarla gelir: `.discountBadge`, `.stockAvailable`, `.stockLow`, `.stockOut`, `.brandAccent`. Metin ya da dolgu için `.green`, `.red`, `.orange` gibi sistem renkleri kullanılmaz.
   - Bilgi yalnızca renkle verilmez; yanında metin ya da ikon olur.
   - Bugünkü durum: uyulmuyor. "Sepete Eklendi" butonu `.green` üzerinde beyaz yazı kullanıyor (≈2:1); bkz. `REVIEW.md` O12.
+  - Bugünkü durum: uyulmuyor. Puan yıldızları `.orange` ile çiziliyor (`Views/Components/StarRatingView.swift`, `Views/Components/ProductCardView.swift`); sistem turuncusu açık temada beyaz zeminde ≈2,2:1. Değerlendirme satırlarında puanı gösteren tek şey bu yıldızlar. Bkz. architect denetimi, 21 Ekim 2026.
 - **Dokunma alanı:** Her dokunulabilir öğe en az 44×44 pt'dir. Görünen şekil küçükse alan `.frame(width: 44, height: 44)` + `.contentShape(Rectangle())` ile büyütülür (`FavoriteButton`, sepet adet butonları).
 - **VoiceOver:** Yalnızca ikondan oluşan butonların etiketi vardır; tekrar eden butonların (kalp, adet) etiketi ürün adını içerir; dekoratif görseller gizlenir.
   - Bugünkü durum: kısmen uyuluyor. Kalp etiketi ürün adını içermiyor, kart tek öğe değil; bkz. `REVIEW.md` O9.
+    - Notta geçmeyen yerler: sepet adet butonlarının etiketi ürün adını içermiyor ve adet değeri bağlamsız okunuyor (`Views/Cart/CartItemRow.swift`); başarıyla yüklenen ürün görseli ne etiketli ne gizli (`Views/Components/ProductImageView.swift`).
 - **Dynamic Type:** Yazılar metin stilleriyle (`.headline`, `.caption`) verilir; ikon ve sabit boyutlar `@ScaledMetric` ile büyür.
   - Bugünkü durum: uyulmuyor. `.system(size:)` ve sabit çerçeveler var; bkz. `REVIEW.md` O10.
+    - Notta geçmeyen yerler: `.system(size:)` `FavoriteButton` ve `StarRatingView`'da; sabit boyutlar `StarRatingView`, `CartItemRow` ve `ProductImageGallery`'de; `StarRatingView`'a sabit `size:` veren çağrılar `ProductDetailView` ve `ReviewRowView`'da.
 
 ```swift
 // ✅ 44 pt dokunma alanı, Assets rengi, etiket
