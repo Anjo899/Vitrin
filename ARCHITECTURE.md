@@ -16,11 +16,14 @@ View ─→ ViewModel ─→ ProductService ─→ Networking (APIClient) ─→
  ├─(environment)─→ Stores ─→ Persistence (PlistStorage) ───────────┤
  │                                                                 │
  └─→ Utilities ────────────────────────────────────────────────────┘
+        └┄→ Persistence (yalnızca PlistStorage.preview)
 ```
 
 Ok, kullanan katmandan kullanılan katmana doğrudur (`A ─→ B`: A, B'yi kullanır). Bağımlılık her zaman soldan sağa akar: bir katman yalnızca sağındaki katmanları bilir, solundakini bilmez. En sağdaki Models hiçbir katmanı bilmez. Store'lar ağ katmanını değil, kalıcılık katmanını kullanır.
 
-Diyagram ana akışı gösterir; her katmanın doğrudan kullanabildikleri aşağıdaki tablodadır (ör. ViewModel ve Stores Models'i doğrudan kullanır). Utilities → Persistence yalnızca önizleme verisi (`PlistStorage.preview`) içindir.
+Diyagram ana akışı gösterir; her katmanın doğrudan kullanabildikleri aşağıdaki tablodadır (ör. ViewModel ve Stores Models'i doğrudan kullanır). Kesikli ok (`┄→`) yalnızca önizleme verisi içindir: Utilities, `PlistStorage.preview` için Persistence'ı kullanır.
+
+Tek istisna `LoadState`: `Views/Common/`'ta, yani View katmanında durur ama SwiftUI'sız bir enum'dur ve ViewModel'in kullanabildiği tek View katmanı tipidir (tabloda ViewModel satırı).
 
 | Katman | Klasör | Kullanabilir | Kullanamaz |
 | --- | --- | --- | --- |
@@ -40,8 +43,13 @@ Diyagram ana akışı gösterir; her katmanın doğrudan kullanabildikleri aşa�
 - Dosyaya yalnızca store'lar `PlistStorage` ile yazar.
 - `Models/`, `Networking/`, `Persistence/`, `Stores/` ve `Utilities/` SwiftUI import etmez. SwiftUI'a ait şeyler (environment anahtarları, `ColorScheme`) `Views/` altında durur.
   - Bugünkü durum: uyulmuyor. `Models/AppTheme.swift` `ColorScheme` için SwiftUI import ediyor. `Utilities/PriceFormatter.swift` hem SwiftUI import ediyor hem de `Product`'ın fiyat hesaplarını içeriyor; bkz. `REVIEW.md` S12.
-    - Notta geçmeyen yerler: `Models/CartItem.swift` ve `Models/Product.swift` `Utilities/`'teki `Currency` ve `roundedToCents`'e, `Models/AppLanguage.swift` (`currency()`) ve `Stores/CartStore.swift` `Currency`'ye bağlı. Tabloya göre Models yalnızca Foundation'ı, Stores yalnızca `PlistStorage` ve Models'i kullanabilir. Bu tipler Models'e taşınınca (aşağıdaki kural) Models → Utilities bağımlılığı kalkar, `CartStore`'unki de kurala uyar.
-- Para birimi tipleri Models'te durur: `Currency`, `ExchangeRate` ve ikisinin de kullandığı `Double.roundedToCents` yalnızca Foundation kullanır. Bağımlılık tek yönlüdür: Utilities → Models serbest, Models → Utilities yasak.
+    - Notta geçmeyen yerler: `Utilities/`'teki tiplere bağlı olanlar:
+      - `Models/Product.swift`: `roundedToCents` (`discountedPrice`).
+      - `Models/CartItem.swift`: `Currency` ve `roundedToCents`.
+      - `Models/AppLanguage.swift`: `Currency` (`currency()`).
+      - `Stores/CartStore.swift`: `Currency` ve `roundedToCents` (`totalPrice(in:)`).
+      - Tabloya göre Models yalnızca Foundation'ı, Stores yalnızca `PlistStorage` ve Models'i kullanabilir. Bu tipler Models'e taşınınca (aşağıdaki kural) Models → Utilities bağımlılığı kalkar, `CartStore`'unki de kurala uyar.
+- Para birimi tipleri Models'te durur: `Currency`, `ExchangeRate` ve `Double.roundedToCents` (`Currency`, `Product`, `CartItem` ve `CartStore` kullanır) yalnızca Foundation kullanır. Bağımlılık tek yönlüdür: Utilities → Models serbest, Models → Utilities yasak.
   - Bugünkü durum: uyulmuyor. Üçü de `Utilities/PriceFormatter.swift`'te; `Product`, `CartItem` ve `AppLanguage.currency()` bunlar için Utilities'e bağlı. Bkz. `REVIEW.md` S12.
 - Fiyat hesapları Models'te, ilgili tipin üzerinde durur: `Product.price(in:)`, `discountedPrice(in:)`, `discountRate`, `CartItem.lineTotal(in:)`. Para birimini ve kuru parametre olarak alır (`Currency`, `ExchangeRate`); hangi para biriminin geçerli olduğunu kendisi seçmez.
   - Bugünkü durum: uyulmuyor. `Product.price(in:)`, `discountedPrice(in:)` ve `discountRate` `Utilities/PriceFormatter.swift`'te; bkz. `REVIEW.md` S12.
@@ -87,7 +95,7 @@ Xcode projesi "synchronized folder" yapısında: `TrendyolBenzeri/` altına ekle
 | `Stores/` | Ekranlar arası paylaşılan state: `FavoritesStore`, `CartStore` |
 | `Views/` (kök) | Uygulama iskeleti: `MainTabView` (sekmeler ve her sekmenin `NavigationStack`'i) |
 | `Views/<Ekran>/` | Bir ekranın view'ları ve ViewModel'i: `Home/`, `Categories/`, `ProductDetail/`, `Favorites/`, `Cart/`, `Settings/` |
-| `Views/Common/` | Ekran durumları: `LoadState`, `LoadingView`, `ErrorView`; önizleme yardımcısı `PreviewEnvironment` (henüz yok, bkz. 3. State management) |
+| `Views/Common/` | Ekranlar arası ortak, ekrana ait olmayan parçalar: ekran durumları (`LoadState`, `LoadingView`, `ErrorView`) ve önizleme yardımcısı `PreviewEnvironment` (henüz yok, bkz. 3. State management) |
 | `Views/Components/` | Birden fazla ekranda kullanılan bileşenler: `ProductGridView`, `ProductCardView` (+ `PriceView`, `RatingView`), `ProductImageView`, `StarRatingView`, `FavoriteButton` |
 | `Utilities/` | SwiftUI'sız biçimlendirme ve yardımcılar: `PriceFormatter` (hedefte yalnızca `.discount` biçimi), `LocalizedStringResource+Locale`, `PreviewData` |
 | `Localizable.xcstrings` | Bütün arayüz metinleri |
@@ -108,7 +116,7 @@ Xcode projesi "synchronized folder" yapısında: `TrendyolBenzeri/` altına ekle
 | Kullanıcı ayarı (tema, dil gibi) | `Models/App<Ad>.swift` (enum) + `@AppStorage` |
 | Test | `TrendyolBenzeriTests/<Konu>Tests.swift` |
 
-`MainTabView` neden `Views/` kökünde? Tek bir ekran değil, bütün ekranları kapsar; bu yüzden `Views/<Ekran>/` klasörlerinden birine ait değil. Bir ekran durumu olmadığı için `Views/Common/`'a, yeniden kullanılan bir bileşen olmadığı için (view'u yalnızca `TrendyolBenzeriApp` kullanır; `MainTabView.Tab` tipini `FavoritesView` ve `CartView` da kullanır) `Views/Components/`'a da uymaz. `TrendyolBenzeriApp`'in uygulama kökünde durması gibi, `MainTabView` da view'ların kökünde durur. `MainTabView.Tab` aynı dosyada kalır.
+`MainTabView` neden `Views/` kökünde? Tek bir ekran değil, bütün ekranları kapsar; bu yüzden `Views/<Ekran>/` klasörlerinden birine ait değil. Ekran durumu ya da önizleme yardımcısı gibi ortak bir parça değil, bütün ekranları bir araya getiren iskelet olduğu için `Views/Common/`'a, yeniden kullanılan bir bileşen olmadığı için (view'u yalnızca `TrendyolBenzeriApp` kullanır; `MainTabView.Tab` tipini `FavoritesView` ve `CartView` da kullanır) `Views/Components/`'a da uymaz. `TrendyolBenzeriApp`'in uygulama kökünde durması gibi, `MainTabView` da view'ların kökünde durur. `MainTabView.Tab` aynı dosyada kalır.
 
 ```
 // ✅ Sepet satırı yalnızca Sepet ekranında kullanılıyor
@@ -314,7 +322,7 @@ Text(product.price, format: .currency(code: "USD"))
 - Dosya yoksa (ilk açılış) store boş başlar.
 - Dosya çözülemezse (bozuk ya da eski biçim) store boş başlar ve dosya `<ad>.plist.corrupt` olarak kenara alınır; böylece ilk kayıt eski veriyi ezmez.
 - Testler ve önizlemeler gerçek dosyalara yazmaz: testler `PlistStorage.temporary()`, önizlemeler `PlistStorage.preview` kullanır.
-  - Bugünkü durum: uyulmuyor. `PlistStorage.preview` her çağrıda aynı geçici klasörü veriyor, bu yüzden önizlemeler arasında veri birikiyor. `Views/Cart/CartView.swift` (iki önizleme) ve `Views/Favorites/FavoritesView.swift` ("Boş" önizlemesi) `.preview` yerine `PlistStorage(directory:)` ile kendi klasörünü kuruyor; klasörü oluşturmadıkları için kayıt sessizce başarısız oluyor. Bkz. `REVIEW.md` S8.
+  - Bugünkü durum: uyulmuyor. `PlistStorage.preview` her çağrıda aynı geçici klasörü veriyor, bu yüzden önizlemeler arasında veri birikiyor. `Views/Cart/CartView.swift` ("Dolu" ve "Boş") ve `Views/Favorites/FavoritesView.swift` ("Boş") önizlemeleri `.preview` yerine `PlistStorage(directory:)` ile UUID'li bir klasör yolu veriyor ama klasörü oluşturmuyor. Kayıt yalnızca `CartView` "Dolu" önizlemesinde deneniyor ve başarısız oluyor; hata `CartStore`'da `print` ediliyor. Bkz. `REVIEW.md` S8.
 - Plist'e API modeli (`Product`) değil, sürümlü ve küçük bir kayıt tipi (id, adet) yazılır; ürün bilgisi açılışta API'den tazelenir. Şema değişince göç ya da yedek zorunludur.
   - Bugünkü durum: uyulmuyor. Plist'te `Product`'ın tamamı saklanıyor ve tazelenmiyor; ikinci bozulmada eski `.corrupt` yedeği siliniyor; bkz. `REVIEW.md` O2, O3, S18.
 
