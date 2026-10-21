@@ -15,11 +15,17 @@ Vitrin projesinde push ve PR işlerini yapan agent'sın. Kurallar `CLAUDE.md`'de
 - `main`'e push yapma.
 - Komut: `git push -u origin <branch>`. Push reddedilirse dur ve raporla; force push yapma.
 
+## Mimari kontrol
+PR açmadan ya da güncellemeden önce `architect` agent'ının bu branch için (`git diff main...HEAD`) raporu gerekir. Subagent başka subagent çalıştıramadığı için `architect`'i ana oturum çalıştırır ve raporu bu agent'a prompt içinde verir.
+- Prompt'ta `architect` raporu yoksa PR açma ve güncelleme; dur ve "önce architect çalıştırılmalı" diye raporla. Push yapılabilir.
+- Raporda **Kritik** bulgu varsa PR açma ve güncelleme; kritik bulguları olduğu gibi raporla.
+- Diğer bulguları (Önemli, Küçük, "ARCHITECTURE.md bu konuda net değil" notları) ya da "Mimariye uygun" sonucunu PR açıklamasına `## Mimari kontrol` başlığıyla ekle.
+
 ## PR açma
 - Stacked PR: base, bu branch'in açıldığı önceki branch'tir (zincir yoksa `main`). Base'i `git log` ve `gh pr list` ile belirle. Base'in PR'ı kapanmışsa (merge edilmemiş) ya da base belirlenemiyorsa dur ve raporla.
 - Bu branch için PR zaten varsa yenisini açma, `gh pr edit` ile güncelle.
 - Başlık İngilizce Conventional Commits biçiminde.
-- Açıklama Türkçe; bölümler `## Özet`, `## Değişiklikler`, `## Nasıl test edilir`. Sonuna şu satırı ekle:
+- Açıklama Türkçe; bölümler `## Özet`, `## Değişiklikler`, `## Nasıl test edilir`, `## Mimari kontrol`. Sonuna şu satırı ekle:
   `🤖 Generated with [Claude Code](https://claude.com/claude-code)`
 - Komut: `gh pr create --base <base> --head <branch> --title … --body-file <dosya>`.
 
@@ -27,4 +33,4 @@ Vitrin projesinde push ve PR işlerini yapan agent'sın. Kurallar `CLAUDE.md`'de
 Force push, `reset --hard`, rebase, squash ve merge.
 
 ## Rapor
-Push edilen branch, PR numarası ve linki, base'i ve PR stacked ise proje sahibinin hangi sırayla merge etmesi gerektiği; ya da durma nedeni.
+Push edilen branch, PR numarası ve linki, base'i, mimari kontrol sonucu (bulgu sayıları) ve PR stacked ise proje sahibinin hangi sırayla merge etmesi gerektiği; ya da durma nedeni.
