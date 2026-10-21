@@ -20,7 +20,7 @@ Bağımlılık her zaman soldan sağa doğrudur: bir katman yalnızca kendinden 
 
 | Katman | Klasör | Kullanabilir | Kullanamaz |
 | --- | --- | --- | --- |
-| Models | `Models/` | Foundation | Diğer bütün katmanlar, SwiftUI |
+| Models | `Models/` | Foundation | Diğer bütün katmanlar (Utilities dahil), SwiftUI |
 | API client | `Networking/APIClient.swift`, `APIError.swift` | Models | Servis, store, ViewModel, View |
 | Service | `Networking/ProductService.swift` | `APIClient`, Models | Store, ViewModel, View |
 | Persistence | `Persistence/` | Models | Ağ, store, ViewModel, View |
@@ -36,7 +36,9 @@ Bağımlılık her zaman soldan sağa doğrudur: bir katman yalnızca kendinden 
 - Dosyaya yalnızca store'lar `PlistStorage` ile yazar.
 - `Models/`, `Networking/`, `Persistence/`, `Stores/` ve `Utilities/` SwiftUI import etmez. SwiftUI'a ait şeyler (environment anahtarları, `ColorScheme`) `Views/` altında durur.
   - Bugünkü durum: uyulmuyor. `Models/AppTheme.swift` `ColorScheme` için SwiftUI import ediyor. `Utilities/PriceFormatter.swift` hem SwiftUI import ediyor hem de `Product`'ın fiyat hesaplarını içeriyor; bkz. `REVIEW.md` S12.
-    - Notta geçmeyen yerler: `Models/CartItem.swift` ve `Models/Product.swift` `Utilities/`'teki `Currency` ve `roundedToCents`'e, `Models/AppLanguage.swift` (`currency()`) ve `Stores/CartStore.swift` `Currency`'ye bağlı. Tabloya göre Models yalnızca Foundation'ı, Stores yalnızca `PlistStorage` ve Models'i kullanabilir. Utilities de Models'i kullandığı için iki katman bugün birbirine bağlı.
+    - Notta geçmeyen yerler: `Models/CartItem.swift` ve `Models/Product.swift` `Utilities/`'teki `Currency` ve `roundedToCents`'e, `Models/AppLanguage.swift` (`currency()`) ve `Stores/CartStore.swift` `Currency`'ye bağlı. Tabloya göre Models yalnızca Foundation'ı, Stores yalnızca `PlistStorage` ve Models'i kullanabilir. Bu tipler Models'e taşınınca (aşağıdaki kural) Models → Utilities bağımlılığı kalkar, `CartStore`'unki de kurala uyar.
+- Para birimi tipleri Models'te durur: `Currency`, `ExchangeRate` ve ikisinin de kullandığı `Double.roundedToCents` yalnızca Foundation kullanır. Bağımlılık tek yönlüdür: Utilities → Models serbest, Models → Utilities yasak.
+  - Bugünkü durum: uyulmuyor. Üçü de `Utilities/PriceFormatter.swift`'te; `Product`, `CartItem` ve `AppLanguage.currency()` bunlar için Utilities'e bağlı. Bkz. `REVIEW.md` S12.
 - `Utilities/` framework olarak yalnızca Foundation import eder; SwiftUI import etmez. Proje içinden Models'i, önizleme verisi için (`PreviewData`'daki `PlistStorage.preview`) `PlistStorage`'ı kullanabilir. Locale ve para birimini parametre olarak alır (`resolved(in: locale)`, `price(in: currency)`); `AppLanguage`'ı ya da environment'ı kendisi okumaz. Hangi dilin ve para biriminin geçerli olduğuna View karar verir ve parametreyle iletir.
   - Bugünkü durum: uyulmuyor. `Utilities/PriceFormatter.swift` SwiftUI import ediyor ve `\.currency` environment anahtarını (`@Entry`) tanımlıyor; anahtar `Views/` altına taşınmalı. Bkz. `REVIEW.md` S12, architect denetimi, 21 Ekim 2026.
 
@@ -73,7 +75,7 @@ Xcode projesi "synchronized folder" yapısında: `TrendyolBenzeri/` altına ekle
 
 | Klasör | İçerik |
 | --- | --- |
-| `Models/` | `Codable` veri tipleri ve onların saf hesapları: `Product`, `Review`, `ProductsResponse`, `ProductCategory` (+ `+Display`), `CartItem`, `AppTheme`, `AppLanguage` |
+| `Models/` | `Codable` veri tipleri ve onların saf hesapları: `Product`, `Review`, `ProductsResponse`, `ProductCategory` (+ `+Display`), `CartItem`, `AppTheme`, `AppLanguage`; para birimi tipleri `Currency`, `ExchangeRate` (bugün `Utilities/PriceFormatter.swift`'te, bkz. 1. Katmanlar) |
 | `Networking/` | `APIClient`, `APIError`, `ProductService` |
 | `Persistence/` | `PlistStorage` |
 | `Stores/` | Ekranlar arası paylaşılan state: `FavoritesStore`, `CartStore` |
