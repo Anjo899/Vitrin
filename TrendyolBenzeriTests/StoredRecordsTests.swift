@@ -126,6 +126,16 @@ struct StoredRecordsTests {
         #expect(storage.backupNames(of: "favorites.plist").isEmpty)
     }
 
+    @Test func newerFavoritesVersionIsMovedAside() throws {
+        let storage = try PlistStorage.temporary()
+        try storage.save(StoredFavorites(version: 99, ids: [1]), to: "favorites.plist")
+
+        let store = FavoritesStore(storage: storage)
+
+        #expect(store.count == 0)
+        #expect(storage.backupNames(of: "favorites.plist").count == 1)
+    }
+
     /// Uygulamanın daha yeni bir sürümünün yazdığı dosya okunmaz ve ezilmez; yedeklenir.
     @Test func newerVersionIsMovedAside() throws {
         let storage = try PlistStorage.temporary()

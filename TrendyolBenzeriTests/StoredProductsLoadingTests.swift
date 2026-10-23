@@ -69,3 +69,56 @@ struct StoredProductsLoadingTests {
         #expect(viewModel.state.loadedValue?.map(\.id) == [6])
     }
 }
+
+/// Sepet ve Favoriler ViewModel'lerinin hata ve iptal geçişleri (ARCHITECTURE.md 9, ViewModel satırı).
+@MainActor
+struct StoredProductsViewModelStateTests {
+
+    @Test func cartViewModelReturnsToIdleWhenCancelled() async {
+        let server = StubServer(.failure(.cancelled))
+        let viewModel = CartViewModel(service: server.service)
+
+        await viewModel.loadProducts(ids: [1])
+
+        #expect(viewModel.state.isIdle)
+    }
+
+    @Test func favoritesViewModelReturnsToIdleWhenCancelled() async {
+        let server = StubServer(.failure(.cancelled))
+        let viewModel = FavoritesViewModel(service: server.service)
+
+        await viewModel.loadProducts(ids: [1])
+
+        #expect(viewModel.state.isIdle)
+    }
+
+    @Test func favoritesViewModelShowsErrorWhenOffline() async {
+        let server = StubServer(.failure(.notConnectedToInternet))
+        let viewModel = FavoritesViewModel(service: server.service)
+
+        await viewModel.loadProducts(ids: [1])
+
+        #expect(viewModel.state.failureMessage
+            == "Sunucuya ulaşılamadı. İnternet bağlantını kontrol edip tekrar dene.")
+    }
+
+    /// Yükleme sürerken durum `.loading`; view bu sırada yükleniyor göstergesini çizer.
+    @Test func cartViewModelIsLoadingWhileWaiting() async {
+        let requestArrived = Gate()
+        let release = Gate()
+        let server = StubServer { _ in
+            await requestArrived.open()
+            await release.wait()
+            return .product(id: 1)
+        }
+        let viewModel = CartViewModel(service: server.service)
+
+        async let load: Void = viewModel.loadProducts(ids: [1])
+        await requestArrived.wait()
+        #expect(viewModel.state.isLoading)
+        await release.open()
+        await load
+
+        #expect(viewModel.state.loadedValue?.map(\.id) == [1])
+    }
+}
