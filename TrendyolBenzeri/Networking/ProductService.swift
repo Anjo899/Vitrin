@@ -20,7 +20,7 @@ nonisolated struct ProductService: Sendable {
             "products",
             query: [
                 URLQueryItem(name: "limit", value: String(limit)),
-                URLQueryItem(name: "skip", value: String(skip)),
+                URLQueryItem(name: "skip", value: String(skip))
             ]
         )
         return response.products

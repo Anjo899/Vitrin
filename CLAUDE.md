@@ -68,19 +68,33 @@
 
 ## Build ve test
 ```sh
-# Derleme
+# Derleme (uygulama)
 xcodebuild -project TrendyolBenzeri.xcodeproj -scheme TrendyolBenzeri \
-  -destination 'platform=iOS Simulator,name=iPhone 17,OS=26.3.1' build
+  -destination 'platform=iOS Simulator,name=iPhone 17,OS=26.3.1' \
+  -skipPackagePluginValidation build
+
+# Derleme (uygulama + testler; commit öncesi lint kontrolü)
+xcodebuild -project TrendyolBenzeri.xcodeproj -scheme TrendyolBenzeri \
+  -destination 'platform=iOS Simulator,name=iPhone 17,OS=26.3.1' \
+  -skipPackagePluginValidation build-for-testing
 
 # Unit testler (sonuç satırı: "✔ Test run with N tests …")
 xcodebuild -project TrendyolBenzeri.xcodeproj -scheme TrendyolBenzeri \
-  -destination 'platform=iOS Simulator,name=iPhone 17,OS=26.3.1' test
+  -destination 'platform=iOS Simulator,name=iPhone 17,OS=26.3.1' \
+  -skipPackagePluginValidation test
 ```
+- `-skipPackagePluginValidation`: komut satırında SwiftLint plugin'inin onay sormadan çalışması için gerekir. Xcode'da plugin bir kez "Trust & Enable" ile onaylanır.
 - Geliştirme makinesine özel: Xcode 26.2 `/Applications/Xcode_26.2.app` içinde ve `xcode-select` onu gösteriyor; `DEVELOPER_DIR` gerekmez. Simülatör: iPhone 17, iOS 26.3.1. `gh`, `/opt/homebrew/bin` içinde.
 - Paylaşılan `TrendyolBenzeri` scheme'inin test aksiyonu yalnızca `TrendyolBenzeriTests`'i çalıştırır:
   - Paralel test kapalı (`parallelizable = "NO"`). Kopya simülatörlerde test çalıştırma takılmıştı.
   - Şablon UI testleri (`TrendyolBenzeriUITests`) scheme'den çıkarıldı; dosyaları duruyor. Geri eklenmez.
 - Xcode'da çalıştırmak için ⌘R, testler için ⌘U.
+
+## Lint
+- SwiftLint, `SwiftLintPlugins` paketinin build tool plugin'i ile her derlemede `TrendyolBenzeri` ve `TrendyolBenzeriTests` target'larında çalışır (sürüm `Package.resolved`'da sabit). Ayrı kurulum ve Run Script yok; script sandbox'ı açık.
+- Ayarlar kökteki `.swiftlint.yml`'de. Özel kurallar `ARCHITECTURE.md` kurallarını uygular; her kuralın üstünde ilgili bölüm yazılı.
+- Error yeni ihlali engeller ve derlemeyi kırar. Warning, `ARCHITECTURE.md`'de "Bugünkü durum: uyulmuyor" notlu bilinen ihlallere takılan kurallar içindir; ihlal düzeltilince kural error'a çekilir.
+- Error varsa commit atılmaz (`committer`).
 
 ## Agents
 Tanımlar projede, `.claude/agents/` içinde. Kullanıcı seviyesinde (`~/.claude/agents/`) aynı adla kopya tutulmaz. Agent tanımlarıyla çelişirse bu dosya geçerlidir.
@@ -91,7 +105,7 @@ Commit işlerini yapar; push yapmaz, PR açmaz.
 - Önce `git status --short` ve `git diff` ile değişiklikleri inceler. Görevle ilgisi olmayan değişiklikleri commit'e katmaz, raporda belirtir.
 - Dosyaları adıyla ekler (`git add <yol>`). `git add -A`, `git add .` ve `git commit -a` kullanılmaz.
 - Asla eklenmeyenler: `xcuserdata/`, `*.xcuserstate`, `.DS_Store`, `DerivedData/`, `build/`, `.swiftpm/` kullanıcı dosyaları, sırlar (`.env`, token, sertifika). `project.pbxproj` yalnızca görevle ilgili bir değişiklik varsa eklenir; emin olunmazsa eklenmez ve raporlanır.
-- Swift dosyası değiştiyse commit'ten önce "Build ve test" bölümündeki `xcodebuild … build` komutuyla derler. Derleme başarısızsa commit atmaz, hatayı bildirir.
+- Swift dosyası ya da `.swiftlint.yml` değiştiyse commit'ten önce "Build ve test" bölümündeki `xcodebuild … build-for-testing` komutuyla derler; SwiftLint bu derlemede çalışır ("Lint"). Derleme başarısızsa ya da SwiftLint error verdiyse commit atmaz, hatayı bildirir.
 - Commit mesajının sonuna boş bir satır ve `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>` eklenir.
 - `--amend`, rebase, `reset --hard`, `--no-verify` ve `--force` kullanılmaz.
 - Rapor: her commit'in hash'i ve mesajı, commit dışında kalan değişiklikler, derleme sonucu.

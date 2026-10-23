@@ -201,6 +201,8 @@ enum LoadState<Value> {
 - Yenileme başarısız olursa mevcut liste silinmez. `refresh()` hata aldığında `state`'e dokunmaz; hata ayrı ve geçici olarak gösterilir.
   - Bugünkü durum: uyulmuyor. Üç ViewModel'de de yenileme hatası `state = .failed(...)` yazıyor ve liste kayboluyor; bkz. `REVIEW.md` O11.
 - Arama gibi art arda gelen isteklerde yalnızca en son isteğin sonucu yazılır (`HomeViewModel.search` içindeki `latestQuery` kontrolü).
+- Kullanıcıya gösterilmeyen hatalar (kayıt, yükleme, dosya işlemleri) `print` ile değil `Logger(subsystem:category:)` ile kaydedilir.
+  - Bugünkü durum: uyulmuyor. `CartStore`, `FavoritesStore` ve `PlistStorage` `print` kullanıyor; bkz. `REVIEW.md` S7.
 
 ```swift
 // ✅ Yenileme hatası mevcut veriyi korur

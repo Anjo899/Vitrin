@@ -21,7 +21,7 @@ extension Product {
         thumbnail: URL(string: "https://cdn.dummyjson.com/product-images/beauty/essence-mascara-lash-princess/thumbnail.webp")!,
         images: [URL(string: "https://cdn.dummyjson.com/product-images/beauty/essence-mascara-lash-princess/1.webp")!],
         reviews: [
-            Review(rating: 5, comment: "Highly impressed!", date: .now, reviewerName: "Eleanor Collins"),
+            Review(rating: 5, comment: "Highly impressed!", date: .now, reviewerName: "Eleanor Collins")
         ]
     )
 

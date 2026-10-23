@@ -19,7 +19,7 @@ struct PlistStorageTests {
         let storage = try PlistStorage.temporary()
         let items: [Int: CartItem] = [
             1: CartItem(product: .sample(id: 1), quantity: 2),
-            7: CartItem(product: .sample(id: 7), quantity: 1),
+            7: CartItem(product: .sample(id: 7), quantity: 1)
         ]
 
         try storage.save(items, to: "cart.plist")
