@@ -11,6 +11,8 @@ import Observation
 final class CategoryProductsViewModel {
     let category: ProductCategory
     private(set) var state: LoadState<[Product]> = .idle
+    /// Aşağı çekip yenileme başarısız olursa gösterilen geçici uyarı; liste ekranda kalır.
+    private(set) var refreshError: LocalizedStringResource?
 
     @ObservationIgnored private let service: ProductService
 
@@ -26,14 +28,7 @@ final class CategoryProductsViewModel {
 
     func load() async {
         state = .loading
-        await fetchProducts()
-    }
-
-    func refresh() async {
-        await fetchProducts()
-    }
-
-    private func fetchProducts() async {
+        refreshError = nil
         do {
             state = .loaded(try await service.fetchProducts(in: category))
         } catch is CancellationError {
@@ -43,5 +38,22 @@ final class CategoryProductsViewModel {
         } catch {
             state = .failed(error.userMessage)
         }
+    }
+
+    /// Hata olursa `state`'e dokunulmaz; liste kalır, hata `refreshError` ile geçici olarak gösterilir.
+    func refresh() async {
+        do {
+            state = .loaded(try await service.fetchProducts(in: category))
+            refreshError = nil
+        } catch is CancellationError {
+            // Yenileme iptal edildi; liste olduğu gibi kalır.
+        } catch {
+            refreshError = error.userMessage
+        }
+    }
+
+    /// Banner süresi dolunca view çağırır.
+    func dismissRefreshError() {
+        refreshError = nil
     }
 }

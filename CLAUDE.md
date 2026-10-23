@@ -20,7 +20,7 @@
 | `Stores/` | Paylaşılan state: `FavoritesStore`, `CartStore` |
 | `Views/` (kök) | Uygulama iskeleti: `MainTabView` |
 | `Views/<Ekran>/` | Ekran view'ları ve varsa ekranın `ViewModel`'i (`Home/`, `Categories/`, `ProductDetail/`, `Favorites/`, `Cart/`, `Settings/`) |
-| `Views/Common/` | `LoadState`, `LoadingView`, `ErrorView`; önizleme yardımcısı `PreviewEnvironment` (henüz yok) |
+| `Views/Common/` | `LoadState`, `LoadingView`, `ErrorView`, `RefreshErrorBanner` (yenileme hatası uyarısı); önizleme yardımcısı `PreviewEnvironment` (henüz yok) |
 | `Views/Components/` | Tekrar kullanılan bileşenler (aşağıda) |
 | `Utilities/` | SwiftUI'sız yardımcılar; yalnızca Foundation import eder, Models'i kullanabilir (Models Utilities'i kullanamaz): `PriceFormatter` (`.discount` biçimi), `LocalizedStringResource+Locale` (`resolved(in:)`), `PreviewData` (önizleme verisi ve `PlistStorage.preview`; `#Preview` blokları Release'te de derlendiği için `#if DEBUG` içine alınmaz). Bugünkü durum: `PriceFormatter` SwiftUI import ediyor; `Currency`, `ExchangeRate`, `roundedToCents`, `Product`'ın fiyat hesapları (`price(in:)`, `discountedPrice(in:)`, `discountRate`) ve `\.currency` environment değerini de içeriyor. Hedef yerleri Models ve `Views/` (`ARCHITECTURE.md` 1. Katmanlar) |
 
@@ -30,7 +30,7 @@
 
 ## State management
 - **`@State`**: ekrana ait değerler ve ekranın ViewModel'i (`@State private var viewModel = HomeViewModel()`). ViewModel bir parametreye bağlıysa init'te `_viewModel = State(initialValue: …)`.
-- **ViewModel**: `@Observable final class`, durum `private(set) var state: LoadState<T>`, bağımlılıklar `@ObservationIgnored`. Kalıp: `loadIfNeeded()` (`.task`), `load()` (ilk yükleme / Tekrar Dene), `refresh()` (`.refreshable`, `.loading`'e geçmez). Kural: yenileme başarısız olursa mevcut liste silinmez. Bugünkü durum: uyulmuyor, yenileme hatası `state = .failed` yazıyor (`REVIEW.md` O11). `CancellationError` hata sayılmaz; yükleme iptal olursa durum `.idle`'a döner.
+- **ViewModel**: `@Observable final class`, durum `private(set) var state: LoadState<T>`, bağımlılıklar `@ObservationIgnored`. Kalıp: `loadIfNeeded()` (`.task`), `load()` (ilk yükleme / Tekrar Dene), `refresh()` (`.refreshable`, `.loading`'e geçmez). Kural: yenileme başarısız olursa mevcut liste silinmez; `refresh()` `state`'e dokunmaz, hatayı `refreshError`'a yazar ve view onu `.refreshErrorBanner` ile geçici olarak gösterir. `CancellationError` hata sayılmaz; yükleme iptal olursa durum `.idle`'a döner.
 - **`LoadState`** (`idle` / `loading` / `loaded` / `failed(LocalizedStringResource)`; ViewModel'ler `error.userMessage` verir): View `switch` ile `LoadingView`, `ErrorView(message:retry:)`, boşsa `ContentUnavailableView` ya da içeriği gösterir.
 - **`.environment`**: `FavoritesStore` ve `CartStore`, `TrendyolBenzeriApp` içinde bir kez `@State` olarak oluşturulur ve `.environment(...)` ile verilir; view'lar `@Environment(CartStore.self)` ile okur. View içinde yeni store örneği oluşturulmaz. Yazılı istisna: `#Preview` blokları store'ları `.previewEnvironment` üzerinden alır ve yardımcı önizleme için store oluşturur (`ARCHITECTURE.md` 3. State management).
 - **Store'lar**: ürün id'sine bağlı dictionary (`[Int: Product]`, `[Int: CartItem]`) tutar ve her değişiklikte `favorites.plist` / `cart.plist`'e kaydeder. Sepete stoktan fazla ürün eklenemez, adet 0'a inince satır silinir, toplamlar indirimli fiyatla hesaplanır.

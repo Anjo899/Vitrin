@@ -66,7 +66,7 @@ Bu turda aşağıdakiler çalıştırılarak kontrol edildi:
 | O8 | Önemli | Dokunma alanı 44 pt'den küçük | ✅ Düzeltildi | `74064b6` |
 | O9 | Önemli | VoiceOver kartı bağlamsız okuyor | ❌ Hâlâ açık | Puan etiketleri var; kart, kalp, görsel ve adet sorunları duruyor |
 | O10 | Önemli | Dynamic Type desteği eksik | ❌ Hâlâ açık | Sabit punto ve çerçeveler duruyor |
-| T1 | Önemli | ViewModel, `APIClient` ve fiyat testleri eksik | 🟡 Hâlâ açık (kısmen düzeltildi) | Fiyat, para birimi ve arama testleri eklendi. Yükleme, yenileme ve iptal geçişleri ile `APIClient` hata eşlemesi test edilmiyor. Güncelleme (23 Ekim 2026): bunlar da test edildi; O11'in doğru davranış testleri düzeltmeye kadar kapalı |
+| T1 | Önemli | ViewModel, `APIClient` ve fiyat testleri eksik | ✅ Düzeltildi (23 Ekim 2026) | Fiyat, para birimi ve arama testleri eklendi. Yükleme, yenileme ve iptal geçişleri ile `APIClient` hata eşlemesi test edilmiyor. Güncelleme (23 Ekim 2026): bunlar da test edildi; O11 düzeltilince kapalı test kalmadı |
 | S1 | Küçük | "%0" indirim rozeti | ❌ Hâlâ açık | Simülatörde Green Bell Pepper kartında "0%" görüldü |
 | S2 | Küçük | Aramada `+` boşluk olarak gidiyor | ❌ Hâlâ açık | Kod değişmedi |
 | S3 | Küçük | Hatalı veriye karşı koruma yok | ❌ Hâlâ açık | Kod değişmedi |
@@ -85,7 +85,7 @@ Bu turda aşağıdakiler çalıştırılarak kontrol edildi:
 
 | # | Önem | Bulgu | Başlık |
 | --- | --- | --- | --- |
-| O11 | Önemli | Aşağı çekip yenileme hata verince liste siliniyor | Hata yönetimi |
+| O11 | Önemli | Aşağı çekip yenileme hata verince liste siliniyor. ✅ Düzeltildi (23 Ekim 2026, `fix/refresh-keeps-list`) | Hata yönetimi |
 | O12 | Önemli | "Sepete Eklendi" butonunda beyaz yazı yeşil zeminde okunmuyor (≈2,0–2,2:1) | Erişilebilirlik |
 | S11 | Küçük | Proje Swift 5 dil modunda; kod Swift 6'ya hazır ama derleyici korumuyor | Concurrency |
 | S12 | Küçük | `PriceFormatter.swift` adının ötesinde iş yapıyor; model dosyası SwiftUI'a bağlı | Mimari, isimlendirme |
@@ -227,6 +227,7 @@ Güncelleme (21 Ekim 2026): `ARCHITECTURE.md` artık Models → Utilities bağı
 ### Hata yönetimi
 
 #### O11 · Önemli · Aşağı çekip yenileme hata verince liste siliniyor
+- **Durum:** ✅ Düzeltildi (23 Ekim 2026, `fix/refresh-keeps-list`). `refresh()` hata aldığında `state`'e dokunmuyor; hata `refreshError` ile `RefreshErrorBanner`'da birkaç saniye gösteriliyor. Üç ViewModel'de testli (`ViewModelLoadingTests`). Ortak yükleyici (S6) yapılmadı.
 - **Dosya:** `Views/Home/HomeViewModel.swift:38–40,73–86`, `Views/Categories/CategoriesViewModel.swift:29–31,33–44`, `Views/Categories/CategoryProductsViewModel.swift:32–34,36–46`
 - **Sorun:** `refresh()`, `load()` ile aynı `fetch…` fonksiyonunu çağırıyor; hata olursa `state = .failed(...)` yazılıyor. İnternet yokken aşağı çekilince:
   - ekrandaki 194 ürünlük liste kayboluyor,
@@ -434,7 +435,7 @@ Koda gömülü metin kalmadı (Doğrulama'ya bakın). Kalan sorunlar seçilen di
     - Satır 12 ve 100: "main'e merge yok (hoca merge edecek). Push öncesi her zaman sorulur." `CLAUDE.md`'deki güncel kural ise push, PR ve merge'ün onay beklemeden yapılması.
     - Satır 40: "en_US". Satır 55: "sadece DEBUG". Satır 56: "`failed(String)`". Üçü de artık doğru değil.
     - Görsel yükleme düzeltmesi (#15) adımlar tablosunda yok.
-  - **`CLAUDE.md`:** ViewModel maddesi (O11) ve Fiyatlar maddesi (S13) kodla çelişiyordu. Güncelleme (21 Ekim 2026): ikisi de düzeltildi; ViewModel maddesi O11'i "Bugünkü durum: uyulmuyor" diye işaretliyor, Fiyatlar maddesi S13'ü doğru anlatıyor. `CLAUDE.md` satır numaraları değiştiği için atıflar bölüm adıyla veriliyor.
+  - **`CLAUDE.md`:** ViewModel maddesi (O11) ve Fiyatlar maddesi (S13) kodla çelişiyordu. Güncelleme (21 Ekim 2026): ikisi de düzeltildi; ViewModel maddesi O11'i "Bugünkü durum: uyulmuyor" diye işaretliyordu (O11 23 Ekim 2026'da düzeltildi, not kaldırıldı), Fiyatlar maddesi S13'ü doğru anlatıyor. `CLAUDE.md` satır numaraları değiştiği için atıflar bölüm adıyla veriliyor.
 - **Neden önemli:** İki dosya da kalıcı bağlam olarak okunuyor; çelişen kurallar yanlış bir push, PR ya da merge kararına yol açabilir.
 - **Öneri:**
   - `PLAN.md`'nin "Genel kurallar" ve "Her branch için iş akışı" bölümlerini `CLAUDE.md`'ye yönlendir ya da güncelle.
@@ -462,9 +463,10 @@ Koda gömülü metin kalmadı (Doğrulama'ya bakın). Kalan sorunlar seçilen di
 
 ### Test kapsamı
 
-Bugün 41 test var: fiyat ve para birimi, dil ve tema, kategori adları, decode, store'lar ve aramanın iki senaryosu. Güncelleme (23 Ekim 2026): 98 unit test (3'ü O11 nedeniyle kapalı) ve ayrı scheme'de bir UI testi var. Testler hızlı (≈1,4 sn) ve ağa çıkmıyor; arama testi `URLProtocol` tabanlı sahte bir oturum kullanıyor.
+Bugün 41 test var: fiyat ve para birimi, dil ve tema, kategori adları, decode, store'lar ve aramanın iki senaryosu. Güncelleme (23 Ekim 2026): 98 unit test (O11 düzeltilince kapalı test kalmadı) ve ayrı scheme'de bir UI testi var. Testler hızlı (≈1,4 sn) ve ağa çıkmıyor; arama testi `URLProtocol` tabanlı sahte bir oturum kullanıyor.
 
 #### T1 · Önemli · Kritik akışların testi eksik (birinci turdan, kısmen düzeltildi)
+- **Durum:** ✅ Düzeltildi (23 Ekim 2026). #21'deki testler ve O11 düzeltmesiyle açılan yenileme testleri; kapalı test kalmadı.
 - **Dosya:** `TrendyolBenzeriTests/`
 - **Sorun:**
   - **Eklenenler:** Fiyat yuvarlama, TL ve dolar toplamları, eski arama testi.
@@ -473,7 +475,7 @@ Bugün 41 test var: fiyat ve para birimi, dil ve tema, kategori adları, decode,
     - İptalde `.idle`'a dönüş.
     - `refresh` davranışı (O11).
     - `APIClient`'ın hata eşlemesi: 2xx dışı kod → `badStatus`, bozuk JSON → `decoding`, `URLError.cancelled` → `CancellationError`.
-- **Güncelleme (23 Ekim 2026):** "Hâlâ test edilmeyenler"in hepsi test edildi (`ViewModelLoadingTests`, `APIClientTests`; ortak `StubURLProtocol`). O11'in doğru davranışını test eden testler, düzeltme yapılana kadar kapalı.
+- **Güncelleme (23 Ekim 2026):** "Hâlâ test edilmeyenler"in hepsi test edildi (`ViewModelLoadingTests`, `APIClientTests`; ortak `StubURLProtocol`). O11'in doğru davranışını test eden testler O11 düzeltilince açıldı (23 Ekim 2026).
 - **Neden önemli:** O11 gibi bir hata, bu testler olsaydı yazıldığı gün yakalanırdı.
 - **Öneri:**
   - `SearchStubURLProtocol`'ü genel bir `StubURLProtocol`'e çevir (yol → durum kodu, gövde, gecikme). Yapıldı (23 Ekim 2026).
@@ -509,7 +511,7 @@ Bugün 41 test var: fiyat ve para birimi, dil ve tema, kategori adları, decode,
 ## Sonraki adımlar
 
 ### Önerilen sıra
-1. **O11 ve T1:** Yenileme hatasında listeyi koru. Ortak yükleyiciyi (S6) çıkar ve durum geçişlerini test et.
+1. **O11 ve T1:** Yenileme hatasında listeyi koru. Ortak yükleyiciyi (S6) çıkar ve durum geçişlerini test et. Güncelleme (23 Ekim 2026): O11 ve T1 düzeltildi; ortak yükleyici (S6) yapılmadı.
 2. **O2 ve O3:** Sepet ve favoriler için sürümlü kayıt tipine geç (id + adet); ürünleri açılışta tazele. S18 de bununla çözülür.
 3. **O4:** `APIClient.get`'i `@concurrent` yap; decoder ve tarih biçimlerini bir kez oluştur.
 4. **O12, O9, O10:** Erişilebilirlik turu. Simülatörde Accessibility Inspector, VoiceOver ve en büyük yazı boyutuyla dene.

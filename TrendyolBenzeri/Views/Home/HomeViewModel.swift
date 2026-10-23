@@ -13,6 +13,8 @@ final class HomeViewModel {
     private(set) var state: LoadState<[Product]> = .idle
     /// Arama sonuçları; arama metni boşken `idle` kalır ve tüm ürünler gösterilir.
     private(set) var searchState: LoadState<[Product]> = .idle
+    /// Aşağı çekip yenileme başarısız olursa gösterilen geçici uyarı; liste ekranda kalır.
+    private(set) var refreshError: LocalizedStringResource?
 
     @ObservationIgnored private let service: ProductService
     /// Arama isteği atılmadan önce beklenen süre (debounce). Testler beklememek için `.zero` verir.
@@ -34,12 +36,35 @@ final class HomeViewModel {
     /// Tam ekran yükleme göstergesiyle yükler (ilk açılış ve "Tekrar Dene").
     func load() async {
         state = .loading
-        await fetchProducts()
+        refreshError = nil
+        do {
+            state = .loaded(try await fetchProducts())
+        } catch is CancellationError {
+            // Ekran yükleme sırasında kapandıysa bir sonraki açılışta yeniden denensin.
+            if case .loading = state {
+                state = .idle
+            }
+        } catch {
+            state = .failed(error.userMessage)
+        }
     }
 
     /// Aşağı çekip yenileme: mevcut liste yeni veri gelene kadar ekranda kalır.
+    /// Hata olursa `state`'e dokunulmaz; hata `refreshError` ile geçici olarak gösterilir.
     func refresh() async {
-        await fetchProducts()
+        do {
+            state = .loaded(try await fetchProducts())
+            refreshError = nil
+        } catch is CancellationError {
+            // Yenileme iptal edildi; liste olduğu gibi kalır.
+        } catch {
+            refreshError = error.userMessage
+        }
+    }
+
+    /// Banner süresi dolunca view çağırır.
+    func dismissRefreshError() {
+        refreshError = nil
     }
 
     /// Arama metni her değiştiğinde `.task(id:)` tarafından çağrılır. Metin değişince
@@ -73,18 +98,8 @@ final class HomeViewModel {
         }
     }
 
-    private func fetchProducts() async {
-        do {
-            // limit=0 dummyjson'da "tüm ürünler" anlamına gelir (194 ürün).
-            let products = try await service.fetchProducts(limit: 0)
-            state = .loaded(products)
-        } catch is CancellationError {
-            // Ekran yükleme sırasında kapandıysa bir sonraki açılışta yeniden denensin.
-            if case .loading = state {
-                state = .idle
-            }
-        } catch {
-            state = .failed(error.userMessage)
-        }
+    private func fetchProducts() async throws -> [Product] {
+        // limit=0 dummyjson'da "tüm ürünler" anlamına gelir (194 ürün).
+        try await service.fetchProducts(limit: 0)
     }
 }
