@@ -15,16 +15,23 @@ enum StubResponse: Sendable {
 
     /// `/products` uçlarının cevabı; her başlık için bir ürün.
     static func products(_ titles: [String]) -> StubResponse {
-        let products = titles.enumerated().map { index, title in
-            """
-            {"id":\(index + 1),"title":"\(title)","description":"","category":"beauty",
-            "price":10,"discountPercentage":0,"rating":4,"stock":5,
-            "thumbnail":"https://example.com/t.webp","images":[],"reviews":[]}
-            """
-        }
+        let products = titles.enumerated().map { index, title in productJSON(id: index + 1, title: title) }
         return .body("""
         {"products":[\(products.joined(separator: ","))],"total":\(titles.count),"skip":0,"limit":\(titles.count)}
         """)
+    }
+
+    /// `/products/{id}` cevabı: tek ürün.
+    static func product(id: Int, title: String = "Product") -> StubResponse {
+        .body(productJSON(id: id, title: title))
+    }
+
+    private static func productJSON(id: Int, title: String) -> String {
+        """
+        {"id":\(id),"title":"\(title)","description":"","category":"beauty",
+        "price":10,"discountPercentage":0,"rating":4,"stock":5,
+        "thumbnail":"https://example.com/t.webp","images":[],"reviews":[]}
+        """
     }
 
     /// `/products/categories` cevabı; her slug için bir kategori.
