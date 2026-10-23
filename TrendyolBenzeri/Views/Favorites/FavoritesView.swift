@@ -20,13 +20,15 @@ struct FavoritesView: View {
             .navigationDestination(for: Product.self) { product in
                 ProductDetailView(product: product)
             }
-            .task(id: favoritesStore.missingProductIDs) {
-                await loadMissingProducts()
+            // Dosyada yalnızca id var; ekran her açıldığında ürünler API'den alınır ve tazelenir.
+            // Ürünler biliniyorsa istek arka planda olur, başarısız olursa liste olduğu gibi kalır.
+            .task {
+                await refreshProducts()
             }
     }
 
-    private func loadMissingProducts() async {
-        let ids = favoritesStore.missingProductIDs
+    private func refreshProducts() async {
+        let ids = favoritesStore.ids
         guard !ids.isEmpty else { return }
         await viewModel.loadProducts(ids: ids)
         if case .loaded(let products) = viewModel.state {
@@ -52,7 +54,7 @@ struct FavoritesView: View {
         } else if !favoritesStore.missingProductIDs.isEmpty {
             if case .failed(let message) = viewModel.state {
                 ErrorView(message: message) {
-                    await loadMissingProducts()
+                    await refreshProducts()
                 }
             } else {
                 LoadingView(message: "Favoriler yükleniyor…")

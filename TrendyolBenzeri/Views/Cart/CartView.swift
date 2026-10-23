@@ -23,14 +23,15 @@ struct CartView: View {
             } message: {
                 Text("Bu bir okul projesi; ödeme adımı henüz yok. Sepetindeki ürünler korunacak.")
             }
-            // Dosyada yalnızca id ve adet var; bilgisi bilinmeyen ürünler API'den istenir.
-            .task(id: cartStore.missingProductIDs) {
-                await loadMissingProducts()
+            // Dosyada yalnızca id var; ekran her açıldığında ürünler API'den alınır ve tazelenir.
+            // Ürünler biliniyorsa istek arka planda olur, başarısız olursa liste olduğu gibi kalır.
+            .task {
+                await refreshProducts()
             }
     }
 
-    private func loadMissingProducts() async {
-        let ids = cartStore.missingProductIDs
+    private func refreshProducts() async {
+        let ids = cartStore.productIDs
         guard !ids.isEmpty else { return }
         await viewModel.loadProducts(ids: ids)
         if case .loaded(let products) = viewModel.state {
@@ -54,7 +55,7 @@ struct CartView: View {
         } else if !cartStore.missingProductIDs.isEmpty {
             if case .failed(let message) = viewModel.state {
                 ErrorView(message: message) {
-                    await loadMissingProducts()
+                    await refreshProducts()
                 }
             } else {
                 LoadingView(message: "Sepet yükleniyor…")
