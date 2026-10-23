@@ -39,3 +39,20 @@ extension PlistStorage {
         return PlistStorage(directory: directory)
     }
 }
+
+extension PlistStorage {
+    /// Bir dosyanın kenara alınmış yedeklerinin adları (`<ad>.corrupt-<zaman>`), sıralı.
+    func backupNames(of fileName: String) -> [String] {
+        let names = (try? FileManager.default.contentsOfDirectory(atPath: directory.path())) ?? []
+        return names.filter { $0.hasPrefix("\(fileName).corrupt") }.sorted()
+    }
+
+    /// Tek yedeğin içeriği; yedek yoksa ya da birden fazlaysa test başarısız olur.
+    func onlyBackupData(of fileName: String) throws -> Data {
+        let names = backupNames(of: fileName)
+        guard names.count == 1 else {
+            throw CocoaError(.fileNoSuchFile, userInfo: [NSDebugDescriptionErrorKey: "Yedekler: \(names)"])
+        }
+        return try Data(contentsOf: directory.appending(path: names[0]))
+    }
+}
