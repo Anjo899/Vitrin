@@ -25,17 +25,21 @@ private struct RefreshErrorBanner: ViewModifier {
                     .font(.footnote)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 8)
+                    // Dokunma alanı en az 44 pt; dokunuşu kapsülün tamamı alır.
+                    .frame(minHeight: 44)
                     .background(.regularMaterial, in: Capsule())
+                    .contentShape(Capsule())
+                    .onTapGesture(perform: dismiss)
                     .padding(.top, 8)
                     .padding(.horizontal)
                     .transition(.move(edge: .top).combined(with: .opacity))
-                    .onTapGesture(perform: dismiss)
                     .accessibilityAddTraits(.isButton)
                     .accessibilityHint(Text("Uyarıyı kapatır"))
                 }
             }
             .animation(.default, value: message != nil)
-            // Yeni hata geldiğinde süre baştan sayılır; ekran kapanınca görev iptal olur.
+            // Farklı bir hata gelince süre baştan sayılır; aynı hata tekrar gelirse süre devam eder.
+            // Ekran kapanınca görev iptal olur.
             .task(id: message.map { $0.resolved(in: locale) }) {
                 guard let message else { return }
                 AccessibilityNotification.Announcement(message.resolved(in: locale)).post()
