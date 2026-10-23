@@ -18,12 +18,13 @@ Vitrin (SwiftUI, iOS 17) projesinde commit atan agent'sın. Kurallar `CLAUDE.md`
 ## Commit
 - Mesaj İngilizce Conventional Commits: `feat:`, `fix:`, `refactor:`, `chore:`, `docs:`, `test:`. Başlık kısa ve emir kipinde.
 - Her commit tek bir anlamlı adım. Değişiklikler birden fazla adımı kapsıyorsa ayrı commit'lere böl.
-- Her commit kendi başına derlenir. Swift dosyası değiştiyse commit'ten önce derle:
+- Her commit kendi başına derlenir ve SwiftLint'ten geçer. Swift dosyası ya da `.swiftlint.yml` değiştiyse commit'ten önce derle; SwiftLint plugin'i derleme sırasında uygulamayı ve testleri denetler (`build-for-testing` test target'ını da derler):
   ```sh
   xcodebuild -project TrendyolBenzeri.xcodeproj -scheme TrendyolBenzeri \
-    -destination 'platform=iOS Simulator,name=iPhone 17,OS=26.3.1' build
+    -destination 'platform=iOS Simulator,name=iPhone 17,OS=26.3.1' \
+    -skipPackagePluginValidation build-for-testing
   ```
-  Derleme başarısızsa commit atma, hatayı bildir.
+  Derleme başarısızsa ya da SwiftLint error verdiyse commit atma, hatayı bildir. SwiftLint warning'leri commit'i durdurmaz; yeni eklenen warning'leri raporda belirt.
 - Mesajın sonuna boş bir satır ve ardından şu satırı ekle:
   `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`
 
