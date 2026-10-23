@@ -95,7 +95,7 @@ Xcode projesi "synchronized folder" yapısında: `TrendyolBenzeri/` altına ekle
 | `Stores/` | Ekranlar arası paylaşılan state: `FavoritesStore`, `CartStore` |
 | `Views/` (kök) | Uygulama iskeleti: `MainTabView` (sekmeler ve her sekmenin `NavigationStack`'i) |
 | `Views/<Ekran>/` | Bir ekranın view'ları ve ViewModel'i: `Home/`, `Categories/`, `ProductDetail/`, `Favorites/`, `Cart/`, `Settings/` |
-| `Views/Common/` | Ekranlar arası ortak, ekrana ait olmayan parçalar: ekran durumları (`LoadState`, `LoadingView`, `ErrorView`) ve önizleme yardımcısı `PreviewEnvironment` (henüz yok, bkz. 3. State management) |
+| `Views/Common/` | Ekranlar arası ortak, ekrana ait olmayan parçalar: ekran durumları (`LoadState`, `LoadingView`, `ErrorView`, `RefreshErrorBanner`) ve önizleme yardımcısı `PreviewEnvironment` (henüz yok, bkz. 3. State management) |
 | `Views/Components/` | Birden fazla ekranda kullanılan bileşenler: `ProductGridView`, `ProductCardView` (+ `PriceView`, `RatingView`), `ProductImageView`, `StarRatingView`, `FavoriteButton` |
 | `Utilities/` | SwiftUI'sız biçimlendirme ve yardımcılar: `PriceFormatter` (hedefte yalnızca `.discount` biçimi), `LocalizedStringResource+Locale`, `PreviewData` |
 | `Localizable.xcstrings` | Bütün arayüz metinleri |
@@ -198,8 +198,7 @@ enum LoadState<Value> {
 - View `switch viewModel.state` ile `LoadingView`, `ErrorView(message:retry:)`, boşsa `ContentUnavailableView`, doluysa içeriği gösterir.
 - Hata mesajı `error.userMessage` ile verilir (`LocalizedStringResource`); `String` değil.
 - `CancellationError` hata sayılmaz. Yükleme sırasında iptal olursa durum `.idle`'a döner ki ekran bir sonraki açılışta yeniden yüklesin.
-- Yenileme başarısız olursa mevcut liste silinmez. `refresh()` hata aldığında `state`'e dokunmaz; hata ayrı ve geçici olarak gösterilir.
-  - Bugünkü durum: uyulmuyor. Üç ViewModel'de de yenileme hatası `state = .failed(...)` yazıyor ve liste kayboluyor; bkz. `REVIEW.md` O11.
+- Yenileme başarısız olursa mevcut liste silinmez. `refresh()` hata aldığında `state`'e dokunmaz; hatayı `private(set) var refreshError: LocalizedStringResource?` olarak tutar. View onu `.refreshErrorBanner(viewModel.refreshError) { viewModel.dismissRefreshError() }` ile birkaç saniyelik bir uyarı olarak gösterir. Başarılı yenileme ve `load()` uyarıyı temizler; iptal edilen yenileme uyarı göstermez.
 - Arama gibi art arda gelen isteklerde yalnızca en son isteğin sonucu yazılır (`HomeViewModel.search` içindeki `latestQuery` kontrolü).
 - Kullanıcıya gösterilmeyen hatalar (kayıt, yükleme, dosya işlemleri) `print` ile değil `Logger(subsystem:category:)` ile kaydedilir.
   - Bugünkü durum: uyulmuyor. `CartStore`, `FavoritesStore` ve `PlistStorage` `print` kullanıyor; bkz. `REVIEW.md` S7.
@@ -406,7 +405,6 @@ UI testi XCTest ile yazılır, ayrı `TrendyolBenzeriUITests` scheme'inde çalı
 - View içinde test edilmesi gereken bir kural varsa (sıralama, yeniden deneme) test edilebilir bir tipe ya da fonksiyona çıkarılır.
   - Bugünkü durum: uyulmuyor. Kategorilerin sıralaması (`CategoriesView` içindeki `sortedByName`) view içinde `private`; `ProductImageView`'daki yeniden deneme kuralı test edilebilir bir tipe çıkarılmadı; bkz. `REVIEW.md` T3.
 - Bir kural bugün ihlal ediliyorsa doğru davranışı test eden test yazılır ve gerekçesiyle `.disabled(...)` bırakılır; yanına bugünkü davranışı belgeleyen bir test konur. Düzeltmede kapalı test açılır, belgeleyen test silinir.
-  - Bugünkü durum: "yenileme hatası listeyi korur" testleri O11 düzeltilene kadar kapalı (`ViewModelLoadingTests.swift`); bkz. `REVIEW.md` O11.
 
 ```swift
 // ✅ Store testi: MainActor, geçici klasör, örnek ürün
