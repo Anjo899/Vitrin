@@ -113,7 +113,7 @@ struct CartView: View {
 }
 
 #Preview("Dolu") {
-    let cartStore = CartStore(storage: PlistStorage(directory: .temporaryDirectory.appending(path: UUID().uuidString)))
+    let cartStore = CartStore(storage: .preview)
     cartStore.add(.previewMascara)
     cartStore.add(.previewMascara)
 
@@ -127,5 +127,5 @@ struct CartView: View {
     NavigationStack {
         CartView(selectedTab: .constant(.cart))
     }
-    .environment(CartStore(storage: PlistStorage(directory: .temporaryDirectory.appending(path: UUID().uuidString))))
+    .environment(CartStore(storage: .preview))
 }

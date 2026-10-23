@@ -74,9 +74,7 @@ struct FavoritesView: View {
 
 #Preview("Dolu") {
     let favoritesStore = FavoritesStore(storage: .preview)
-    if !favoritesStore.isFavorite(.previewMascara) {
-        favoritesStore.toggle(.previewMascara)
-    }
+    favoritesStore.toggle(.previewMascara)
 
     return NavigationStack {
         FavoritesView(selectedTab: .constant(.favorites))
@@ -88,5 +86,5 @@ struct FavoritesView: View {
     NavigationStack {
         FavoritesView(selectedTab: .constant(.favorites))
     }
-    .environment(FavoritesStore(storage: PlistStorage(directory: .temporaryDirectory.appending(path: UUID().uuidString))))
+    .environment(FavoritesStore(storage: .preview))
 }

@@ -42,8 +42,11 @@ extension Product {
 }
 
 extension PlistStorage {
-    /// Önizlemeler gerçek favori/sepet dosyalarına yazmasın diye geçici klasör.
+    /// Önizlemeler gerçek favori/sepet dosyalarına yazmasın diye her çağrıda yeni, boş bir geçici klasör.
+    /// Böylece önizlemeler birbirinin kaydını görmez; dosyada kalan bir id yüzünden ürün API'den istenmez.
     static var preview: PlistStorage {
-        PlistStorage(directory: FileManager.default.temporaryDirectory)
+        let directory = FileManager.default.temporaryDirectory.appending(path: "Preview-\(UUID().uuidString)")
+        try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        return PlistStorage(directory: directory)
     }
 }
