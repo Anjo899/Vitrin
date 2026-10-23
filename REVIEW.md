@@ -57,8 +57,8 @@ Bu turda aşağıdakiler çalıştırılarak kontrol edildi:
 | --- | --- | --- | --- | --- |
 | K1 | Kritik | Release derlemesi başarısız | ✅ Düzeltildi | `83f4532`. Bu turda Release derlemesi yeniden alındı, başarılı |
 | O1 | Önemli | Sepet toplamında kuruş farkı | ✅ Düzeltildi | `81b795c`, TL ve dolar için `27092ef`. Satır toplamı = görünen birim fiyat × adet; toplam = görünen satırların toplamı. Testli |
-| O2 | Önemli | Sepet ve favoriler ürünün eski kopyasını saklıyor | ❌ Hâlâ açık | Ayrıntı aşağıda |
-| O3 | Önemli | Plist çözülemezse veri kayboluyor | 🟡 Hâlâ açık (kısmen düzeltildi) | `.corrupt` yedeği var (`fbdf477`). Sürümlü kayıt tipi yok; ikinci bozulmada eski yedek siliniyor |
+| O2 | Önemli | Sepet ve favoriler ürünün eski kopyasını saklıyor | 🟡 Kısmen düzeltildi (23 Ekim 2026) | Plist'te ürün yok, açılışta API'den geliyor (O3). Oturum içinde tazeleme ve adedi stoğa indirme yok |
+| O3 | Önemli | Plist çözülemezse veri kayboluyor | ✅ Düzeltildi (23 Ekim 2026, `fix/versioned-storage`) | `.corrupt` yedeği var (`fbdf477`). Sürümlü kayıt tipi yok; ikinci bozulmada eski yedek siliniyor |
 | O4 | Önemli | JSON çözümü ana thread'de | ❌ Hâlâ açık | Ayrıntı aşağıda |
 | O5 | Önemli | Eski arama sonucu yenisinin üzerine yazılıyor | ✅ Düzeltildi | `57e680a`, testli. `ErrorView`'daki `Task {}` duruyor ama `latestQuery` kontrolü eski sonucu engelliyor |
 | O6 | Önemli | Türkçe yerelleştirme yok | ✅ Düzeltildi | `40537db`: String Catalog ve `tr.lproj`. Türkçe cihazda sistem metinleri de Türkçe. Kalan sınırlar S16'da |
@@ -241,6 +241,7 @@ Güncelleme (21 Ekim 2026): `ARCHITECTURE.md` artık Models → Utilities bağı
   - Bir testle koru (T3).
 
 #### O3 · Önemli · Plist çözülemezse veri kayboluyor (birinci turdan, kısmen düzeltildi)
+- **Durum:** ✅ Düzeltildi (23 Ekim 2026, `fix/versioned-storage`). Plist'e yalnızca sürümlü küçük kayıt yazılıyor (`StoredCart`: id → adet, `StoredFavorites`: id'ler); eski biçim göç ediyor; daha yeni sürümün dosyası ve bozuk dosya zaman damgalı yedeğe alınıyor, önceki yedekler silinmiyor. Ürünler açılışta id ile API'den alınıyor (O2'nin açılış kısmı da böylece çözüldü). Testli (`StoredRecordsTests`).
 - **Dosya:** `Persistence/PlistStorage.swift:37–48`, `Stores/CartStore.swift:18–27`, `Stores/FavoritesStore.swift:19–28`
 - **Sorun:**
   - **Düzeltilen kısım:** Çözülemeyen dosya artık `.corrupt` olarak kenara alınıyor.
