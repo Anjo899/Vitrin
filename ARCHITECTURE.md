@@ -394,7 +394,7 @@ UI testi XCTest ile yazılır, ayrı `TrendyolBenzeriUITests` scheme'inde çalı
 | ViewModel | `load` → `.loaded` / `.failed`, iptalde `.idle`, yenileme hatası listeyi korur, arama | Evet |
 | API client | Durum kodu, decode ve iptal hatalarının eşlenmesi | Evet |
 | View | — | Hayır; davranış ViewModel'e konup orada test edilir |
-| Kritik akış (UI testi) | Sepete ekle → Sepet badge'i → sepet toplamı | Evet; ayrı `TrendyolBenzeriUITests` scheme'inde, CI'da çalışır |
+| Kritik akış (UI testi) | Sepete ekle → Sepet badge'i → sepet toplamı | Evet; ayrı `TrendyolBenzeriUITests` scheme'inde, CI'da çalışır (bugün CI billing nedeniyle çalışmıyor; ilgili PR'larda `pr-manager` yerelde çalıştırır, bkz. `CLAUDE.md`) |
 
 **Kurallar**
 - Bir hata düzeltilince onu yakalayan bir test eklenir.
