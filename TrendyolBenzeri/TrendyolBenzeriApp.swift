@@ -39,8 +39,11 @@ struct TrendyolBenzeriApp: App {
     /// Unit testler çalışırken uygulama test host'u olarak açılır.
     private static let isHostingUnitTests = ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
 
+    /// UI testleri uygulamayı `-uiTesting` argümanıyla açar; sepet ve favoriler boş başlar.
+    private static let isUITesting = ProcessInfo.processInfo.arguments.contains("-uiTesting")
+
     /// Normalde Documents. Testlerde gerçek favori ve sepet dosyalarına dokunulmasın diye geçici klasör.
-    private static let storage: PlistStorage = isHostingUnitTests ? temporaryStorage() : PlistStorage()
+    private static let storage: PlistStorage = isHostingUnitTests || isUITesting ? temporaryStorage() : PlistStorage()
 
     private static func temporaryStorage() -> PlistStorage {
         let directory = URL.temporaryDirectory.appending(path: UUID().uuidString)

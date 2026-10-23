@@ -67,6 +67,8 @@ struct CartView: View {
                     .font(.title3.bold())
                     .contentTransition(.numericText())
                     .animation(.default, value: cartStore.totalPrice(in: currency))
+                    // UI testi toplamı bu kimlikle bulur; VoiceOver'ı etkilemez.
+                    .accessibilityIdentifier("cartTotal")
             }
 
             Button {

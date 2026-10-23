@@ -23,6 +23,8 @@ struct ProductGridView: View {
                     ProductCardView(product: product)
                 }
                 .buttonStyle(.plain)
+                // UI testleri kartı bununla bulur; VoiceOver'ı etkilemez.
+                .accessibilityIdentifier("productCard")
                 // Kalp, NavigationLink'in dışında; basınca detay açılmaz.
                 .overlay(alignment: .topTrailing) {
                     // Buton 44 pt dokunma alanına sahip; 7 pt boşlukla görünen kalp eski yerinde kalır.
