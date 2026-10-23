@@ -25,7 +25,7 @@ Birinci turun 23 bulgusunun durumu:
 
 Bu turda 15 yeni bulgu var: 2 Önemli, 13 Küçük. Kritik bulgu yok. En önemli açık konular:
 1. **O2:** Sepet ve favoriler ürünün eski kopyasını saklıyor. Güncelleme (23 Ekim 2026): kısmen düzeltildi (O3 ile).
-2. **O11 (yeni):** Aşağı çekip yenileme başarısız olursa ekrandaki liste siliniyor. `CLAUDE.md` bunun tersini söylüyor. Güncelleme (23 Ekim 2026): düzeltildi.
+2. **O11 (yeni):** Aşağı çekip yenileme başarısız olursa ekrandaki liste siliniyor. `CLAUDE.md` bunun tersini söylüyor. Güncelleme (23 Ekim 2026): düzeltmesi PR #23'te.
 3. **O4:** JSON çözümü ana thread'de yapılıyor.
 4. **O9 ve O10:** VoiceOver ve Dynamic Type desteği eksik.
 
@@ -74,7 +74,7 @@ Bu turda aşağıdakiler çalıştırılarak kontrol edildi:
 | S5 | Küçük | Görsel önbelleği küçük, 194 ürün tek istekte | ❌ Hâlâ açık | Görsel yeniden deneme (#15) aynı görseli daha sık istiyor |
 | S6 | Küçük | Tekrar eden kod | 🟡 Hâlâ açık (kısmen düzeltildi) | Görsel kodu `ProductImageView`'da birleşti (`01b213e`–`5678294`). ViewModel yükleme mantığı, fiyat ve rozet gösterimi, "n ürün" başlığı hâlâ tekrar ediyor |
 | S7 | Küçük | İsimlendirme ve yerleşim | 🟡 Hâlâ açık (kısmen düzeltildi) | `discountLabel` kalktı (`97c1408`). `MainTabView.Tab`, kullanılmayan `fetchProduct(id:)`, boş `example()` testi ve `print` duruyor. Güncelleme (23 Ekim 2026): `fetchProduct(id:)` artık kullanılıyor (`fetchProducts(ids:)`) |
-| S8 | Küçük | Önizlemeler aynı geçici klasörü kullanıyor | ✅ Düzeltildi (23 Ekim 2026, `fix/versioned-storage`) | Bazı önizlemeler kendi klasör yolunu veriyor ama klasörü oluşturmuyor; ortak çözüm yok. Ayrıca bkz. S20 |
+| S8 | Küçük | Önizlemeler aynı geçici klasörü kullanıyor | ✅ Düzeltildi (23 Ekim 2026, `fix/versioned-storage`) | `PlistStorage.preview` her çağrıda yeni klasör oluşturuyor; bütün önizlemeler onu kullanıyor. Ayrıca bkz. S20 |
 | S9 | Küçük | Yanıltıcı demo ödeme uyarısı | ❌ Hâlâ açık | Mesaj "ürünler korunacak" diyor, başlık hâlâ "Siparişin alındı (demo)" |
 | S10 | Küçük | Karışık sayı biçimleri | ✅ Düzeltildi | `97c1408`: fiyat, indirim, puan ve tarih seçilen dile göre biçimleniyor |
 | T2 | Küçük | Ek test ve kontroller | 🟡 Hâlâ açık (kısmen düzeltildi) | Eski arama ve bozuk plist testleri var. İndirim uç değerleri, yıldız eşikleri, tam API cevabı ve Release derlemesi kontrolü yok. Güncelleme (23 Ekim 2026): `discountRate` yuvarlaması test edildi |
