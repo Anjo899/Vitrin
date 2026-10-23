@@ -89,7 +89,7 @@ Xcode projesi "synchronized folder" yapısında: `TrendyolBenzeri/` altına ekle
 
 | Klasör | İçerik |
 | --- | --- |
-| `Models/` | `Codable` veri tipleri ve onların saf hesapları: `Product`, `Review`, `ProductsResponse`, `ProductCategory` (+ `+Display`), `CartItem`, `AppTheme`, `AppLanguage`; para birimi tipleri `Currency`, `ExchangeRate`, `roundedToCents` ve `Product`'ın fiyat hesapları (bugün `Utilities/PriceFormatter.swift`'te, bkz. 1. Katmanlar) |
+| `Models/` | `Codable` veri tipleri ve onların saf hesapları: `Product`, `Review`, `ProductsResponse`, `ProductCategory` (+ `+Display`), `CartItem`, `AppTheme`, `AppLanguage`, kalıcı kayıt tipleri (`StoredCart`, `StoredFavorites`, `StoredRecordError`); para birimi tipleri `Currency`, `ExchangeRate`, `roundedToCents` ve `Product`'ın fiyat hesapları (bugün `Utilities/PriceFormatter.swift`'te, bkz. 1. Katmanlar) |
 | `Networking/` | `APIClient`, `APIError`, `ProductService` |
 | `Persistence/` | `PlistStorage` |
 | `Stores/` | Ekranlar arası paylaşılan state: `FavoritesStore`, `CartStore` |
@@ -152,7 +152,7 @@ Models/HomeViewModel.swift
   - Tema ve dil: kökteki yöntemle uygulanır: `.preferredColorScheme(theme.colorScheme)`, `.environment(\.locale, language.locale())`, `.environment(\.currency, language.currency())`.
   - `#if DEBUG` içine alınmaz. `#Preview` blokları Release'te de derlendiği için, yardımcı DEBUG'a kapatılırsa onu kullanan her önizleme Release derlemesini kırar; bkz. `REVIEW.md` K1.
   - Önizleme yardımcısı ve `#Preview` blokları, View'ın `PlistStorage` kullanamaz kuralından yalnızca `PlistStorage.preview` için muaftır.
-  - Bugünkü durum: uyulmuyor. `.previewEnvironment` yok; her önizleme environment'ı kendisi kuruyor. `HomeView` ve `FavoritesView` ("Dolu") önizlemeleri `CartStore` vermiyor ve detaya geçince çöküyor. `CategoryProductsView` ve `ProductGridView` önizlemeleri de `CartStore` vermiyor; stack'lerinde `Product` hedefi olmadığı için bugün detaya geçilmiyor ve çökmüyor. Bkz. `REVIEW.md` S20. Kendi klasörünü kuran önizlemeler için bkz. `REVIEW.md` S8.
+  - Bugünkü durum: uyulmuyor. `.previewEnvironment` yok; her önizleme environment'ı kendisi kuruyor. `HomeView` ve `FavoritesView` ("Dolu") önizlemeleri `CartStore` vermiyor ve detaya geçince çöküyor. `CategoryProductsView` ve `ProductGridView` önizlemeleri de `CartStore` vermiyor; stack'lerinde `Product` hedefi olmadığı için bugün detaya geçilmiyor ve çökmüyor. Bkz. `REVIEW.md` S20.
 
 ```swift
 // ✅ Türetilmiş değer hesaplanır
@@ -319,24 +319,25 @@ Text(product.price, format: .currency(code: "USD"))
 
 ## 7. Kalıcılık
 
-- Favoriler ve sepet, store'lar tarafından Documents altında plist olarak saklanır: `favorites.plist` (`[Int: Product]`), `cart.plist` (`[Int: CartItem]`). Anahtar ürün id'sidir.
+- Favoriler ve sepet, store'lar tarafından Documents altında plist olarak saklanır: `favorites.plist` (`StoredFavorites`: sürüm ve id'ler), `cart.plist` (`StoredCart`: sürüm ve id → adet). Kayıt tipleri `Models/StoredRecords.swift`'te.
 - Yazma ve okuma yalnızca `PlistStorage` ile yapılır. Store her değişiklikten sonra kaydeder, açılışta yükler.
 - Dosya yoksa (ilk açılış) store boş başlar.
-- Dosya çözülemezse (bozuk ya da eski biçim) store boş başlar ve dosya `<ad>.plist.corrupt` olarak kenara alınır; böylece ilk kayıt eski veriyi ezmez.
-- Testler ve önizlemeler gerçek dosyalara yazmaz: testler `PlistStorage.temporary()`, önizlemeler `PlistStorage.preview` kullanır.
-  - Bugünkü durum: uyulmuyor. `PlistStorage.preview` her çağrıda aynı geçici klasörü veriyor, bu yüzden önizlemeler arasında veri birikiyor. `Views/Cart/CartView.swift` ("Dolu" ve "Boş") ve `Views/Favorites/FavoritesView.swift` ("Boş") önizlemeleri `.preview` yerine `PlistStorage(directory:)` ile UUID'li bir klasör yolu veriyor ama klasörü oluşturmuyor. Kayıt yalnızca `CartView` "Dolu" önizlemesinde deneniyor ve başarısız oluyor; hata `CartStore`'da `print` ediliyor. Bkz. `REVIEW.md` S8.
+- Dosya çözülemezse (bozuk, bilinmeyen biçim ya da uygulamanın daha yeni bir sürümünün yazdığı dosya) store boş başlar ve dosya zaman damgalı bir adla (`<ad>.plist.corrupt-<zaman>`) kenara alınır; böylece ilk kayıt eski veriyi ezmez ve önceki yedekler silinmez.
+- Testler ve önizlemeler gerçek dosyalara yazmaz: testler `PlistStorage.temporary()`, önizlemeler `PlistStorage.preview` kullanır. İkisi de her çağrıda yeni, boş bir klasör verir; önizlemeler birbirinin kaydını görmez.
 - Plist'e API modeli (`Product`) değil, sürümlü ve küçük bir kayıt tipi (id, adet) yazılır; ürün bilgisi açılışta API'den tazelenir. Şema değişince göç ya da yedek zorunludur.
-  - Bugünkü durum: uyulmuyor. Plist'te `Product`'ın tamamı saklanıyor ve tazelenmiyor; ikinci bozulmada eski `.corrupt` yedeği siliniyor; bkz. `REVIEW.md` O2, O3, S18.
+  - Store, ürün bilgisini yalnızca bellekte tutar. Açılışta bilinmeyen id'ler (`missingProductIDs`) sepet ve Favoriler ekranının ViewModel'i ile API'den istenir (`ProductService.fetchProducts(ids:)`), view sonucu store'a verir (`update(with:requestedIDs:)`). API'de artık olmayan (404) ürünler sepetten ve favorilerden çıkar. Çevrimdışıyken ekran hata ve "Tekrar Dene" gösterir; badge adedi dosyadan bilinir.
+  - Eski biçimdeki dosya (`[Int: CartItem]`, `[Int: Product]`) yeni biçime göç eder; ürünler o açılışta eski dosyadan bilinir.
+  - Bugünkü durum: kısmen uyuluyor. Oturum içinde bilinen ürünler (sepete eklenen ya da bir kez yüklenen) tazelenmiyor; stok düşerse sepetteki adet stoğa indirilmiyor; bkz. `REVIEW.md` O2. Her değişiklikte dosya ana thread'de yazılıyor; bkz. `REVIEW.md` S18.
 
 ```swift
-// ✅ Çözülemeyen dosya kenara alınır, store boş başlar
+// ✅ Sürümlü küçük kayıt; çözülemeyen dosya kenara alınır, store boş başlar
 do {
-    items = try storage.load([Int: CartItem].self, from: fileName) ?? [:]
+    quantities = try storage.load(StoredCart.self, from: fileName)?.quantities ?? [:]
 } catch {
     storage.moveAsideCorruptFile(fileName)
 }
 
-// ❌ Hata yutulur; boş sepet ilk kayıtta eski dosyanın üzerine yazılır
+// ❌ API modeli saklanır ve hata yutulur; boş sepet ilk kayıtta eski dosyanın üzerine yazılır
 items = (try? storage.load([Int: CartItem].self, from: fileName)) ?? [:]
 ```
 

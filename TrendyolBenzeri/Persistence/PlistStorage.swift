@@ -32,15 +32,18 @@ nonisolated struct PlistStorage: Sendable {
         return try PropertyListDecoder().decode(type, from: data)
     }
 
-    /// Okunamayan dosyayı silmeden kenara alır (ör. `cart.plist` → `cart.plist.corrupt`).
-    /// Böylece bir sonraki kayıt eski veriyi ezmez; dosya incelenip kurtarılabilir.
-    func moveAsideCorruptFile(_ fileName: String) {
+    /// Okunamayan dosyayı silmeden, zaman damgalı bir adla kenara alır
+    /// (ör. `cart.plist` → `cart.plist.corrupt-20261023T120000Z`).
+    /// Böylece bir sonraki kayıt eski veriyi ezmez ve önceki yedekler silinmez; dosya incelenip kurtarılabilir.
+    func moveAsideCorruptFile(_ fileName: String, date: Date = .now) {
         let source = fileURL(for: fileName)
-        let destination = fileURL(for: "\(fileName).corrupt")
+        let stamp = date.ISO8601Format(.iso8601.dateSeparator(.omitted).timeSeparator(.omitted))
+        var destination = fileURL(for: "\(fileName).corrupt-\(stamp)")
+        // Aynı saniyede ikinci bir yedek gelirse ilkini ezmesin.
+        if FileManager.default.fileExists(atPath: destination.path()) {
+            destination = fileURL(for: "\(fileName).corrupt-\(stamp)-\(UUID().uuidString)")
+        }
         do {
-            if FileManager.default.fileExists(atPath: destination.path()) {
-                try FileManager.default.removeItem(at: destination)
-            }
             try FileManager.default.moveItem(at: source, to: destination)
         } catch {
             print("\(fileName) kenara alınamadı: \(error)")

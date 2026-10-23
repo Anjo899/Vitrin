@@ -38,7 +38,7 @@ struct PlistStorageTests {
         cartStore.add(.sample())
 
         #expect(cartStore.totalQuantity == 1)
-        let movedAside = try Data(contentsOf: storage.directory.appending(path: "cart.plist.corrupt"))
+        let movedAside = try storage.onlyBackupData(of: "cart.plist")
         #expect(movedAside == corruptData)
     }
 }
@@ -173,7 +173,7 @@ struct StoreRecoveryTests {
         #expect(store.count == 0)
 
         store.toggle(.sample(id: 4))
-        let movedAside = try Data(contentsOf: storage.directory.appending(path: "favorites.plist.corrupt"))
+        let movedAside = try storage.onlyBackupData(of: "favorites.plist")
         #expect(movedAside == corruptData)
         #expect(FavoritesStore(storage: storage).isFavorite(.sample(id: 4)))
     }
@@ -185,7 +185,7 @@ struct StoreRecoveryTests {
         let store = CartStore(storage: storage)
 
         #expect(store.isEmpty)
-        #expect(FileManager.default.fileExists(atPath: storage.directory.appending(path: "cart.plist.corrupt").path()))
+        #expect(storage.backupNames(of: "cart.plist").count == 1)
     }
 
     /// Başka tipte (eski biçim) kaydedilmiş dosya da bozuk sayılır.
@@ -196,7 +196,7 @@ struct StoreRecoveryTests {
         let store = CartStore(storage: storage)
 
         #expect(store.isEmpty)
-        #expect(FileManager.default.fileExists(atPath: storage.directory.appending(path: "cart.plist.corrupt").path()))
+        #expect(storage.backupNames(of: "cart.plist").count == 1)
     }
 }
 

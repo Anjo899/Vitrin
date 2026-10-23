@@ -267,6 +267,10 @@ extension LoadState {
         if case .idle = self { true } else { false }
     }
 
+    var isLoading: Bool {
+        if case .loading = self { true } else { false }
+    }
+
     var isFailed: Bool {
         if case .failed = self { true } else { false }
     }
