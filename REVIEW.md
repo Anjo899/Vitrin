@@ -66,7 +66,7 @@ Bu turda aşağıdakiler çalıştırılarak kontrol edildi:
 | O8 | Önemli | Dokunma alanı 44 pt'den küçük | ✅ Düzeltildi | `74064b6` |
 | O9 | Önemli | VoiceOver kartı bağlamsız okuyor | ❌ Hâlâ açık | Puan etiketleri var; kart, kalp, görsel ve adet sorunları duruyor |
 | O10 | Önemli | Dynamic Type desteği eksik | ❌ Hâlâ açık | Sabit punto ve çerçeveler duruyor |
-| T1 | Önemli | ViewModel, `APIClient` ve fiyat testleri eksik | ✅ Düzeltildi (23 Ekim 2026) | Fiyat, para birimi ve arama testleri eklendi. Yükleme, yenileme ve iptal geçişleri ile `APIClient` hata eşlemesi test edilmiyor. Güncelleme (23 Ekim 2026): bunlar da test edildi; O11'in doğru davranış testleri düzeltmeye kadar kapalı |
+| T1 | Önemli | ViewModel, `APIClient` ve fiyat testleri eksik | ✅ Düzeltildi (23 Ekim 2026) | Fiyat, para birimi ve arama testleri eklendi. Yükleme, yenileme ve iptal geçişleri ile `APIClient` hata eşlemesi test edilmiyor. Güncelleme (23 Ekim 2026): bunlar da test edildi; O11 düzeltilince kapalı test kalmadı |
 | S1 | Küçük | "%0" indirim rozeti | ❌ Hâlâ açık | Simülatörde Green Bell Pepper kartında "0%" görüldü |
 | S2 | Küçük | Aramada `+` boşluk olarak gidiyor | ❌ Hâlâ açık | Kod değişmedi |
 | S3 | Küçük | Hatalı veriye karşı koruma yok | ❌ Hâlâ açık | Kod değişmedi |
@@ -463,7 +463,7 @@ Koda gömülü metin kalmadı (Doğrulama'ya bakın). Kalan sorunlar seçilen di
 
 ### Test kapsamı
 
-Bugün 41 test var: fiyat ve para birimi, dil ve tema, kategori adları, decode, store'lar ve aramanın iki senaryosu. Güncelleme (23 Ekim 2026): 98 unit test (3'ü O11 nedeniyle kapalı) ve ayrı scheme'de bir UI testi var. Testler hızlı (≈1,4 sn) ve ağa çıkmıyor; arama testi `URLProtocol` tabanlı sahte bir oturum kullanıyor.
+Bugün 41 test var: fiyat ve para birimi, dil ve tema, kategori adları, decode, store'lar ve aramanın iki senaryosu. Güncelleme (23 Ekim 2026): 98 unit test (O11 düzeltilince kapalı test kalmadı) ve ayrı scheme'de bir UI testi var. Testler hızlı (≈1,4 sn) ve ağa çıkmıyor; arama testi `URLProtocol` tabanlı sahte bir oturum kullanıyor.
 
 #### T1 · Önemli · Kritik akışların testi eksik (birinci turdan, kısmen düzeltildi)
 - **Durum:** ✅ Düzeltildi (23 Ekim 2026). #21'deki testler ve O11 düzeltmesiyle açılan yenileme testleri; kapalı test kalmadı.
