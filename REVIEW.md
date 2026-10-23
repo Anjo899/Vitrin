@@ -24,7 +24,7 @@ Birinci turun 23 bulgusunun durumu:
 - 11'i açık.
 
 Bu turda 15 yeni bulgu var: 2 Önemli, 13 Küçük. Kritik bulgu yok. En önemli açık konular:
-1. **O2:** Sepet ve favoriler ürünün eski kopyasını saklıyor. Güncelleme (23 Ekim 2026): kısmen düzeltildi (O3 ile).
+1. **O2:** Sepet ve favoriler ürünün eski kopyasını saklıyor. Güncelleme (23 Ekim 2026): düzeltildi (O3 ve `fix/refresh-stored-products`).
 2. **O11 (yeni):** Aşağı çekip yenileme başarısız olursa ekrandaki liste siliniyor. `CLAUDE.md` bunun tersini söylüyor. Güncelleme (23 Ekim 2026): düzeltmesi PR #23'te.
 3. **O4:** JSON çözümü ana thread'de yapılıyor.
 4. **O9 ve O10:** VoiceOver ve Dynamic Type desteği eksik.
@@ -57,7 +57,7 @@ Bu turda aşağıdakiler çalıştırılarak kontrol edildi:
 | --- | --- | --- | --- | --- |
 | K1 | Kritik | Release derlemesi başarısız | ✅ Düzeltildi | `83f4532`. Bu turda Release derlemesi yeniden alındı, başarılı |
 | O1 | Önemli | Sepet toplamında kuruş farkı | ✅ Düzeltildi | `81b795c`, TL ve dolar için `27092ef`. Satır toplamı = görünen birim fiyat × adet; toplam = görünen satırların toplamı. Testli |
-| O2 | Önemli | Sepet ve favoriler ürünün eski kopyasını saklıyor | 🟡 Kısmen düzeltildi (23 Ekim 2026) | Plist'te ürün yok, açılışta API'den geliyor (O3). Oturum içinde tazeleme ve adedi stoğa indirme yok |
+| O2 | Önemli | Sepet ve favoriler ürünün eski kopyasını saklıyor | ✅ Düzeltildi (23 Ekim 2026, `fix/refresh-stored-products`) | Plist'te ürün yok (O3); sepet ve Favoriler ekranı her açılışta ürünleri tazeliyor, adet stoğa iniyor |
 | O3 | Önemli | Plist çözülemezse veri kayboluyor | ✅ Düzeltildi (23 Ekim 2026, `fix/versioned-storage`) | `.corrupt` yedeği var (`fbdf477`). Güncelleme (23 Ekim 2026): sürümlü kayıt tipi (id, adet) ve zaman damgalı yedekler eklendi |
 | O4 | Önemli | JSON çözümü ana thread'de | ❌ Hâlâ açık | Ayrıntı aşağıda |
 | O5 | Önemli | Eski arama sonucu yenisinin üzerine yazılıyor | ✅ Düzeltildi | `57e680a`, testli. `ErrorView`'daki `Task {}` duruyor ama `latestQuery` kontrolü eski sonucu engelliyor |
@@ -141,7 +141,7 @@ Güncelleme (21 Ekim 2026): `ARCHITECTURE.md` artık Models → Utilities bağı
 - Tema ve dil `@AppStorage` ile kalıcı; kök ve Ayarlar aynı anahtarı okuyor.
 
 #### O2 · Önemli · Sepet ve favorilerde ürünün eski kopyası saklanıyor (birinci turdan, açık)
-- **Durum:** 🟡 Kısmen düzeltildi (23 Ekim 2026, `fix/versioned-storage`, O3). Plist'te ürün saklanmıyor; ürünler açılışta id ile API'den geliyor. Kalanlar: oturum içinde bilinen ürünler tazelenmiyor, `add` satırdaki ürünü yenisiyle değiştirmiyor, adet yeni stoğa indirilmiyor.
+- **Durum:** ✅ Düzeltildi (23 Ekim 2026). `fix/versioned-storage` (O3): plist'te ürün saklanmıyor. `fix/refresh-stored-products`: sepet ve Favoriler ekranı her açıldığında ürünleri API'den tazeliyor; `add` satırdaki ürünü yenisiyle değiştiriyor; adet yeni stoğa iniyor, stok bittiyse satır çıkıyor. Testli (`ProductRefreshTests`).
 - **Dosya:** `Stores/CartStore.swift:62–71`, `Stores/FavoritesStore.swift:43–50`, `Networking/ProductService.swift:46–48`
 - **Sorun:**
   - `add` ürün zaten sepetteyse yalnızca adedi artırıyor; satırdaki `product` eklendiği günkü haliyle kalıyor. Favoriler de aynı.
