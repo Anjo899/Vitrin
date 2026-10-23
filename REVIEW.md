@@ -24,8 +24,8 @@ Birinci turun 23 bulgusunun durumu:
 - 11'i açık.
 
 Bu turda 15 yeni bulgu var: 2 Önemli, 13 Küçük. Kritik bulgu yok. En önemli açık konular:
-1. **O2:** Sepet ve favoriler ürünün eski kopyasını saklıyor.
-2. **O11 (yeni):** Aşağı çekip yenileme başarısız olursa ekrandaki liste siliniyor. `CLAUDE.md` bunun tersini söylüyor.
+1. **O2:** Sepet ve favoriler ürünün eski kopyasını saklıyor. Güncelleme (23 Ekim 2026): kısmen düzeltildi (O3 ile).
+2. **O11 (yeni):** Aşağı çekip yenileme başarısız olursa ekrandaki liste siliniyor. `CLAUDE.md` bunun tersini söylüyor. Güncelleme (23 Ekim 2026): düzeltildi.
 3. **O4:** JSON çözümü ana thread'de yapılıyor.
 4. **O9 ve O10:** VoiceOver ve Dynamic Type desteği eksik.
 
@@ -73,8 +73,8 @@ Bu turda aşağıdakiler çalıştırılarak kontrol edildi:
 | S4 | Küçük | Gereksiz yeniden hesaplama | ❌ Hâlâ açık | `CartView` artık toplamı da her çizimde iki kez hesaplıyor |
 | S5 | Küçük | Görsel önbelleği küçük, 194 ürün tek istekte | ❌ Hâlâ açık | Görsel yeniden deneme (#15) aynı görseli daha sık istiyor |
 | S6 | Küçük | Tekrar eden kod | 🟡 Hâlâ açık (kısmen düzeltildi) | Görsel kodu `ProductImageView`'da birleşti (`01b213e`–`5678294`). ViewModel yükleme mantığı, fiyat ve rozet gösterimi, "n ürün" başlığı hâlâ tekrar ediyor |
-| S7 | Küçük | İsimlendirme ve yerleşim | 🟡 Hâlâ açık (kısmen düzeltildi) | `discountLabel` kalktı (`97c1408`). `MainTabView.Tab`, kullanılmayan `fetchProduct(id:)`, boş `example()` testi ve `print` duruyor |
-| S8 | Küçük | Önizlemeler aynı geçici klasörü kullanıyor | ❌ Hâlâ açık | Bazı önizlemeler kendi klasör yolunu veriyor ama klasörü oluşturmuyor; ortak çözüm yok. Ayrıca bkz. S20 |
+| S7 | Küçük | İsimlendirme ve yerleşim | 🟡 Hâlâ açık (kısmen düzeltildi) | `discountLabel` kalktı (`97c1408`). `MainTabView.Tab`, kullanılmayan `fetchProduct(id:)`, boş `example()` testi ve `print` duruyor. Güncelleme (23 Ekim 2026): `fetchProduct(id:)` artık kullanılıyor (`fetchProducts(ids:)`) |
+| S8 | Küçük | Önizlemeler aynı geçici klasörü kullanıyor | ✅ Düzeltildi (23 Ekim 2026, `fix/versioned-storage`) | Bazı önizlemeler kendi klasör yolunu veriyor ama klasörü oluşturmuyor; ortak çözüm yok. Ayrıca bkz. S20 |
 | S9 | Küçük | Yanıltıcı demo ödeme uyarısı | ❌ Hâlâ açık | Mesaj "ürünler korunacak" diyor, başlık hâlâ "Siparişin alındı (demo)" |
 | S10 | Küçük | Karışık sayı biçimleri | ✅ Düzeltildi | `97c1408`: fiyat, indirim, puan ve tarih seçilen dile göre biçimleniyor |
 | T2 | Küçük | Ek test ve kontroller | 🟡 Hâlâ açık (kısmen düzeltildi) | Eski arama ve bozuk plist testleri var. İndirim uç değerleri, yıldız eşikleri, tam API cevabı ve Release derlemesi kontrolü yok. Güncelleme (23 Ekim 2026): `discountRate` yuvarlaması test edildi |
@@ -141,6 +141,7 @@ Güncelleme (21 Ekim 2026): `ARCHITECTURE.md` artık Models → Utilities bağı
 - Tema ve dil `@AppStorage` ile kalıcı; kök ve Ayarlar aynı anahtarı okuyor.
 
 #### O2 · Önemli · Sepet ve favorilerde ürünün eski kopyası saklanıyor (birinci turdan, açık)
+- **Durum:** 🟡 Kısmen düzeltildi (23 Ekim 2026, `fix/versioned-storage`, O3). Plist'te ürün saklanmıyor; ürünler açılışta id ile API'den geliyor. Kalanlar: oturum içinde bilinen ürünler tazelenmiyor, `add` satırdaki ürünü yenisiyle değiştirmiyor, adet yeni stoğa indirilmiyor.
 - **Dosya:** `Stores/CartStore.swift:62–71`, `Stores/FavoritesStore.swift:43–50`, `Networking/ProductService.swift:46–48`
 - **Sorun:**
   - `add` ürün zaten sepetteyse yalnızca adedi artırıyor; satırdaki `product` eklendiği günkü haliyle kalıyor. Favoriler de aynı.
@@ -281,7 +282,7 @@ Güncelleme (21 Ekim 2026): `ARCHITECTURE.md` artık Models → Utilities bağı
 
 #### S18 · Küçük · Her değişiklikte tüm dosya ana thread'de yazılıyor
 - **Dosya:** `Stores/CartStore.swift:90–96`, `Stores/FavoritesStore.swift:52–58`, `Persistence/PlistStorage.swift:18–23`
-- **Sorun:** Sepette her `+`/`−` dokunuşu ve her kalp, bütün sözlüğü XML plist olarak kodlayıp diske atomik olarak yazıyor. Bu iş MainActor'da yapılıyor ve sözlükte her ürünün tamamı, yorumlarıyla birlikte var.
+- **Sorun:** Sepette her `+`/`−` dokunuşu ve her kalp, bütün sözlüğü XML plist olarak kodlayıp diske atomik olarak yazıyor. Bu iş MainActor'da yapılıyor ve sözlükte her ürünün tamamı, yorumlarıyla birlikte var. Güncelleme (23 Ekim 2026): dosyaya artık yalnızca id ve adet yazılıyor (O3); yazma hâlâ MainActor'da ve her değişiklikte.
 - **Neden önemli:** Bugün küçük, ama O3'teki şema riskiyle aynı kökten geliyor. Veri büyüdükçe dokunuş başına ana thread maliyeti artıyor.
 - **Öneri:**
   - O3'teki küçük kayıt tipine geç (yalnızca id ve adet).
@@ -445,6 +446,7 @@ Koda gömülü metin kalmadı (Doğrulama'ya bakın). Kalan sorunlar seçilen di
 ### Kod kalitesi: önizlemeler
 
 #### S8 · Küçük · Önizlemeler aynı geçici klasörü kullanıyor (birinci turdan, açık)
+- **Durum:** ✅ Düzeltildi (23 Ekim 2026, `fix/versioned-storage`). `PlistStorage.preview` her çağrıda yeni bir klasör oluşturuyor; bütün önizlemeler onu kullanıyor. O3 sonrası paylaşılan klasör Favoriler önizlemesini API'ye çıkardığı için bu PR'da düzeltildi.
 - **Dosya:** `Utilities/PreviewData.swift:44–48`, `Views/Favorites/FavoritesView.swift:55–58`
 - **Sorun:** `PlistStorage.preview` her seferinde aynı geçici klasörü veriyor. Bu yüzden önizlemeler arasında veri birikiyor. `FavoritesView` önizlemesindeki `if` bunu telafi etmek için yazılmış.
   - `CartView` ("Dolu" ve "Boş") ve `FavoritesView` ("Boş") önizlemeleri `PlistStorage(directory:)` ile UUID'li bir klasör yolu veriyor ama klasörü oluşturmuyor. Kayıt yalnızca `CartView` "Dolu" önizlemesinde deneniyor ve başarısız oluyor; hata `CartStore`'da `print` ediliyor.

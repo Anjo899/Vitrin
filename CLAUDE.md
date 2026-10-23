@@ -14,7 +14,7 @@
 
 | Klasör | Sorumluluk |
 | --- | --- |
-| `Models/` | `Codable` veri tipleri: `Product`, `Review`, `ProductsResponse`, `ProductCategory` (+ `+Display`: slug → çevrilen ad ve SF Symbol), `CartItem`, `AppTheme`, `AppLanguage` |
+| `Models/` | `Codable` veri tipleri: `Product`, `Review`, `ProductsResponse`, `ProductCategory` (+ `+Display`: slug → çevrilen ad ve SF Symbol), `CartItem`, `AppTheme`, `AppLanguage`, plist kayıtları `StoredCart` / `StoredFavorites` |
 | `Networking/` | `APIClient` (generic `get`, tarih çözen `JSONDecoder.dummyJSON`), `APIError` (Türkçe hata mesajları), `ProductService` (endpoint'leri bilen tek yer) |
 | `Persistence/` | `PlistStorage`: `Codable` değerleri Documents'a plist olarak yazar ve okur |
 | `Stores/` | Paylaşılan state: `FavoritesStore`, `CartStore` |
