@@ -56,6 +56,19 @@ final class StubServer: @unchecked Sendable {
         self.init { _ in response }
     }
 
+    /// Cevapları sırayla veren sunucu; liste bitince son cevap tekrarlanır (ör. yükle, sonra yenile).
+    convenience init(sequence: [StubResponse]) {
+        let responses = ResponseSequence(sequence)
+        self.init { _ in await responses.next() }
+    }
+
+    /// Cevaptan önce çalışır; test bir isteği `Gate` ile bekletmek için kullanır.
+    var onRequest: (@Sendable () async -> Void)? {
+        get { lock.withLock { requestHook } }
+        set { lock.withLock { requestHook = newValue } }
+    }
+    private var requestHook: (@Sendable () async -> Void)?
+
     /// Bu sunucuya istek atan, gerçek ağa çıkamayan istemci.
     var client: APIClient {
         APIClient(baseURL: URL(string: "https://\(host)")!, session: StubURLProtocol.session)
@@ -71,8 +84,25 @@ final class StubServer: @unchecked Sendable {
     }
 
     fileprivate func handle(_ request: URLRequest) async -> StubResponse {
-        lock.withLock { receivedRequests.append(request) }
+        let hook = lock.withLock {
+            receivedRequests.append(request)
+            return requestHook
+        }
+        await hook?()
         return await respond(request)
+    }
+}
+
+/// `StubServer(sequence:)` cevaplarını sırayla verir.
+private actor ResponseSequence {
+    private var responses: [StubResponse]
+
+    init(_ responses: [StubResponse]) {
+        self.responses = responses
+    }
+
+    func next() -> StubResponse {
+        responses.count > 1 ? responses.removeFirst() : responses.first ?? .failure(.badServerResponse)
     }
 }
 
