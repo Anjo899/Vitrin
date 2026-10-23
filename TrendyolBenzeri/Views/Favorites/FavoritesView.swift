@@ -6,7 +6,7 @@
 import SwiftUI
 
 /// Favori ürünler. Liste `FavoritesStore`'dan gelir; başka bir ekranda kalbe basıldığında kendiliğinden
-/// güncellenir. Dosyada yalnızca id'ler olduğu için açılıştan sonra ürün bilgisi bir kez API'den istenir.
+/// güncellenir. Dosyada yalnızca id'ler olduğu için ekran her açıldığında ürünler API'den alınır ve tazelenir.
 struct FavoritesView: View {
     /// Seçili sekme `MainTabView`'a ait; `@Binding` ile buradan değiştirebiliyoruz.
     @Binding var selectedTab: MainTabView.Tab
@@ -23,17 +23,8 @@ struct FavoritesView: View {
             // Dosyada yalnızca id var; ekran her açıldığında ürünler API'den alınır ve tazelenir.
             // Ürünler biliniyorsa istek arka planda olur, başarısız olursa liste olduğu gibi kalır.
             .task {
-                await refreshProducts()
+                await favoritesStore.refreshProducts(using: viewModel)
             }
-    }
-
-    private func refreshProducts() async {
-        let ids = favoritesStore.ids
-        guard !ids.isEmpty else { return }
-        await viewModel.loadProducts(ids: ids)
-        if case .loaded(let products) = viewModel.state {
-            favoritesStore.update(with: products, requestedIDs: ids)
-        }
     }
 
     @ViewBuilder
@@ -54,7 +45,7 @@ struct FavoritesView: View {
         } else if !favoritesStore.missingProductIDs.isEmpty {
             if case .failed(let message) = viewModel.state {
                 ErrorView(message: message) {
-                    await refreshProducts()
+                    await favoritesStore.refreshProducts(using: viewModel)
                 }
             } else {
                 LoadingView(message: "Favoriler yükleniyor…")

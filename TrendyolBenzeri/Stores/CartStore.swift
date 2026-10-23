@@ -81,7 +81,7 @@ final class CartStore {
     func add(_ product: Product) {
         guard canAdd(product) else { return }
         quantities[product.id, default: 0] += 1
-        // Satırdaki ürün, eklenirken gösterilen (daha yeni) kopyayla değişir.
+        // Satırdaki ürün, eklenirken gösterilen kopyayla değişir; sepet ekranı açılınca yine API'den tazelenir.
         products[product.id] = product
         save()
     }

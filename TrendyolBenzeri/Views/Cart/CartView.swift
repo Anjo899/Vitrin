@@ -26,17 +26,8 @@ struct CartView: View {
             // Dosyada yalnızca id var; ekran her açıldığında ürünler API'den alınır ve tazelenir.
             // Ürünler biliniyorsa istek arka planda olur, başarısız olursa liste olduğu gibi kalır.
             .task {
-                await refreshProducts()
+                await cartStore.refreshProducts(using: viewModel)
             }
-    }
-
-    private func refreshProducts() async {
-        let ids = cartStore.productIDs
-        guard !ids.isEmpty else { return }
-        await viewModel.loadProducts(ids: ids)
-        if case .loaded(let products) = viewModel.state {
-            cartStore.update(with: products, requestedIDs: ids)
-        }
     }
 
     @ViewBuilder
@@ -55,7 +46,7 @@ struct CartView: View {
         } else if !cartStore.missingProductIDs.isEmpty {
             if case .failed(let message) = viewModel.state {
                 ErrorView(message: message) {
-                    await refreshProducts()
+                    await cartStore.refreshProducts(using: viewModel)
                 }
             } else {
                 LoadingView(message: "Sepet yükleniyor…")
