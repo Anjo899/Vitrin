@@ -38,7 +38,14 @@ struct MainTabView: View {
             NavigationStack {
                 CartView(selectedTab: $selectedTab)
             }
-            .tabItem { Label("Sepet", systemImage: "cart") }
+            .tabItem {
+                Label("Sepet", systemImage: "cart")
+                    // iOS 26 sekme çubuğu badge'i erişilebilirlik ağacına koymuyor; VoiceOver ve
+                    // UI testleri adedi bu değerden okur. Badge gibi, sepet boşken değer de yok.
+                    .accessibilityValue(
+                        cartStore.isEmpty ? Text(verbatim: "") : Text(cartStore.totalQuantity, format: .number)
+                    )
+            }
             // Badge 0 olduğunda SwiftUI onu otomatik gizler.
             .badge(cartStore.totalQuantity)
             .tag(Tab.cart)
