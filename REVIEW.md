@@ -435,7 +435,7 @@ Koda gömülü metin kalmadı (Doğrulama'ya bakın). Kalan sorunlar seçilen di
     - Satır 12 ve 100: "main'e merge yok (hoca merge edecek). Push öncesi her zaman sorulur." `CLAUDE.md`'deki güncel kural ise push, PR ve merge'ün onay beklemeden yapılması.
     - Satır 40: "en_US". Satır 55: "sadece DEBUG". Satır 56: "`failed(String)`". Üçü de artık doğru değil.
     - Görsel yükleme düzeltmesi (#15) adımlar tablosunda yok.
-  - **`CLAUDE.md`:** ViewModel maddesi (O11) ve Fiyatlar maddesi (S13) kodla çelişiyordu. Güncelleme (21 Ekim 2026): ikisi de düzeltildi; ViewModel maddesi O11'i "Bugünkü durum: uyulmuyor" diye işaretliyor, Fiyatlar maddesi S13'ü doğru anlatıyor. `CLAUDE.md` satır numaraları değiştiği için atıflar bölüm adıyla veriliyor.
+  - **`CLAUDE.md`:** ViewModel maddesi (O11) ve Fiyatlar maddesi (S13) kodla çelişiyordu. Güncelleme (21 Ekim 2026): ikisi de düzeltildi; ViewModel maddesi O11'i "Bugünkü durum: uyulmuyor" diye işaretliyordu (O11 23 Ekim 2026'da düzeltildi, not kaldırıldı), Fiyatlar maddesi S13'ü doğru anlatıyor. `CLAUDE.md` satır numaraları değiştiği için atıflar bölüm adıyla veriliyor.
 - **Neden önemli:** İki dosya da kalıcı bağlam olarak okunuyor; çelişen kurallar yanlış bir push, PR ya da merge kararına yol açabilir.
 - **Öneri:**
   - `PLAN.md`'nin "Genel kurallar" ve "Her branch için iş akışı" bölümlerini `CLAUDE.md`'ye yönlendir ya da güncelle.
@@ -475,7 +475,7 @@ Bugün 41 test var: fiyat ve para birimi, dil ve tema, kategori adları, decode,
     - İptalde `.idle`'a dönüş.
     - `refresh` davranışı (O11).
     - `APIClient`'ın hata eşlemesi: 2xx dışı kod → `badStatus`, bozuk JSON → `decoding`, `URLError.cancelled` → `CancellationError`.
-- **Güncelleme (23 Ekim 2026):** "Hâlâ test edilmeyenler"in hepsi test edildi (`ViewModelLoadingTests`, `APIClientTests`; ortak `StubURLProtocol`). O11'in doğru davranışını test eden testler, düzeltme yapılana kadar kapalı.
+- **Güncelleme (23 Ekim 2026):** "Hâlâ test edilmeyenler"in hepsi test edildi (`ViewModelLoadingTests`, `APIClientTests`; ortak `StubURLProtocol`). O11'in doğru davranışını test eden testler O11 düzeltilince açıldı (23 Ekim 2026).
 - **Neden önemli:** O11 gibi bir hata, bu testler olsaydı yazıldığı gün yakalanırdı.
 - **Öneri:**
   - `SearchStubURLProtocol`'ü genel bir `StubURLProtocol`'e çevir (yol → durum kodu, gövde, gecikme). Yapıldı (23 Ekim 2026).
@@ -511,7 +511,7 @@ Bugün 41 test var: fiyat ve para birimi, dil ve tema, kategori adları, decode,
 ## Sonraki adımlar
 
 ### Önerilen sıra
-1. **O11 ve T1:** Yenileme hatasında listeyi koru. Ortak yükleyiciyi (S6) çıkar ve durum geçişlerini test et.
+1. **O11 ve T1:** Yenileme hatasında listeyi koru. Ortak yükleyiciyi (S6) çıkar ve durum geçişlerini test et. Güncelleme (23 Ekim 2026): O11 ve T1 düzeltildi; ortak yükleyici (S6) yapılmadı.
 2. **O2 ve O3:** Sepet ve favoriler için sürümlü kayıt tipine geç (id + adet); ürünleri açılışta tazele. S18 de bununla çözülür.
 3. **O4:** `APIClient.get`'i `@concurrent` yap; decoder ve tarih biçimlerini bir kez oluştur.
 4. **O12, O9, O10:** Erişilebilirlik turu. Simülatörde Accessibility Inspector, VoiceOver ve en büyük yazı boyutuyla dene.

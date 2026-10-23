@@ -214,7 +214,7 @@ func refresh() async {
     }
 }
 
-// ❌ Yenileme hatası listeyi tam ekran hatayla değiştirir (bugünkü kod)
+// ❌ Yenileme hatası listeyi tam ekran hatayla değiştirir
 func refresh() async {
     await fetchProducts()   // hata olursa state = .failed(...)
 }
