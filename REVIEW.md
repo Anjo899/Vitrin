@@ -66,7 +66,7 @@ Bu turda aşağıdakiler çalıştırılarak kontrol edildi:
 | O8 | Önemli | Dokunma alanı 44 pt'den küçük | ✅ Düzeltildi | `74064b6` |
 | O9 | Önemli | VoiceOver kartı bağlamsız okuyor | ❌ Hâlâ açık | Puan etiketleri var; kart, kalp, görsel ve adet sorunları duruyor |
 | O10 | Önemli | Dynamic Type desteği eksik | ❌ Hâlâ açık | Sabit punto ve çerçeveler duruyor |
-| T1 | Önemli | ViewModel, `APIClient` ve fiyat testleri eksik | 🟡 Hâlâ açık (kısmen düzeltildi) | Fiyat, para birimi ve arama testleri eklendi. Yükleme, yenileme ve iptal geçişleri ile `APIClient` hata eşlemesi test edilmiyor |
+| T1 | Önemli | ViewModel, `APIClient` ve fiyat testleri eksik | 🟡 Hâlâ açık (kısmen düzeltildi) | Fiyat, para birimi ve arama testleri eklendi. Yükleme, yenileme ve iptal geçişleri ile `APIClient` hata eşlemesi test edilmiyor. Güncelleme (23 Ekim 2026): bunlar da test edildi; O11'in doğru davranış testleri düzeltmeye kadar kapalı |
 | S1 | Küçük | "%0" indirim rozeti | ❌ Hâlâ açık | Simülatörde Green Bell Pepper kartında "0%" görüldü |
 | S2 | Küçük | Aramada `+` boşluk olarak gidiyor | ❌ Hâlâ açık | Kod değişmedi |
 | S3 | Küçük | Hatalı veriye karşı koruma yok | ❌ Hâlâ açık | Kod değişmedi |
@@ -77,7 +77,7 @@ Bu turda aşağıdakiler çalıştırılarak kontrol edildi:
 | S8 | Küçük | Önizlemeler aynı geçici klasörü kullanıyor | ❌ Hâlâ açık | Bazı önizlemeler kendi klasör yolunu veriyor ama klasörü oluşturmuyor; ortak çözüm yok. Ayrıca bkz. S20 |
 | S9 | Küçük | Yanıltıcı demo ödeme uyarısı | ❌ Hâlâ açık | Mesaj "ürünler korunacak" diyor, başlık hâlâ "Siparişin alındı (demo)" |
 | S10 | Küçük | Karışık sayı biçimleri | ✅ Düzeltildi | `97c1408`: fiyat, indirim, puan ve tarih seçilen dile göre biçimleniyor |
-| T2 | Küçük | Ek test ve kontroller | 🟡 Hâlâ açık (kısmen düzeltildi) | Eski arama ve bozuk plist testleri var. İndirim uç değerleri, yıldız eşikleri, tam API cevabı ve Release derlemesi kontrolü yok |
+| T2 | Küçük | Ek test ve kontroller | 🟡 Hâlâ açık (kısmen düzeltildi) | Eski arama ve bozuk plist testleri var. İndirim uç değerleri, yıldız eşikleri, tam API cevabı ve Release derlemesi kontrolü yok. Güncelleme (23 Ekim 2026): `discountRate` yuvarlaması test edildi |
 
 "Artık geçerli değil" durumuna düşen bulgu yok.
 
@@ -462,7 +462,7 @@ Koda gömülü metin kalmadı (Doğrulama'ya bakın). Kalan sorunlar seçilen di
 
 ### Test kapsamı
 
-Bugün 41 test var: fiyat ve para birimi, dil ve tema, kategori adları, decode, store'lar ve aramanın iki senaryosu. Testler hızlı (≈1,4 sn) ve ağa çıkmıyor; arama testi `URLProtocol` tabanlı sahte bir oturum kullanıyor.
+Bugün 41 test var: fiyat ve para birimi, dil ve tema, kategori adları, decode, store'lar ve aramanın iki senaryosu. Güncelleme (23 Ekim 2026): 98 unit test (3'ü O11 nedeniyle kapalı) ve ayrı scheme'de bir UI testi var. Testler hızlı (≈1,4 sn) ve ağa çıkmıyor; arama testi `URLProtocol` tabanlı sahte bir oturum kullanıyor.
 
 #### T1 · Önemli · Kritik akışların testi eksik (birinci turdan, kısmen düzeltildi)
 - **Dosya:** `TrendyolBenzeriTests/`
@@ -476,14 +476,14 @@ Bugün 41 test var: fiyat ve para birimi, dil ve tema, kategori adları, decode,
 - **Güncelleme (23 Ekim 2026):** "Hâlâ test edilmeyenler"in hepsi test edildi (`ViewModelLoadingTests`, `APIClientTests`; ortak `StubURLProtocol`). O11'in doğru davranışını test eden testler, düzeltme yapılana kadar kapalı.
 - **Neden önemli:** O11 gibi bir hata, bu testler olsaydı yazıldığı gün yakalanırdı.
 - **Öneri:**
-  - `SearchStubURLProtocol`'ü genel bir `StubURLProtocol`'e çevir (yol → durum kodu, gövde, gecikme).
-  - Üç ViewModel ve `APIClient` için durum geçişi testleri yaz.
+  - `SearchStubURLProtocol`'ü genel bir `StubURLProtocol`'e çevir (yol → durum kodu, gövde, gecikme). Yapıldı (23 Ekim 2026).
+  - Üç ViewModel ve `APIClient` için durum geçişi testleri yaz. Yapıldı (23 Ekim 2026).
 
 #### T2 · Küçük · Ek test ve kontroller (birinci turdan, kısmen düzeltildi)
 - **Sorun:**
   - **Eklenenler:** Eski arama ve bozuk plist testleri.
   - **Hâlâ eksik:**
-    - `hasDiscount` / `discountRate` uç değerleri (S1).
+    - `hasDiscount` / `discountRate` uç değerleri (S1). Güncelleme (23 Ekim 2026): `discountRate` yuvarlaması test edildi; S1'deki `hasDiscount` ile rozetin ayrıştığı durum (ör. %0,3 indirim) hâlâ testsiz.
     - `StarRatingView` eşikleri (0,25 / 0,75).
     - Gerçek bir API cevabının tamamıyla decode.
     - `+` kodlaması (S2).
@@ -559,6 +559,7 @@ Güncelleme (23 Ekim 2026): SwiftLint #20 ile eklendi (`.swiftlint.yml`, `SwiftL
 - **Görsel yükleme:** İptal yeniden denenir; kalıcı hata sınırlı denenir (S17, T3).
 - **Erişilebilirlik:** UI testlerinde `performAccessibilityAudit()` kontrast, dokunma alanı, etiket ve Dynamic Type sorunlarını otomatik yakalar (O9, O10, O12).
   - Ancak `CLAUDE.md` şablon UI testlerinin scheme'e geri eklenmemesini söylüyor. Bunun için ayrı bir UI test scheme'i ya da bu kuralın gözden geçirilmesi gerekir; karar proje sahibinin.
+  - Güncelleme (23 Ekim 2026): proje sahibi ayrı scheme'i seçti; `TrendyolBenzeriUITests` scheme'i var ve sepet akışını test ediyor. `performAccessibilityAudit()` henüz eklenmedi.
 
 ### Mimari kural olarak yazılması gerekenler
 Bunlar `CLAUDE.md`'ye kural olarak eklenmeli:
