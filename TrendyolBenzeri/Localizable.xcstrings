@@ -1293,6 +1293,22 @@
       "comment": "Dil adı; her dilde kendi yazılışıyla gösterilir",
       "shouldTranslate": false
     },
+    "Uyarıyı kapatır": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dismisses the alert"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uyarıyı kapatır"
+          }
+        }
+      }
+    },
     "Vitrin": {
       "comment": "Uygulama adı",
       "shouldTranslate": false

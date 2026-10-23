@@ -49,6 +49,10 @@ struct CategoriesView: View {
             .refreshable {
                 await viewModel.refresh()
             }
+            // Yenileme hatası listeyi silmez; birkaç saniyelik uyarı olarak görünür.
+            .refreshErrorBanner(viewModel.refreshError) {
+                viewModel.dismissRefreshError()
+            }
         }
     }
 
