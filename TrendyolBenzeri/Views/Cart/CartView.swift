@@ -13,6 +13,7 @@ struct CartView: View {
     /// Kökte seçilen dile göre verilir; dil değişince fiyatlar anında yeni para birimine geçer.
     @Environment(\.currency) private var currency
     @State private var showsCheckoutAlert = false
+    @State private var viewModel = CartViewModel()
 
     var body: some View {
         content
@@ -22,6 +23,19 @@ struct CartView: View {
             } message: {
                 Text("Bu bir okul projesi; ödeme adımı henüz yok. Sepetindeki ürünler korunacak.")
             }
+            // Dosyada yalnızca id ve adet var; bilgisi bilinmeyen ürünler API'den istenir.
+            .task(id: cartStore.missingProductIDs) {
+                await loadMissingProducts()
+            }
+    }
+
+    private func loadMissingProducts() async {
+        let ids = cartStore.missingProductIDs
+        guard !ids.isEmpty else { return }
+        await viewModel.loadProducts(ids: ids)
+        if case .loaded(let products) = viewModel.state {
+            cartStore.update(with: products, requestedIDs: ids)
+        }
     }
 
     @ViewBuilder
@@ -36,6 +50,14 @@ struct CartView: View {
                     selectedTab = .home
                 }
                 .buttonStyle(.borderedProminent)
+            }
+        } else if !cartStore.missingProductIDs.isEmpty {
+            if case .failed(let message) = viewModel.state {
+                ErrorView(message: message) {
+                    await loadMissingProducts()
+                }
+            } else {
+                LoadingView(message: "Sepet yükleniyor…")
             }
         } else {
             List {

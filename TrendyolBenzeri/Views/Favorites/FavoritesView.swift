@@ -5,13 +5,14 @@
 
 import SwiftUI
 
-/// Favori ürünler. Veri ağdan değil `FavoritesStore`'dan geldiği için yükleniyor/hata durumu yok;
-/// başka bir ekranda kalbe basıldığında bu liste kendiliğinden güncellenir.
+/// Favori ürünler. Liste `FavoritesStore`'dan gelir; başka bir ekranda kalbe basıldığında kendiliğinden
+/// güncellenir. Dosyada yalnızca id'ler olduğu için açılıştan sonra ürün bilgisi bir kez API'den istenir.
 struct FavoritesView: View {
     /// Seçili sekme `MainTabView`'a ait; `@Binding` ile buradan değiştirebiliyoruz.
     @Binding var selectedTab: MainTabView.Tab
 
     @Environment(FavoritesStore.self) private var favoritesStore
+    @State private var viewModel = FavoritesViewModel()
 
     var body: some View {
         content
@@ -19,13 +20,25 @@ struct FavoritesView: View {
             .navigationDestination(for: Product.self) { product in
                 ProductDetailView(product: product)
             }
+            .task(id: favoritesStore.missingProductIDs) {
+                await loadMissingProducts()
+            }
+    }
+
+    private func loadMissingProducts() async {
+        let ids = favoritesStore.missingProductIDs
+        guard !ids.isEmpty else { return }
+        await viewModel.loadProducts(ids: ids)
+        if case .loaded(let products) = viewModel.state {
+            favoritesStore.update(with: products, requestedIDs: ids)
+        }
     }
 
     @ViewBuilder
     private var content: some View {
         let products = favoritesStore.products
 
-        if products.isEmpty {
+        if favoritesStore.count == 0 {
             ContentUnavailableView {
                 Label("Henüz favori ürünün yok", systemImage: "heart")
             } description: {
@@ -35,6 +48,14 @@ struct FavoritesView: View {
                     selectedTab = .home
                 }
                 .buttonStyle(.borderedProminent)
+            }
+        } else if !favoritesStore.missingProductIDs.isEmpty {
+            if case .failed(let message) = viewModel.state {
+                ErrorView(message: message) {
+                    await loadMissingProducts()
+                }
+            } else {
+                LoadingView(message: "Favoriler yükleniyor…")
             }
         } else {
             ScrollView {

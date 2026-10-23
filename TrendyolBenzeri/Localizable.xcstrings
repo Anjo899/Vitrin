@@ -493,6 +493,22 @@
         }
       }
     },
+    "Favoriler yükleniyor…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Loading favorites…"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Favoriler yükleniyor…"
+          }
+        }
+      }
+    },
     "Favorilerden çıkar": {
       "localizations": {
         "en": {
@@ -873,6 +889,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sepet"
+          }
+        }
+      }
+    },
+    "Sepet yükleniyor…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Loading cart…"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sepet yükleniyor…"
           }
         }
       }
