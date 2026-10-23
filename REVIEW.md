@@ -473,6 +473,7 @@ Bugün 41 test var: fiyat ve para birimi, dil ve tema, kategori adları, decode,
     - İptalde `.idle`'a dönüş.
     - `refresh` davranışı (O11).
     - `APIClient`'ın hata eşlemesi: 2xx dışı kod → `badStatus`, bozuk JSON → `decoding`, `URLError.cancelled` → `CancellationError`.
+- **Güncelleme (23 Ekim 2026):** "Hâlâ test edilmeyenler"in hepsi test edildi (`ViewModelLoadingTests`, `APIClientTests`; ortak `StubURLProtocol`). O11'in doğru davranışını test eden testler, düzeltme yapılana kadar kapalı.
 - **Neden önemli:** O11 gibi bir hata, bu testler olsaydı yazıldığı gün yakalanırdı.
 - **Öneri:**
   - `SearchStubURLProtocol`'ü genel bir `StubURLProtocol`'e çevir (yol → durum kodu, gövde, gecikme).
@@ -517,7 +518,7 @@ Bugün 41 test var: fiyat ve para birimi, dil ve tema, kategori adları, decode,
 7. Kalan küçük bulgular.
 
 ### Lint kurallarıyla otomatik yakalanabilecekler
-Projede SwiftLint ya da başka bir lint aracı yok. Önerilenler:
+Güncelleme (23 Ekim 2026): SwiftLint #20 ile eklendi (`.swiftlint.yml`, `SwiftLintPlugins` build tool plugin'i; bkz. `CLAUDE.md` "Lint"). Aşağıdaki SwiftLint kurallarının hepsi uygulandı; iki istisna var: `unused_declaration` analyzer kuralı olduğu için plugin'de çalışmıyor, `frame(width: <sayı>` uyarısı ise `ARCHITECTURE.md` 8'deki 44×44 dokunma alanı kuralıyla çeliştiği için alınmadı. SwiftLint dışındaki maddeler (derleyici ayarları, catalog kontrolü, ölü kod, Release derlemesi) hâlâ öneri. Önerilenler:
 - **SwiftLint kuralları:**
   - Hazır kurallar: `accessibility_label_for_image` ve `accessibility_trait_for_button` (opt-in), `unused_declaration` (analyzer).
   - **Özel kural, `print` yasak:** `print(` → `Logger` kullanılır (S7).
