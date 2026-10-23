@@ -29,6 +29,7 @@ xcodebuild -project TrendyolBenzeri.xcodeproj -scheme TrendyolBenzeri \
   -skipPackagePluginValidation test
 ```
 - Sonucu PR açıklamasına `## Test sonucu` başlığıyla yaz: toplam test, geçen, atlanan (gerekçesiyle) ve başarısız sayısı. Kaynak, `✔ Test run with N tests …` ya da `✘ Test run with N tests …` satırı ve atlanan testlerin `➜ … skipped` satırlarıdır.
+- SwiftLint ayrıca kurulmaz ve ayrı çalıştırılmaz: `SwiftLintPlugins` build tool plugin'i bu `test` komutunun derlemesinde çalışır. Error derlemeyi kırar; derleme geçtiyse lint error yoktur. `## Test sonucu`'na lint sonucunu bu derlemeden yaz (error sayısı ve PR'ın yeni warning ekleyip eklemediği).
 - Başarısız test varsa PR açma ve güncelleme; dur ve başarısız testleri raporla. Push yapılabilir.
 - UI testi (`TrendyolBenzeriUITests` scheme'i) CI'da çalışır; PR açıklamasında CI'ın sonucuna bakılacağı belirtilir.
 - Geçici (CI billing nedeniyle çalışmıyor; bkz. `CLAUDE.md` "Git çalışma şekli"):
