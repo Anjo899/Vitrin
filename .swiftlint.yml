@@ -97,14 +97,13 @@ custom_rules:
     severity: error
 
   # 9. Testler: testler ve test yardımcıları DispatchQueue ya da sleep ile beklemez; async/await kullanır.
-  # Warning: bilinen ihlal. `HomeViewModelTests` `Task.sleep` ve `DispatchQueue` kullanıyor
-  # ("Bugünkü durum: uyulmuyor", architect denetimi 21 Ekim 2026).
+  # Bugün ihlal yok: error. `HomeViewModelTests` stub'ı ve sıralaması `StubURLProtocol` ile `Gate`'e taşındı.
   no_waiting_in_tests:
     name: "Testte DispatchQueue/sleep yasak"
     included: '/TrendyolBenzeriTests/'
     regex: '\bDispatchQueue\b|\b(usleep|sleep)\(|\bTask\.sleep\b'
     message: "Testler async/await ile bekler; DispatchQueue ve sleep kullanılmaz (ARCHITECTURE.md 9)."
-    severity: warning
+    severity: error
 
   # 2. Klasör yapısı / CLAUDE.md bileşen kuralı: ürün görseli yalnızca ProductImageView ile gösterilir (REVIEW.md lint listesi, S17).
   # Bugün ihlal yok: error.
