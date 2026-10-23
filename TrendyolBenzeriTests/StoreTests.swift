@@ -159,3 +159,109 @@ struct CartStoreTests {
         #expect(reloaded.quantity(of: product) == 2)
     }
 }
+
+@MainActor
+struct StoreRecoveryTests {
+
+    /// Bozuk dosya kenara alınır, store boş başlar ve ilk kayıt yedeği ezmez (ARCHITECTURE.md 7. Kalıcılık).
+    @Test func favoritesCorruptFileIsMovedAside() throws {
+        let storage = try PlistStorage.temporary()
+        let corruptData = Data("bozuk veri".utf8)
+        try corruptData.write(to: storage.directory.appending(path: "favorites.plist"))
+
+        let store = FavoritesStore(storage: storage)
+        #expect(store.count == 0)
+
+        store.toggle(.sample(id: 4))
+        let movedAside = try Data(contentsOf: storage.directory.appending(path: "favorites.plist.corrupt"))
+        #expect(movedAside == corruptData)
+        #expect(FavoritesStore(storage: storage).isFavorite(.sample(id: 4)))
+    }
+
+    @Test func cartCorruptFileStartsEmpty() throws {
+        let storage = try PlistStorage.temporary()
+        try Data("bozuk veri".utf8).write(to: storage.directory.appending(path: "cart.plist"))
+
+        let store = CartStore(storage: storage)
+
+        #expect(store.isEmpty)
+        #expect(FileManager.default.fileExists(atPath: storage.directory.appending(path: "cart.plist.corrupt").path()))
+    }
+
+    /// Başka tipte (eski biçim) kaydedilmiş dosya da bozuk sayılır.
+    @Test func cartFileWithOldFormatIsMovedAside() throws {
+        let storage = try PlistStorage.temporary()
+        try storage.save(["eski": "biçim"], to: "cart.plist")
+
+        let store = CartStore(storage: storage)
+
+        #expect(store.isEmpty)
+        #expect(FileManager.default.fileExists(atPath: storage.directory.appending(path: "cart.plist.corrupt").path()))
+    }
+}
+
+@MainActor
+struct CartStoreQuantityTests {
+
+    @Test func incrementAddsOneUpToStock() throws {
+        let store = CartStore(storage: try .temporary())
+        let product = Product.sample(stock: 2)
+        store.add(product)
+        let item = try #require(store.items[product.id])
+
+        store.increment(item)
+        store.increment(item)
+
+        #expect(store.quantity(of: product) == 2)
+    }
+
+    @Test func decrementOfMissingItemDoesNothing() throws {
+        let store = CartStore(storage: try .temporary())
+        store.add(.sample(id: 1))
+
+        store.decrement(CartItem(product: .sample(id: 2), quantity: 1))
+
+        #expect(store.totalQuantity == 1)
+    }
+
+    @Test func totalQuantitySumsAllLines() throws {
+        let store = CartStore(storage: try .temporary())
+        store.add(.sample(id: 1))
+        store.add(.sample(id: 1))
+        store.add(.sample(id: 2))
+
+        #expect(store.totalQuantity == 3)
+        #expect(store.items.count == 2)
+    }
+
+    @Test func sortedItemsAreOrderedByTitle() throws {
+        let store = CartStore(storage: try .temporary())
+        store.add(.sample(id: 1, title: "Zeytinyağı"))
+        store.add(.sample(id: 2, title: "Ayran"))
+
+        #expect(store.sortedItems.map(\.product.title) == ["Ayran", "Zeytinyağı"])
+    }
+
+    @Test func changesArePersistedImmediately() throws {
+        let storage = try PlistStorage.temporary()
+        let store = CartStore(storage: storage)
+        let product = Product.sample(id: 9)
+        store.add(product)
+        store.add(product)
+
+        store.decrement(try #require(store.items[product.id]))
+        #expect(CartStore(storage: storage).quantity(of: product) == 1)
+
+        store.remove(try #require(store.items[product.id]))
+        #expect(CartStore(storage: storage).isEmpty)
+    }
+
+    @Test func favoriteRemovalIsPersisted() throws {
+        let storage = try PlistStorage.temporary()
+        let store = FavoritesStore(storage: storage)
+        store.toggle(.sample(id: 3))
+        store.toggle(.sample(id: 3))
+
+        #expect(FavoritesStore(storage: storage).count == 0)
+    }
+}
