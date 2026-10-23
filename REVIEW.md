@@ -66,7 +66,7 @@ Bu turda aşağıdakiler çalıştırılarak kontrol edildi:
 | O8 | Önemli | Dokunma alanı 44 pt'den küçük | ✅ Düzeltildi | `74064b6` |
 | O9 | Önemli | VoiceOver kartı bağlamsız okuyor | ❌ Hâlâ açık | Puan etiketleri var; kart, kalp, görsel ve adet sorunları duruyor |
 | O10 | Önemli | Dynamic Type desteği eksik | ❌ Hâlâ açık | Sabit punto ve çerçeveler duruyor |
-| T1 | Önemli | ViewModel, `APIClient` ve fiyat testleri eksik | 🟡 Hâlâ açık (kısmen düzeltildi) | Fiyat, para birimi ve arama testleri eklendi. Yükleme, yenileme ve iptal geçişleri ile `APIClient` hata eşlemesi test edilmiyor. Güncelleme (23 Ekim 2026): bunlar da test edildi; O11'in doğru davranış testleri düzeltmeye kadar kapalı |
+| T1 | Önemli | ViewModel, `APIClient` ve fiyat testleri eksik | ✅ Düzeltildi (23 Ekim 2026) | Fiyat, para birimi ve arama testleri eklendi. Yükleme, yenileme ve iptal geçişleri ile `APIClient` hata eşlemesi test edilmiyor. Güncelleme (23 Ekim 2026): bunlar da test edildi; O11'in doğru davranış testleri düzeltmeye kadar kapalı |
 | S1 | Küçük | "%0" indirim rozeti | ❌ Hâlâ açık | Simülatörde Green Bell Pepper kartında "0%" görüldü |
 | S2 | Küçük | Aramada `+` boşluk olarak gidiyor | ❌ Hâlâ açık | Kod değişmedi |
 | S3 | Küçük | Hatalı veriye karşı koruma yok | ❌ Hâlâ açık | Kod değişmedi |
@@ -85,7 +85,7 @@ Bu turda aşağıdakiler çalıştırılarak kontrol edildi:
 
 | # | Önem | Bulgu | Başlık |
 | --- | --- | --- | --- |
-| O11 | Önemli | Aşağı çekip yenileme hata verince liste siliniyor | Hata yönetimi |
+| O11 | Önemli | Aşağı çekip yenileme hata verince liste siliniyor. ✅ Düzeltildi (23 Ekim 2026, `fix/refresh-keeps-list`) | Hata yönetimi |
 | O12 | Önemli | "Sepete Eklendi" butonunda beyaz yazı yeşil zeminde okunmuyor (≈2,0–2,2:1) | Erişilebilirlik |
 | S11 | Küçük | Proje Swift 5 dil modunda; kod Swift 6'ya hazır ama derleyici korumuyor | Concurrency |
 | S12 | Küçük | `PriceFormatter.swift` adının ötesinde iş yapıyor; model dosyası SwiftUI'a bağlı | Mimari, isimlendirme |
@@ -227,6 +227,7 @@ Güncelleme (21 Ekim 2026): `ARCHITECTURE.md` artık Models → Utilities bağı
 ### Hata yönetimi
 
 #### O11 · Önemli · Aşağı çekip yenileme hata verince liste siliniyor
+- **Durum:** ✅ Düzeltildi (23 Ekim 2026, `fix/refresh-keeps-list`). `refresh()` hata aldığında `state`'e dokunmuyor; hata `refreshError` ile `RefreshErrorBanner`'da birkaç saniye gösteriliyor. Üç ViewModel'de testli (`ViewModelLoadingTests`). Ortak yükleyici (S6) yapılmadı.
 - **Dosya:** `Views/Home/HomeViewModel.swift:38–40,73–86`, `Views/Categories/CategoriesViewModel.swift:29–31,33–44`, `Views/Categories/CategoryProductsViewModel.swift:32–34,36–46`
 - **Sorun:** `refresh()`, `load()` ile aynı `fetch…` fonksiyonunu çağırıyor; hata olursa `state = .failed(...)` yazılıyor. İnternet yokken aşağı çekilince:
   - ekrandaki 194 ürünlük liste kayboluyor,
@@ -465,6 +466,7 @@ Koda gömülü metin kalmadı (Doğrulama'ya bakın). Kalan sorunlar seçilen di
 Bugün 41 test var: fiyat ve para birimi, dil ve tema, kategori adları, decode, store'lar ve aramanın iki senaryosu. Güncelleme (23 Ekim 2026): 98 unit test (3'ü O11 nedeniyle kapalı) ve ayrı scheme'de bir UI testi var. Testler hızlı (≈1,4 sn) ve ağa çıkmıyor; arama testi `URLProtocol` tabanlı sahte bir oturum kullanıyor.
 
 #### T1 · Önemli · Kritik akışların testi eksik (birinci turdan, kısmen düzeltildi)
+- **Durum:** ✅ Düzeltildi (23 Ekim 2026). #21'deki testler ve O11 düzeltmesiyle açılan yenileme testleri; kapalı test kalmadı.
 - **Dosya:** `TrendyolBenzeriTests/`
 - **Sorun:**
   - **Eklenenler:** Fiyat yuvarlama, TL ve dolar toplamları, eski arama testi.
