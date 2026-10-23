@@ -30,4 +30,28 @@ struct AppThemeTests {
         #expect(AppTheme.allCases.map(\.rawValue) == ["system", "light", "dark"])
         #expect(AppTheme(rawValue: "dark") == .dark)
     }
+
+    @MainActor
+    @Test func selectionPersistsInUserDefaults() throws {
+        let suiteName = "AppThemeTests-\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+
+        // Kökteki ve Ayarlar ekranındaki tanımla aynı: önce varsayılan "Sistem".
+        let storage = AppStorage(wrappedValue: AppTheme.system, AppTheme.storageKey, store: defaults)
+        #expect(storage.wrappedValue == .system)
+
+        storage.wrappedValue = .dark
+        #expect(defaults.string(forKey: AppTheme.storageKey) == "dark")
+
+        // Uygulama yeniden açılınca yeni bir `AppStorage` aynı değeri okur.
+        let reopened = AppStorage(wrappedValue: AppTheme.system, AppTheme.storageKey, store: defaults)
+        #expect(reopened.wrappedValue == .dark)
+    }
+
+    /// Tema ve dil ayrı anahtarlarda saklanır; biri diğerini ezmez.
+    @Test func storageKeyDiffersFromLanguage() {
+        #expect(AppTheme.storageKey == "appTheme")
+        #expect(AppTheme.storageKey != AppLanguage.storageKey)
+    }
 }

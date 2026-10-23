@@ -53,15 +53,16 @@
   - `FavoriteButton`: favori kalbi; arayüzde favori ekleyip çıkarmanın tek yolu.
   - `LoadingView`, `ErrorView`, `ContentUnavailableView`: yükleniyor, hata ve boş durumlar.
 - Önizlemeler `PreviewData` örneklerini ve `PlistStorage.preview`'u kullanır; gerçek favori ve sepet dosyalarına yazılmaz. Environment değerlerini ortak `.previewEnvironment(theme:language:)` modifier'ından alır (varsayılan `theme: .system`, `language: .turkish`; `Views/Common/PreviewEnvironment.swift`, `#if DEBUG` içine alınmaz). Bugünkü durum: yardımcı henüz yok.
-- Testler Swift Testing ile yazılır. `TestHelpers.swift` içindeki `Product.sample(...)` ve `PlistStorage.temporary()` kullanılır; store testleri `@MainActor`.
+- Testler Swift Testing ile yazılır. `TestHelpers.swift` içindeki `Product.sample(...)` ve `PlistStorage.temporary()` kullanılır; store ve ViewModel testleri `@MainActor`. Ağ isteği gereken testler `StubURLProtocol.swift` içindeki `StubServer` ile yazılır (`server.service`, `server.client`); sıralama `Gate` ile yapılır, `DispatchQueue` ve `sleep` kullanılmaz.
 
 ## Git çalışma şekli
-- Branch adları: `feature/<ad>`, `fix/<ad>`, `chore/<ad>`, yalnızca belge değişikliği için `docs/<ad>`.
+- Branch adları: `feature/<ad>`, `fix/<ad>`, `chore/<ad>`, ağırlıklı olarak test ekleyen işler için `test/<ad>`, yalnızca belge değişikliği için `docs/<ad>`.
 - Stacked PR: yeni branch bir önceki özellik branch'inden açılır, PR'ın base'i o branch olur.
 - Push ve PR açmayı agent'lar onay beklemeden yapar (`pr-manager`). Merge'leri proje sahibi GitHub'da elle yapar; agent'lar merge etmez. Hoca yalnızca yönlendirir.
 - Proje sahibi için merge notu: stacked PR'lar en alttan başlayarak sırayla "Create a merge commit" ile merge edilir (squash zinciri bozar). Her merge'den önce bir üstteki PR'ın base'i `main`'e çevrilir; böylece alttaki branch silinince üstteki PR kapanmaz. Repo'da "Automatically delete head branches" açık.
 - Commit mesajları İngilizce Conventional Commits (`feat:`, `fix:`, `refactor:`, `chore:`, `docs:`, `test:`). Her commit tek bir anlamlı adım ve kendi başına derlenir.
-- Her özellik ayrı PR. PR açıklaması Türkçe: Özet, Değişiklikler, Nasıl test edilir, Mimari kontrol.
+- Her özellik ayrı PR. PR açıklaması Türkçe: Özet, Değişiklikler, Nasıl test edilir, Test sonucu, Mimari kontrol.
+- Her PR'da GitHub Actions (`.github/workflows/ci.yml`) derlemeyi, SwiftLint'i, unit testleri ve UI testini çalıştırır. CI kırmızıysa PR merge edilmez.
 - Özellik bitince: `PLAN.md`'de ✅ işaretlenir, test adımları verilir ve sonraki özelliğe geçmeden onay beklenir.
 - Çakışma ya da başarısız kontrol olursa iş durur ve raporlanır. Force push, `reset --hard`, rebase ve squash yasaktır.
 - Remote: `https://github.com/Anjo899/Vitrin`. PR'lar `gh` ile açılır.
@@ -73,13 +74,14 @@ xcodebuild -project TrendyolBenzeri.xcodeproj -scheme TrendyolBenzeri \
   -destination 'platform=iOS Simulator,name=iPhone 17,OS=26.3.1' \
   -skipPackagePluginValidation build
 
-# Derleme (uygulama + testler; commit öncesi lint kontrolü)
+# Unit testler; uygulamayı ve testleri derler, SwiftLint de çalışır
+# (sonuç satırı: "✔ Test run with N tests …"; commit öncesi kapı)
 xcodebuild -project TrendyolBenzeri.xcodeproj -scheme TrendyolBenzeri \
   -destination 'platform=iOS Simulator,name=iPhone 17,OS=26.3.1' \
-  -skipPackagePluginValidation build-for-testing
+  -skipPackagePluginValidation test
 
-# Unit testler (sonuç satırı: "✔ Test run with N tests …")
-xcodebuild -project TrendyolBenzeri.xcodeproj -scheme TrendyolBenzeri \
+# UI testi (gerçek dummyjson'a bağlanır, ~15 sn)
+xcodebuild -project TrendyolBenzeri.xcodeproj -scheme TrendyolBenzeriUITests \
   -destination 'platform=iOS Simulator,name=iPhone 17,OS=26.3.1' \
   -skipPackagePluginValidation test
 ```
@@ -87,39 +89,46 @@ xcodebuild -project TrendyolBenzeri.xcodeproj -scheme TrendyolBenzeri \
 - Geliştirme makinesine özel: Xcode 26.2 `/Applications/Xcode_26.2.app` içinde ve `xcode-select` onu gösteriyor; `DEVELOPER_DIR` gerekmez. Simülatör: iPhone 17, iOS 26.3.1. `gh`, `/opt/homebrew/bin` içinde.
 - Paylaşılan `TrendyolBenzeri` scheme'inin test aksiyonu yalnızca `TrendyolBenzeriTests`'i çalıştırır:
   - Paralel test kapalı (`parallelizable = "NO"`). Kopya simülatörlerde test çalıştırma takılmıştı.
-  - Şablon UI testleri (`TrendyolBenzeriUITests`) scheme'den çıkarıldı; dosyaları duruyor. Geri eklenmez.
+  - UI testleri bu scheme'e eklenmez; ⌘U ve commit kapısı hızlı ve ağdan bağımsız kalır.
+- UI testleri ayrı paylaşılan `TrendyolBenzeriUITests` scheme'inde çalışır:
+  - Uygulamayı `-uiTesting` argümanıyla açar; favoriler ve sepet geçici klasörde boş başlar. Ürünler gerçek dummyjson'dan gelir.
+  - Ögeleri `accessibilityIdentifier` ile bulur (`productCard`, `addToCartButton`, `addToCartPrice`, `cartTotal`).
+  - Şablon testler (`TrendyolBenzeriUITests`, `TrendyolBenzeriUITestsLaunchTests`) bu scheme'de atlanır.
+- Unit testler uygulamayı test host'u olarak açar. Host bunu görünce (`XCTestConfigurationFilePath`) ekranları yüklemez ve geçici klasör kullanır; testler sırasında ağa çıkılmaz.
+- CI (`macos-26` runner): Xcode 26.2, simülatör iPhone 17 / iOS 26.2 (runner'da 26.3.1 yok).
 - Xcode'da çalıştırmak için ⌘R, testler için ⌘U.
 
 ## Lint
 - SwiftLint, `SwiftLintPlugins` paketinin build tool plugin'i ile her derlemede `TrendyolBenzeri` ve `TrendyolBenzeriTests` target'larında çalışır (sürüm `Package.resolved`'da sabit). Ayrı kurulum ve Run Script yok; script sandbox'ı açık.
 - Ayarlar kökteki `.swiftlint.yml`'de. Özel kurallar `ARCHITECTURE.md` kurallarını uygular; her kuralın üstünde ilgili bölüm yazılı.
 - Error yeni ihlali engeller ve derlemeyi kırar. Warning, `ARCHITECTURE.md`'de "Bugünkü durum: uyulmuyor" notlu bilinen ihlallere takılan kurallar içindir; ihlal düzeltilince kural error'a çekilir.
-- Error varsa commit atılmaz (`committer`).
+- Error varsa ya da bir test başarısızsa commit atılmaz (`committer`).
 
 ## Agents
 Tanımlar projede, `.claude/agents/` içinde. Kullanıcı seviyesinde (`~/.claude/agents/`) aynı adla kopya tutulmaz. Agent tanımlarıyla çelişirse bu dosya geçerlidir.
 
 ### `committer`
 Commit işlerini yapar; push yapmaz, PR açmaz.
-- Branch `main` ise commit atmaz; durur ve uygun branch (`feature/<ad>`, `fix/<ad>`, `chore/<ad>`, `docs/<ad>`) açılması gerektiğini bildirir.
+- Branch `main` ise commit atmaz; durur ve uygun branch (`feature/<ad>`, `fix/<ad>`, `chore/<ad>`, `test/<ad>`, `docs/<ad>`) açılması gerektiğini bildirir.
 - Önce `git status --short` ve `git diff` ile değişiklikleri inceler. Görevle ilgisi olmayan değişiklikleri commit'e katmaz, raporda belirtir.
 - Dosyaları adıyla ekler (`git add <yol>`). `git add -A`, `git add .` ve `git commit -a` kullanılmaz.
 - Asla eklenmeyenler: `xcuserdata/`, `*.xcuserstate`, `.DS_Store`, `DerivedData/`, `build/`, `.swiftpm/` kullanıcı dosyaları, sırlar (`.env`, token, sertifika). `project.pbxproj` yalnızca görevle ilgili bir değişiklik varsa eklenir; emin olunmazsa eklenmez ve raporlanır.
-- Swift dosyası ya da `.swiftlint.yml` değiştiyse commit'ten önce "Build ve test" bölümündeki `xcodebuild … build-for-testing` komutuyla derler; SwiftLint bu derlemede çalışır ("Lint"). Derleme başarısızsa ya da SwiftLint error verdiyse commit atmaz, hatayı bildirir.
+- Swift dosyası ya da `.swiftlint.yml` değiştiyse commit'ten önce "Build ve test" bölümündeki unit test komutunu (`xcodebuild … test`) çalıştırır; SwiftLint bu derlemede çalışır ("Lint"). Derleme başarısızsa, SwiftLint error verdiyse ya da bir test başarısızsa commit atmaz, hatayı bildirir. Çalışma ağacında commit dışı değişiklik varsa yalnızca staged içeriği ayrı klasörde test eder. UI testi bu kapıda çalışmaz.
 - Commit mesajının sonuna boş bir satır ve `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>` eklenir.
 - `--amend`, rebase, `reset --hard`, `--no-verify` ve `--force` kullanılmaz.
-- Rapor: her commit'in hash'i ve mesajı, commit dışında kalan değişiklikler, derleme sonucu.
+- Rapor: her commit'in hash'i ve mesajı, commit dışında kalan değişiklikler, derleme ve test sonucu.
 
 ### `pr-manager`
 Push ve PR açma işlerini `gh` (`/opt/homebrew/bin/gh`) ile onay beklemeden yapar. Merge etmez (`gh pr merge` çalıştırmaz); merge'leri proje sahibi GitHub'da yapar. Commit atmaz. Commit'lenmemiş değişiklik varsa bildirir.
 - Push: `git push -u origin <branch>`. `main`'e push yapılmaz.
 - Mimari kontrol: PR açmadan ya da güncellemeden önce ana oturum `architect`'i çalıştırır ve raporu `pr-manager`'a verir (subagent başka subagent çalıştıramaz). Rapor yoksa ya da Kritik bulgu varsa PR açılmaz, durum raporlanır. Diğer bulgular ya da "Mimariye uygun" sonucu PR açıklamasına `## Mimari kontrol` başlığıyla eklenir.
+- Test sonucu: PR açmadan ya da güncellemeden önce unit testleri çalıştırır; toplam, geçen, atlanan (gerekçesiyle) ve başarısız sayısını `## Test sonucu` başlığıyla yazar. Başarısız test varsa PR açılmaz. UI testinin sonucu CI'dadır.
 - PR açma: base, branch'in açıldığı önceki özellik branch'idir (`git log` ve `gh pr list` ile belirlenir). Base belirlenemezse ya da zincirin ilk PR'ı olmadığı hâlde `main` çıkıyorsa durur ve raporlar. PR bu branch için zaten varsa `gh pr edit` ile güncellenir.
   - Başlık İngilizce Conventional Commits biçiminde.
-  - Açıklama Türkçe; bölümler `## Özet`, `## Değişiklikler`, `## Nasıl test edilir`, `## Mimari kontrol`. Sonuna `🤖 Generated with [Claude Code](https://claude.com/claude-code)` satırı eklenir.
+  - Açıklama Türkçe; bölümler `## Özet`, `## Değişiklikler`, `## Nasıl test edilir`, `## Test sonucu`, `## Mimari kontrol`. Sonuna `🤖 Generated with [Claude Code](https://claude.com/claude-code)` satırı eklenir.
   - Komut: `gh pr create --base <base> --head <branch> --title … --body-file <dosya>`.
 - Base PR'ı kapanmışsa ya da push reddedilirse durur ve raporlar. Force push, `reset --hard`, rebase ve squash yapılmaz.
-- Rapor: push edilen branch, PR linki, mimari kontrol sonucu ve merge sırası (hangi PR'ın önce merge edilmesi gerektiği) ya da durma nedeni.
+- Rapor: push edilen branch, PR linki, test sonucu, mimari kontrol sonucu ve merge sırası (hangi PR'ın önce merge edilmesi gerektiği) ya da durma nedeni.
 
 ### `architect`
 Değişiklikleri (`git diff main...HEAD`) ya da istenirse tüm projeyi `ARCHITECTURE.md` kurallarına göre denetler. Salt okunur: hiçbir dosyayı değiştirmez.

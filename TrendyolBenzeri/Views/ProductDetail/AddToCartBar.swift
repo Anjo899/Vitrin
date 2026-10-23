@@ -23,6 +23,8 @@ struct AddToCartBar: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(product.discountedPrice(in: currency), format: currency.format)
                     .font(.headline)
+                    // UI testleri fiyatı ve butonu bu kimliklerle bulur; VoiceOver'ı etkilemez.
+                    .accessibilityIdentifier("addToCartPrice")
                 if quantityInCart > 0 {
                     Text("Sepette \(quantityInCart) adet")
                         .font(.caption)
@@ -47,6 +49,7 @@ struct AddToCartBar: View {
             .controlSize(.large)
             .tint(showsAddedFeedback ? .green : .accentColor)
             .disabled(!cartStore.canAdd(product))
+            .accessibilityIdentifier("addToCartButton")
         }
         .padding(.horizontal)
         .padding(.vertical, 10)

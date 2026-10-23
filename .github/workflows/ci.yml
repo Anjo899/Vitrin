@@ -1,0 +1,46 @@
+# Her PR'da derleme, SwiftLint, unit testler ve UI testi.
+# SwiftLint ayrı bir adım değil: build tool plugin'i derleme sırasında çalışır, error derlemeyi kırar.
+name: CI
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+# Aynı PR'a yeni commit gelince eski çalışma iptal edilir.
+concurrency:
+  group: ci-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+env:
+  # Geliştirme makinesindeki Xcode ile aynı sürüm. Runner'da 26.2 kurulu ama varsayılan değil.
+  DEVELOPER_DIR: /Applications/Xcode_26.2.app/Contents/Developer
+  # Runner'da iOS 26.3.1 yok; Xcode 26.2 ile gelen iOS 26.2 simülatörü kullanılır.
+  DESTINATION: platform=iOS Simulator,name=iPhone 17,OS=26.2
+
+jobs:
+  build-and-test:
+    runs-on: macos-26
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Xcode sürümü
+        run: xcodebuild -version
+
+      - name: Derleme ve SwiftLint
+        run: |
+          xcodebuild -project TrendyolBenzeri.xcodeproj -scheme TrendyolBenzeri \
+            -destination "$DESTINATION" -skipPackagePluginValidation build-for-testing
+
+      - name: Unit testler
+        run: |
+          xcodebuild -project TrendyolBenzeri.xcodeproj -scheme TrendyolBenzeri \
+            -destination "$DESTINATION" -skipPackagePluginValidation test-without-building
+
+      # Gerçek dummyjson'a bağlanır; API erişilemezse bu adım düşer.
+      - name: UI testi
+        run: |
+          xcodebuild -project TrendyolBenzeri.xcodeproj -scheme TrendyolBenzeriUITests \
+            -destination "$DESTINATION" -skipPackagePluginValidation test

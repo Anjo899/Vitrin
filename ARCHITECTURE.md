@@ -382,7 +382,9 @@ Text("Sepete Eklendi").foregroundStyle(.white).background(.green)
 
 ## 9. Testler
 
-Testler Swift Testing ile yazılır ve ağa çıkmaz. Ortak örnekler `TestHelpers.swift` içindedir: `Product.sample(...)`, `PlistStorage.temporary()`.
+Unit testler Swift Testing ile yazılır ve ağa çıkmaz. Ortak örnekler `TestHelpers.swift` içindedir: `Product.sample(...)`, `PlistStorage.temporary()`.
+
+UI testi XCTest ile yazılır, ayrı `TrendyolBenzeriUITests` scheme'inde çalışır ve gerçek dummyjson'a bağlanır. Uygulamayı `-uiTesting` argümanıyla açar; favoriler ve sepet geçici klasörde boş başlar, gerçek dosyalara yazılmaz.
 
 | Katman | Test | Zorunlu mu |
 | --- | --- | --- |
@@ -392,20 +394,19 @@ Testler Swift Testing ile yazılır ve ağa çıkmaz. Ortak örnekler `TestHelpe
 | ViewModel | `load` → `.loaded` / `.failed`, iptalde `.idle`, yenileme hatası listeyi korur, arama | Evet |
 | API client | Durum kodu, decode ve iptal hatalarının eşlenmesi | Evet |
 | View | — | Hayır; davranış ViewModel'e konup orada test edilir |
+| Kritik akış (UI testi) | Sepete ekle → Sepet badge'i → sepet toplamı | Evet; ayrı `TrendyolBenzeriUITests` scheme'inde, CI'da çalışır |
 
 **Kurallar**
 - Bir hata düzeltilince onu yakalayan bir test eklenir.
 - Store ve ViewModel testleri `@MainActor`'dır.
-- Ağ isteği gereken testler `URLProtocol` tabanlı sahte bir oturumla (`APIClient(session:)`) yazılır.
+- Ağ isteği gereken testler `URLProtocol` tabanlı sahte bir oturumla yazılır: `StubURLProtocol.swift` içindeki `StubServer` (`server.service`, `server.client`). Her test kendi sunucusunu oluşturur; paralel testler birbirini etkilemez.
 - Unit testler gerçek ağa çıkmaz. İstek atmaması beklenen testler de gerçek `URLSession` yerine `URLProtocol` stub'ı kullanır; böylece kod bozulsa bile test ağa çıkamaz.
-- Testler ve test yardımcıları (stub'lar dahil) `DispatchQueue` ya da `sleep` / `Task.sleep` ile beklemez; `async`/`await` kullanır (bkz. 5. Concurrency).
-  - Bugünkü durum: uyulmuyor. `TrendyolBenzeriTests/HomeViewModelTests.swift`:
-    - Boş arama testi gerçek `URLSession`'lı bir `APIClient` (`https://invalid.example`) kullanıyor. Bugün istek atılmadığı için ağa çıkmıyor, ama kod bozulursa çıkar.
-    - Eski arama testi `Task.sleep(for: .milliseconds(100))` ile bekliyor.
-    - `SearchStubURLProtocol` yanıtı `DispatchQueue.global().asyncAfter` ile geciktiriyor.
-    - Bkz. architect denetimi, 21 Ekim 2026.
+- Testler ve test yardımcıları (stub'lar dahil) `DispatchQueue` ya da `sleep` / `Task.sleep` ile beklemez; `async`/`await` kullanır (bkz. 5. Concurrency). Sıra gerekiyorsa `Gate` kullanılır; zamanlayıcıya bağlı kod (ör. arama debounce'u) süreyi parametre olarak alır ve test `.zero` verir. SwiftLint `no_waiting_in_tests` kuralı bunu error olarak denetler.
+- Unit testler uygulamayı test host'u olarak açar; host bu durumda ekranları yüklemez ve geçici klasör kullanır (`TrendyolBenzeriApp`). Böylece testler sırasında ağa çıkılmaz ve gerçek favori/sepet dosyası okunmaz.
 - View içinde test edilmesi gereken bir kural varsa (sıralama, yeniden deneme) test edilebilir bir tipe ya da fonksiyona çıkarılır.
-- Bugünkü durum: uyulmuyor. ViewModel'lerin yükleme, yenileme ve iptal geçişleri ile `APIClient` hata eşlemesi test edilmiyor; yalnızca aramanın testi var; bkz. `REVIEW.md` T1, T3.
+  - Bugünkü durum: uyulmuyor. Kategorilerin sıralaması (`CategoriesView` içindeki `sortedByName`) view içinde `private`; `ProductImageView`'daki yeniden deneme kuralı test edilebilir bir tipe çıkarılmadı; bkz. `REVIEW.md` T3.
+- Bir kural bugün ihlal ediliyorsa doğru davranışı test eden test yazılır ve gerekçesiyle `.disabled(...)` bırakılır; yanına bugünkü davranışı belgeleyen bir test konur. Düzeltmede kapalı test açılır, belgeleyen test silinir.
+  - Bugünkü durum: "yenileme hatası listeyi korur" testleri O11 düzeltilene kadar kapalı (`ViewModelLoadingTests.swift`); bkz. `REVIEW.md` O11.
 
 ```swift
 // ✅ Store testi: MainActor, geçici klasör, örnek ürün

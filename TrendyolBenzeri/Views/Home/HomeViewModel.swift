@@ -15,11 +15,14 @@ final class HomeViewModel {
     private(set) var searchState: LoadState<[Product]> = .idle
 
     @ObservationIgnored private let service: ProductService
+    /// Arama isteği atılmadan önce beklenen süre (debounce). Testler beklememek için `.zero` verir.
+    @ObservationIgnored private let searchDebounce: Duration
     /// En son istenen arama. Daha eski bir aramanın geç gelen sonucu bununla karşılaştırılıp atılır.
     @ObservationIgnored private var latestQuery = ""
 
-    init(service: ProductService = .shared) {
+    init(service: ProductService = .shared, searchDebounce: Duration = .milliseconds(400)) {
         self.service = service
+        self.searchDebounce = searchDebounce
     }
 
     /// Ekran ilk açıldığında çağrılır; veri zaten yüklendiyse tekrar istek atmaz.
@@ -56,7 +59,7 @@ final class HomeViewModel {
         }
 
         do {
-            try await Task.sleep(for: .milliseconds(400))
+            try await Task.sleep(for: searchDebounce)
             guard isLatest() else { return }
             searchState = .loading
             let products = try await service.searchProducts(query: trimmedQuery)
