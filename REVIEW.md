@@ -58,7 +58,7 @@ Bu turda aşağıdakiler çalıştırılarak kontrol edildi:
 | K1 | Kritik | Release derlemesi başarısız | ✅ Düzeltildi | `83f4532`. Bu turda Release derlemesi yeniden alındı, başarılı |
 | O1 | Önemli | Sepet toplamında kuruş farkı | ✅ Düzeltildi | `81b795c`, TL ve dolar için `27092ef`. Satır toplamı = görünen birim fiyat × adet; toplam = görünen satırların toplamı. Testli |
 | O2 | Önemli | Sepet ve favoriler ürünün eski kopyasını saklıyor | 🟡 Kısmen düzeltildi (23 Ekim 2026) | Plist'te ürün yok, açılışta API'den geliyor (O3). Oturum içinde tazeleme ve adedi stoğa indirme yok |
-| O3 | Önemli | Plist çözülemezse veri kayboluyor | ✅ Düzeltildi (23 Ekim 2026, `fix/versioned-storage`) | `.corrupt` yedeği var (`fbdf477`). Sürümlü kayıt tipi yok; ikinci bozulmada eski yedek siliniyor |
+| O3 | Önemli | Plist çözülemezse veri kayboluyor | ✅ Düzeltildi (23 Ekim 2026, `fix/versioned-storage`) | `.corrupt` yedeği var (`fbdf477`). Güncelleme (23 Ekim 2026): sürümlü kayıt tipi (id, adet) ve zaman damgalı yedekler eklendi |
 | O4 | Önemli | JSON çözümü ana thread'de | ❌ Hâlâ açık | Ayrıntı aşağıda |
 | O5 | Önemli | Eski arama sonucu yenisinin üzerine yazılıyor | ✅ Düzeltildi | `57e680a`, testli. `ErrorView`'daki `Task {}` duruyor ama `latestQuery` kontrolü eski sonucu engelliyor |
 | O6 | Önemli | Türkçe yerelleştirme yok | ✅ Düzeltildi | `40537db`: String Catalog ve `tr.lproj`. Türkçe cihazda sistem metinleri de Türkçe. Kalan sınırlar S16'da |
