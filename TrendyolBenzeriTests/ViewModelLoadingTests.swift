@@ -8,14 +8,6 @@ import Testing
 @testable import TrendyolBenzeri
 
 /// ViewModel'lerin yükleme, yenileme ve iptal geçişleri (ARCHITECTURE.md 4, REVIEW.md T1, O11).
-///
-/// O11 için iki test var: biri bugünkü davranışı belgeler, diğeri `ARCHITECTURE.md`'deki doğru
-/// davranışı test eder ve şimdilik kapalıdır. Düzeltme Adım 6'da yapılacak; o zaman kapalı test
-/// açılır, bugünkü davranışı belgeleyen test silinir.
-private let o11Reason: Comment = """
-    O11: yenileme hatası bugün listeyi `.failed` ile değiştiriyor. Düzeltme Adım 6'da yapılacak; \
-    o zaman bu test açılır ve "bugünkü davranış" testi silinir.
-    """
 
 @MainActor
 struct HomeViewModelLoadingTests {
@@ -92,6 +84,41 @@ struct HomeViewModelLoadingTests {
         await refresh
     }
 
+    @Test func refreshErrorShowsMessageAndClearsOnSuccess() async {
+        let server = StubServer(sequence: [.products(["A"]), .body("", status: 500), .products(["A", "B"])])
+        let viewModel = HomeViewModel(service: server.service)
+        await viewModel.load()
+
+        await viewModel.refresh()
+        #expect(viewModel.refreshError?.resolved(in: Locale(identifier: "tr_TR"))
+            == "Sunucu beklenmedik bir cevap verdi (500).")
+
+        await viewModel.refresh()
+        #expect(viewModel.refreshError == nil)
+        #expect(viewModel.state.loadedValue?.map(\.title) == ["A", "B"])
+    }
+
+    @Test func cancelledRefreshDoesNotShowError() async {
+        let server = StubServer(sequence: [.products(["A"]), .failure(.cancelled)])
+        let viewModel = HomeViewModel(service: server.service)
+        await viewModel.load()
+
+        await viewModel.refresh()
+
+        #expect(viewModel.refreshError == nil)
+    }
+
+    @Test func dismissClearsRefreshError() async {
+        let server = StubServer(sequence: [.products(["A"]), .failure(.notConnectedToInternet)])
+        let viewModel = HomeViewModel(service: server.service)
+        await viewModel.load()
+        await viewModel.refresh()
+
+        viewModel.dismissRefreshError()
+
+        #expect(viewModel.refreshError == nil)
+    }
+
     @Test func refreshReplacesListOnSuccess() async {
         let server = StubServer(sequence: [.products(["A"]), .products(["A", "B"])])
         let viewModel = HomeViewModel(service: server.service)
@@ -102,18 +129,7 @@ struct HomeViewModelLoadingTests {
         #expect(viewModel.state.loadedValue?.map(\.title) == ["A", "B"])
     }
 
-    @Test("O11 bugünkü davranış: yenileme hatası listeyi hata ekranıyla değiştirir")
-    func refreshFailureReplacesListCurrentBehavior() async {
-        let server = StubServer(sequence: [.products(["A"]), .body("", status: 500)])
-        let viewModel = HomeViewModel(service: server.service)
-
-        await viewModel.load()
-        await viewModel.refresh()
-
-        #expect(viewModel.state.isFailed)
-    }
-
-    @Test("Yenileme hatası mevcut listeyi silmez", .disabled(o11Reason))
+    @Test("Yenileme hatası mevcut listeyi silmez (O11)")
     func refreshFailureKeepsList() async {
         let server = StubServer(sequence: [.products(["A"]), .body("", status: 500)])
         let viewModel = HomeViewModel(service: server.service)
@@ -122,6 +138,7 @@ struct HomeViewModelLoadingTests {
         await viewModel.refresh()
 
         #expect(viewModel.state.loadedValue?.map(\.title) == ["A"])
+        #expect(viewModel.refreshError != nil)
     }
 }
 
@@ -166,18 +183,7 @@ struct CategoriesViewModelTests {
         #expect(viewModel.state.isIdle)
     }
 
-    @Test("O11 bugünkü davranış: yenileme hatası listeyi hata ekranıyla değiştirir")
-    func refreshFailureReplacesListCurrentBehavior() async {
-        let server = StubServer(sequence: [.categories(["beauty"]), .body("", status: 500)])
-        let viewModel = CategoriesViewModel(service: server.service)
-
-        await viewModel.load()
-        await viewModel.refresh()
-
-        #expect(viewModel.state.isFailed)
-    }
-
-    @Test("Yenileme hatası mevcut listeyi silmez", .disabled(o11Reason))
+    @Test("Yenileme hatası mevcut listeyi silmez (O11)")
     func refreshFailureKeepsList() async {
         let server = StubServer(sequence: [.categories(["beauty"]), .body("", status: 500)])
         let viewModel = CategoriesViewModel(service: server.service)
@@ -186,6 +192,7 @@ struct CategoriesViewModelTests {
         await viewModel.refresh()
 
         #expect(viewModel.state.loadedValue?.map(\.slug) == ["beauty"])
+        #expect(viewModel.refreshError != nil)
     }
 }
 
@@ -232,18 +239,7 @@ struct CategoryProductsViewModelTests {
         #expect(viewModel.state.isIdle)
     }
 
-    @Test("O11 bugünkü davranış: yenileme hatası listeyi hata ekranıyla değiştirir")
-    func refreshFailureReplacesListCurrentBehavior() async {
-        let server = StubServer(sequence: [.products(["Lipstick"]), .body("", status: 500)])
-        let viewModel = CategoryProductsViewModel(category: category, service: server.service)
-
-        await viewModel.load()
-        await viewModel.refresh()
-
-        #expect(viewModel.state.isFailed)
-    }
-
-    @Test("Yenileme hatası mevcut listeyi silmez", .disabled(o11Reason))
+    @Test("Yenileme hatası mevcut listeyi silmez (O11)")
     func refreshFailureKeepsList() async {
         let server = StubServer(sequence: [.products(["Lipstick"]), .body("", status: 500)])
         let viewModel = CategoryProductsViewModel(category: category, service: server.service)
@@ -252,6 +248,7 @@ struct CategoryProductsViewModelTests {
         await viewModel.refresh()
 
         #expect(viewModel.state.loadedValue?.map(\.title) == ["Lipstick"])
+        #expect(viewModel.refreshError != nil)
     }
 }
 
