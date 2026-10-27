@@ -96,7 +96,7 @@ Xcode projesi "synchronized folder" yapısında: `TrendyolBenzeri/` altına ekle
 | `Views/` (kök) | Uygulama iskeleti: `MainTabView` (sekmeler ve her sekmenin `NavigationStack`'i) |
 | `Views/<Ekran>/` | Bir ekranın view'ları ve ViewModel'i: `Home/`, `Categories/`, `ProductDetail/`, `Favorites/`, `Cart/`, `Settings/` |
 | `Views/Common/` | Ekranlar arası ortak, ekrana ait olmayan parçalar: ekran durumları (`LoadState`, `LoadingView`, `ErrorView`) ve önizleme yardımcısı `PreviewEnvironment` (henüz yok, bkz. 3. State management) |
-| `Views/Components/` | Birden fazla ekranda kullanılan bileşenler: `ProductGridView`, `ProductCardView` (+ `PriceView`, `RatingView`), `ProductImageView`, `StarRatingView`, `FavoriteButton` |
+| `Views/Components/` | Birden fazla ekranda kullanılan bileşenler: `ProductGridView`, `ProductCardView` (+ `PriceView`, `RatingView`), `ProductImageView`, `StarRatingView`, `FavoriteButton`; bu bileşenlerin VoiceOver metinleri `ProductAccessibility` |
 | `Utilities/` | SwiftUI'sız biçimlendirme ve yardımcılar: `PriceFormatter` (hedefte yalnızca `.discount` biçimi), `LocalizedStringResource+Locale`, `PreviewData` |
 | `Localizable.xcstrings` | Bütün arayüz metinleri |
 | `TrendyolBenzeriTests/` | Unit testler; `TestHelpers.swift` ortak örnekleri verir |
@@ -359,8 +359,8 @@ let store = CartStore()
   - Bugünkü durum: uyulmuyor. Puan yıldızları `.orange` ile çiziliyor (`Views/Components/StarRatingView.swift`, `Views/Components/ProductCardView.swift`); sistem turuncusu açık temada beyaz zeminde ≈2,2:1. Değerlendirme satırlarında puanı gösteren tek şey bu yıldızlar. Bkz. architect denetimi, 21 Ekim 2026.
 - **Dokunma alanı:** Her dokunulabilir öğe en az 44×44 pt'dir. Görünen şekil küçükse alan `.frame(width: 44, height: 44)` + `.contentShape(Rectangle())` ile büyütülür (`FavoriteButton`, sepet adet butonları).
 - **VoiceOver:** Yalnızca ikondan oluşan butonların etiketi vardır; tekrar eden butonların (kalp, adet) etiketi ürün adını içerir; dekoratif görseller gizlenir.
-  - Bugünkü durum: kısmen uyuluyor. Kalp etiketi ürün adını içermiyor, kart tek öğe değil; bkz. `REVIEW.md` O9.
-    - Notta geçmeyen yerler: sepet adet butonlarının etiketi ürün adını içermiyor ve adet değeri bağlamsız okunuyor (`Views/Cart/CartItemRow.swift`); başarıyla yüklenen ürün görseli ne etiketli ne gizli (`Views/Components/ProductImageView.swift`).
+  - Ürün kartı tek öğedir; etiketi marka, ad, puan, indirim, eski ve yeni fiyatı bağlamıyla okur. Üstü çizili fiyat "Eski fiyat" diye okunur. Sepet adedi tek, ayarlanabilir öğedir ("<ürün> adedi", değer adet; yukarı/aşağı kaydırma artırır/azaltır). Ürün görselleri gizlidir.
+  - Bu metinler `Views/Components/ProductAccessibility.swift`'te kurulur ve seçilen dilde test edilir (`ProductAccessibilityTests`). SwiftLint `accessibility_label_for_image` error'dır.
 - **Dynamic Type:** Yazılar metin stilleriyle (`.headline`, `.caption`) verilir; ikon ve sabit boyutlar `@ScaledMetric` ile büyür.
   - Bugünkü durum: uyulmuyor. `.system(size:)` ve sabit çerçeveler var; bkz. `REVIEW.md` O10.
     - Notta geçmeyen yerler: `.system(size:)` `FavoriteButton` ve `StarRatingView`'da; sabit boyutlar `StarRatingView`, `CartItemRow` ve `ProductImageGallery`'de; `StarRatingView`'a sabit `size:` veren çağrılar `ProductDetailView` ve `ReviewRowView`'da.

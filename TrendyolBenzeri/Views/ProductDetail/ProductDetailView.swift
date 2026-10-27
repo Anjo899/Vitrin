@@ -11,6 +11,7 @@ struct ProductDetailView: View {
     let product: Product
     /// Kökte seçilen dile göre verilir; dil değişince fiyatlar anında yeni para birimine geçer.
     @Environment(\.currency) private var currency
+    @Environment(\.locale) private var locale
 
     /// Bazı ürünlerde `images` boş olabilir; o zaman küçük görseli galeride gösteririz.
     private var galleryImages: [URL] {
@@ -82,6 +83,9 @@ struct ProductDetailView: View {
                             .font(.subheadline)
                             .strikethrough()
                             .foregroundStyle(.secondary)
+                            .accessibilityLabel(Text(verbatim: ProductAccessibility.oldPriceLabel(
+                                for: product, currency: currency, locale: locale
+                            )))
                     }
                 }
                 Text(product.discountedPrice(in: currency), format: currency.format)

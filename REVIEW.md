@@ -64,7 +64,7 @@ Bu turda aşağıdakiler çalıştırılarak kontrol edildi:
 | O6 | Önemli | Türkçe yerelleştirme yok | ✅ Düzeltildi | `40537db`: String Catalog ve `tr.lproj`. Türkçe cihazda sistem metinleri de Türkçe. Kalan sınırlar S16'da |
 | O7 | Önemli | Stok ve indirim metinlerinde kontrast | ✅ Düzeltildi | `dfa4564`. Aynı türden yeni bir sorun: O12 |
 | O8 | Önemli | Dokunma alanı 44 pt'den küçük | ✅ Düzeltildi | `74064b6` |
-| O9 | Önemli | VoiceOver kartı bağlamsız okuyor | ❌ Hâlâ açık | Puan etiketleri var; kart, kalp, görsel ve adet sorunları duruyor |
+| O9 | Önemli | VoiceOver kartı bağlamsız okuyor | ✅ Düzeltildi (27 Ekim 2026, `fix/voiceover-labels`) | Kart tek öğe, kalp ve adet ürün adını içeriyor, görsel gizli, eski fiyat bağlamlı. Testli |
 | O10 | Önemli | Dynamic Type desteği eksik | ❌ Hâlâ açık | Sabit punto ve çerçeveler duruyor |
 | T1 | Önemli | ViewModel, `APIClient` ve fiyat testleri eksik | 🟡 Hâlâ açık (kısmen düzeltildi) | Fiyat, para birimi ve arama testleri eklendi. Yükleme, yenileme ve iptal geçişleri ile `APIClient` hata eşlemesi test edilmiyor. Güncelleme (23 Ekim 2026): bunlar da test edildi; O11'in doğru davranış testleri düzeltmeye kadar kapalı |
 | S1 | Küçük | "%0" indirim rozeti | ❌ Hâlâ açık | Simülatörde Green Bell Pepper kartında "0%" görüldü |
@@ -290,6 +290,7 @@ Güncelleme (21 Ekim 2026): `ARCHITECTURE.md` artık Models → Utilities bağı
 ### Erişilebilirlik
 
 #### O9 · Önemli · VoiceOver ürün kartını bağlamsız okuyor (birinci turdan, açık)
+- **Durum:** ✅ Düzeltildi (27 Ekim 2026, `fix/voiceover-labels`). Kart tek öğe ve etiketi marka, ad, puan, indirim, eski ve yeni fiyatı içeriyor; kalp etiketi ürün adını içeriyor; ürün görseli gizli; üstü çizili fiyat "Eski fiyat" diye okunuyor; sepet adedi tek, ayarlanabilir öğe. Metinler `ProductAccessibility`'de, testli. `accessibility_label_for_image` error'a çekildi. Cihazda VoiceOver ile denenmedi.
 - **Dosya:** `Views/Components/ProductGridView.swift:22–31`, `Views/Components/ProductCardView.swift:14–43`, `Views/Components/FavoriteButton.swift:33`, `Views/Components/ProductImageView.swift:28–31`, `Views/Cart/CartItemRow.swift:67–70`
 - **Sorun:**
   - **Düzeltilen kısım:** Puan (`RatingView`, `StarRatingView`) ve hata yer tutucusu için etiketler var.

@@ -27,10 +27,13 @@ struct FavoriteButton: View {
                 // Görünen daire 34 pt kalır, dokunma alanı HIG'in önerdiği 44 pt olur.
                 .frame(width: 44, height: 44)
                 .contentShape(Rectangle())
+                // Butonun kendi etiketi var; ikon ayrıca okunmaz.
+                .accessibilityHidden(true)
         }
         .buttonStyle(.plain)
         .sensoryFeedback(.selection, trigger: isFavorite)
-        .accessibilityLabel(isFavorite ? Text("Favorilerden çıkar") : Text("Favorilere ekle"))
+        // Etiket ürünün adını içerir; her kartta aynı "Favorilere ekle" okunmaz (REVIEW.md O9).
+        .accessibilityLabel(Text(ProductAccessibility.favoriteLabel(for: product, isFavorite: isFavorite)))
     }
 }
 

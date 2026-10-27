@@ -1,6 +1,70 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "%@ adedi": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quantity of %@"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ adedi"
+          }
+        }
+      }
+    },
+    "%@ indirim": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ off"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ indirim"
+          }
+        }
+      }
+    },
+    "%@ ürününü favorilerden çıkar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove %@ from favorites"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ ürününü favorilerden çıkar"
+          }
+        }
+      }
+    },
+    "%@ ürününü favorilere ekle": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add %@ to favorites"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ ürününü favorilere ekle"
+          }
+        }
+      }
+    },
     "%lld ürün": {
       "localizations": {
         "en": {
@@ -461,6 +525,22 @@
         }
       }
     },
+    "Eski fiyat %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Original price %@"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eski fiyat %@"
+          }
+        }
+      }
+    },
     "Ev Dekorasyonu": {
       "localizations": {
         "en": {
@@ -493,34 +573,18 @@
         }
       }
     },
-    "Favorilerden çıkar": {
+    "Fiyat %@": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Remove from favorites"
+            "value": "Price %@"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Favorilerden çıkar"
-          }
-        }
-      }
-    },
-    "Favorilere ekle": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Add to favorites"
-          }
-        },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Favorilere ekle"
+            "value": "Fiyat %@"
           }
         }
       }
