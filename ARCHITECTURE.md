@@ -96,7 +96,7 @@ Xcode projesi "synchronized folder" yapısında: `TrendyolBenzeri/` altına ekle
 | `Views/` (kök) | Uygulama iskeleti: `MainTabView` (sekmeler ve her sekmenin `NavigationStack`'i) |
 | `Views/<Ekran>/` | Bir ekranın view'ları ve ViewModel'i: `Home/`, `Categories/`, `ProductDetail/`, `Favorites/`, `Cart/`, `Settings/` |
 | `Views/Common/` | Ekranlar arası ortak, ekrana ait olmayan parçalar: ekran durumları (`LoadState`, `LoadingView`, `ErrorView`) ve önizleme yardımcısı `PreviewEnvironment` (henüz yok, bkz. 3. State management) |
-| `Views/Components/` | Birden fazla ekranda kullanılan bileşenler: `ProductGridView`, `ProductCardView` (+ `PriceView`, `RatingView`), `ProductImageView`, `StarRatingView`, `FavoriteButton` |
+| `Views/Components/` | Birden fazla ekranda kullanılan bileşenler: `ProductGridView`, `ProductCardView` (+ `PriceView`, `RatingView`), `ProductImageView`, `StarRatingView`, `FavoriteButton`; bu bileşenlerin VoiceOver metinleri `ProductAccessibility` |
 | `Utilities/` | SwiftUI'sız biçimlendirme ve yardımcılar: `PriceFormatter` (hedefte yalnızca `.discount` biçimi), `LocalizedStringResource+Locale`, `PreviewData` |
 | `Localizable.xcstrings` | Bütün arayüz metinleri |
 | `TrendyolBenzeriTests/` | Unit testler; `TestHelpers.swift` ortak örnekleri verir |

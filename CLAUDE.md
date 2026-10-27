@@ -21,7 +21,7 @@
 | `Views/` (kök) | Uygulama iskeleti: `MainTabView` |
 | `Views/<Ekran>/` | Ekran view'ları ve varsa ekranın `ViewModel`'i (`Home/`, `Categories/`, `ProductDetail/`, `Favorites/`, `Cart/`, `Settings/`) |
 | `Views/Common/` | `LoadState`, `LoadingView`, `ErrorView`; önizleme yardımcısı `PreviewEnvironment` (henüz yok) |
-| `Views/Components/` | Tekrar kullanılan bileşenler (aşağıda) |
+| `Views/Components/` | Tekrar kullanılan bileşenler (aşağıda) ve onların VoiceOver metinleri (`ProductAccessibility`) |
 | `Utilities/` | SwiftUI'sız yardımcılar; yalnızca Foundation import eder, Models'i kullanabilir (Models Utilities'i kullanamaz): `PriceFormatter` (`.discount` biçimi), `LocalizedStringResource+Locale` (`resolved(in:)`), `PreviewData` (önizleme verisi ve `PlistStorage.preview`; `#Preview` blokları Release'te de derlendiği için `#if DEBUG` içine alınmaz). Bugünkü durum: `PriceFormatter` SwiftUI import ediyor; `Currency`, `ExchangeRate`, `roundedToCents`, `Product`'ın fiyat hesapları (`price(in:)`, `discountedPrice(in:)`, `discountRate`) ve `\.currency` environment değerini de içeriyor. Hedef yerleri Models ve `Views/` (`ARCHITECTURE.md` 1. Katmanlar) |
 
 - Akış: View → ViewModel → `ProductService` → `APIClient`. View'lar URL bilmez.
