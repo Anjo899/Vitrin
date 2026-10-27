@@ -74,6 +74,23 @@ struct APIClientTests {
         #expect(request.queryValue("q") == "phone")
     }
 
+    // MARK: - Ana thread dışında çözme (REVIEW.md O4)
+
+    /// MainActor'dan çağrılsa bile JSON arka planda çözülür.
+    @MainActor
+    @Test func decodesOffTheMainThreadWhenCalledFromMainActor() async throws {
+        let server = StubServer(.body("{}"))
+
+        let probe: MainThreadProbe = try await server.client.get("probe")
+
+        #expect(!probe.decodedOnMainThread)
+    }
+
+    /// Decoder her istekte yeniden oluşturulmaz.
+    @Test func sharesOneDecoder() {
+        #expect(JSONDecoder.dummyJSON === JSONDecoder.dummyJSON)
+    }
+
     // MARK: - Hata mesajları
 
     @Test func userMessageMapsEachError() {
@@ -141,5 +158,14 @@ struct ProductServiceTests {
 
         #expect(products.map(\.title) == ["Lipstick"])
         #expect(server.requests.first?.url?.path() == "/products/category/beauty")
+    }
+}
+
+/// Çözüldüğü thread'i kaydeder.
+private struct MainThreadProbe: Decodable {
+    let decodedOnMainThread: Bool
+
+    init(from decoder: Decoder) throws {
+        decodedOnMainThread = Thread.isMainThread
     }
 }

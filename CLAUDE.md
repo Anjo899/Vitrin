@@ -26,7 +26,7 @@
 
 - Akış: View → ViewModel → `ProductService` → `APIClient`. View'lar URL bilmez.
 - Projede `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor`. View, ViewModel ve store'lar MainActor'da; modeller, ağ katmanı ve `PlistStorage` `nonisolated` + `Sendable`.
-- `SWIFT_APPROACHABLE_CONCURRENCY` açık (`NonisolatedNonsendingByDefault`): `nonisolated async` bir fonksiyon çağıranın actor'ünde çalışır. Yani ViewModel'den çağrılan `APIClient.get` JSON'u şu an ana thread'de çözüyor; işi arka plana almak için `@concurrent` gerekir (`REVIEW.md` O4).
+- `SWIFT_APPROACHABLE_CONCURRENCY` açık (`NonisolatedNonsendingByDefault`): `nonisolated async` bir fonksiyon çağıranın actor'ünde çalışır. Bu yüzden ağ ve JSON çözme işi yapan fonksiyonlar `@concurrent` ile işaretlenir: `APIClient.get` öyle, ViewModel MainActor'dan çağırsa da istek ve çözme arka planda çalışır. `JSONDecoder.dummyJSON` ve tarih biçimleri bir kez oluşturulur.
 
 ## State management
 - **`@State`**: ekrana ait değerler ve ekranın ViewModel'i (`@State private var viewModel = HomeViewModel()`). ViewModel bir parametreye bağlıysa init'te `_viewModel = State(initialValue: …)`.
