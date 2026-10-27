@@ -15,9 +15,21 @@ final class AddToCartUITests: XCTestCase {
 
     @MainActor
     func testAddingProductUpdatesBadgeAndTotal() {
+        runAddToCartFlow(extraArguments: [])
+    }
+
+    /// En büyük erişilebilirlik yazı boyutunda da akış çalışır: alt çubuklar alt alta dizilir,
+    /// buton ekranda kalır ve basılabilir (ARCHITECTURE.md 8 Dynamic Type, REVIEW.md O10).
+    @MainActor
+    func testAddingProductWorksAtLargestTextSize() {
+        runAddToCartFlow(extraArguments: ["-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"])
+    }
+
+    @MainActor
+    private func runAddToCartFlow(extraArguments: [String]) {
         let app = XCUIApplication()
         // Türkçe arayüz ve TL; sepet gerçek dosya yerine geçici klasörde.
-        app.launchArguments = ["-uiTesting", "-appLanguage", "tr", "-appTheme", "light"]
+        app.launchArguments = ["-uiTesting", "-appLanguage", "tr", "-appTheme", "light"] + extraArguments
         app.launch()
 
         let cartTab = app.tabBars.buttons["Sepet"]
@@ -31,6 +43,7 @@ final class AddToCartUITests: XCTestCase {
 
         let addButton = app.buttons["addToCartButton"]
         XCTAssertTrue(addButton.waitForExistence(timeout: 5))
+        XCTAssertTrue(addButton.isHittable, "Sepete Ekle butonu ekranda ve basılabilir olmalı")
         let price = app.staticTexts["addToCartPrice"].label
         addButton.tap()
 

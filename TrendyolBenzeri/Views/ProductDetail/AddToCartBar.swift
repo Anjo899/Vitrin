@@ -15,11 +15,16 @@ struct AddToCartBar: View {
     /// Her eklemede artar; geri bildirim (titreşim + yeşil buton) bunu tetikler.
     @State private var addCount = 0
     @State private var showsAddedFeedback = false
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
         let quantityInCart = cartStore.quantity(of: product)
+        // Erişilebilirlik yazı boyutlarında fiyat ve buton yan yana sığmaz; alt alta dizilir.
+        let layout = dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: 8))
+            : AnyLayout(HStackLayout(spacing: 16))
 
-        HStack(spacing: 16) {
+        layout {
             VStack(alignment: .leading, spacing: 2) {
                 Text(product.discountedPrice(in: currency), format: currency.format)
                     .font(.headline)
