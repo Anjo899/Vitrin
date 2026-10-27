@@ -9,8 +9,8 @@ import Observation
 /// Favori ürünleri tutan paylaşılan store. Uygulamanın giriş noktasında oluşturulur
 /// ve `.environment` ile tüm ekranlara verilir; böylece kalp ikonu her yerde senkron kalır.
 ///
-/// Dosyaya yalnızca id'ler yazılır (`StoredFavorites`). Ürün bilgisi bellekte tutulur; açılışta
-/// bilinmeyenler (`missingProductIDs`) Favoriler ekranında API'den alınır.
+/// Dosyaya yalnızca id'ler yazılır (`StoredFavorites`). Ürün bilgisi bellekte tutulur; Favoriler ekranı
+/// her açıldığında bütün ürünler API'den tazelenir.
 @Observable
 final class FavoritesStore {
     /// Favori ürünlerin id'leri. Kaydedilen tek bilgi bu; "favori mi?" sorusu hızlıca cevaplanır.
@@ -55,7 +55,7 @@ final class FavoritesStore {
         save()
     }
 
-    /// API'den gelen ürünleri işler. İstenip gelmeyen id'ler (API'de artık olmayan ürünler) favorilerden çıkar.
+    /// API'den gelen güncel ürünleri işler. İstenip gelmeyen id'ler (API'de artık olmayan ürünler) favorilerden çıkar.
     func update(with fetchedProducts: [Product], requestedIDs: Set<Int>) {
         for product in fetchedProducts where ids.contains(product.id) {
             knownProducts[product.id] = product

@@ -9,8 +9,8 @@ import Observation
 /// Sepeti tutan paylaşılan store. Sepet sekmesindeki badge `totalQuantity`'yi gösterir.
 ///
 /// Dosyaya yalnızca id ve adet yazılır (`StoredCart`). Ürün bilgisi bellekte tutulur: sepete
-/// eklenen ürün hemen bilinir, açılışta bilinmeyenler (`missingProductIDs`) sepet ekranında
-/// API'den alınıp `update(with:requestedIDs:)` ile verilir.
+/// eklenen ürün hemen bilinir; sepet ekranı her açıldığında bütün ürünler API'den tazelenip
+/// `update(with:requestedIDs:)` ile verilir (fiyat ve stok güncel kalır).
 @Observable
 final class CartStore {
     /// Ürün id'si → adet. Kaydedilen tek bilgi bu.
@@ -33,6 +33,11 @@ final class CartStore {
                 items[entry.key] = CartItem(product: product, quantity: entry.value)
             }
         }
+    }
+
+    /// Sepetteki bütün ürünlerin id'leri; sepet ekranı bunları API'den tazeler.
+    var productIDs: Set<Int> {
+        Set(quantities.keys)
     }
 
     /// Sepette olup ürün bilgisi henüz gelmemiş id'ler (açılıştan sonra API'den istenir).
@@ -76,9 +81,8 @@ final class CartStore {
     func add(_ product: Product) {
         guard canAdd(product) else { return }
         quantities[product.id, default: 0] += 1
-        if products[product.id] == nil {
-            products[product.id] = product
-        }
+        // Satırdaki ürün, eklenirken gösterilen kopyayla değişir; sepet ekranı açılınca yine API'den tazelenir.
+        products[product.id] = product
         save()
     }
 
@@ -98,17 +102,26 @@ final class CartStore {
         save()
     }
 
-    /// API'den gelen ürünleri sepete işler. İstenip gelmeyen id'ler (API'de artık olmayan ürünler) sepetten çıkar.
+    /// API'den gelen güncel ürünleri sepete işler.
+    /// - Adet yeni stoktan fazlaysa stoğa indirilir; stok bittiyse satır çıkar.
+    /// - İstenip gelmeyen id'ler (API'de artık olmayan ürünler) sepetten çıkar.
     func update(with fetchedProducts: [Product], requestedIDs: Set<Int>) {
-        for product in fetchedProducts where quantities[product.id] != nil {
+        var changed = false
+        for product in fetchedProducts {
+            guard let quantity = quantities[product.id] else { continue }
             products[product.id] = product
+            if quantity > product.stock {
+                quantities[product.id] = product.stock > 0 ? product.stock : nil
+                changed = true
+            }
         }
-        let removedIDs = requestedIDs.subtracting(fetchedProducts.map(\.id))
-        guard !removedIDs.isEmpty else { return }
-        for id in removedIDs {
+        for id in requestedIDs.subtracting(fetchedProducts.map(\.id)) where quantities[id] != nil {
             quantities[id] = nil
+            changed = true
         }
-        save()
+        if changed {
+            save()
+        }
     }
 
     // MARK: - Kalıcılık
