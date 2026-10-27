@@ -8,13 +8,14 @@ import SwiftUI
 /// 5 yıldızlık puan göstergesi; ör. 3.6 → ★★★½☆
 struct StarRatingView: View {
     let rating: Double
-    var size: CGFloat = 12
+    /// Yıldızların boyutu metin stiliyle verilir; yazı boyutu büyüyünce yıldızlar da büyür (Dynamic Type).
+    var textStyle: Font.TextStyle = .caption
 
     var body: some View {
         HStack(spacing: 1) {
             ForEach(1...5, id: \.self) { index in
                 Image(systemName: symbolName(for: index))
-                    .font(.system(size: size))
+                    .font(.system(textStyle))
                     .foregroundStyle(.orange)
             }
         }
@@ -38,6 +39,6 @@ struct StarRatingView: View {
     VStack(alignment: .leading) {
         StarRatingView(rating: 4.8)
         StarRatingView(rating: 3.5)
-        StarRatingView(rating: 1.2, size: 20)
+        StarRatingView(rating: 1.2, textStyle: .title3)
     }
 }
