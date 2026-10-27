@@ -351,11 +351,10 @@ let store = CartStore()
 ## 8. Erişilebilirlik
 
 - **Kontrast:** Metin ile zemini arasında en az 4,5:1, büyük metin (≥ 18 pt ya da ≥ 14 pt kalın) ve ikonlarda en az 3:1. Bu oran açık ve koyu temada ayrı ayrı sağlanır.
-  - Anlam taşıyan renkler Assets'ten, Xcode'un ürettiği adlarla gelir: `.discountBadge`, `.stockAvailable`, `.stockLow`, `.stockOut`, `.brandAccent`. Metin ya da dolgu için `.green`, `.red`, `.orange` gibi sistem renkleri kullanılmaz.
+  - Anlam taşıyan renkler Assets'ten, Xcode'un ürettiği adlarla gelir: `.discountBadge`, `.stockAvailable`, `.stockLow`, `.stockOut`, `.brandAccent`, `.successFill` ("Sepete Eklendi" butonunun zemini). Üzerine beyaz yazı gelen renklerin kontrastı `ColorContrastTests` ile iki temada test edilir. Metin ya da dolgu için `.green`, `.red`, `.orange` gibi sistem renkleri kullanılmaz.
   - Anlam taşıyan her ikon (kalp, yıldız, rozet) zeminiyle en az 3:1 kontrast verir. İkonlarda da `.red` dahil sistem renkleri yerine Assets renkleri kullanılır.
   - Bugünkü durum: uyulmuyor. Kalp (`Views/Components/FavoriteButton.swift`) favorideyken `.red`, değilken `.secondary`, zemini `.regularMaterial`. Hesaplanan değerler (cihazda ölçülmedi; material yarı saydam olduğu için arkadaki görsele göre değişir): dolu kalp açık temada ≈3,2–3,5:1, koyu temada ≈4–5:1; boş kalp açık temada ≈3,1–3,5:1. Eşiği geçiyor ama payı küçük; sistem rengi (`.red`) kullandığı için kurala uymuyor. Bkz. architect denetimi, 21 Ekim 2026.
   - Bilgi yalnızca renkle verilmez; yanında metin ya da ikon olur.
-  - Bugünkü durum: uyulmuyor. "Sepete Eklendi" butonu `.green` üzerinde beyaz yazı kullanıyor (≈2:1); bkz. `REVIEW.md` O12.
   - Bugünkü durum: uyulmuyor. Puan yıldızları `.orange` ile çiziliyor (`Views/Components/StarRatingView.swift`, `Views/Components/ProductCardView.swift`); sistem turuncusu açık temada beyaz zeminde ≈2,2:1. Değerlendirme satırlarında puanı gösteren tek şey bu yıldızlar. Bkz. architect denetimi, 21 Ekim 2026.
 - **Dokunma alanı:** Her dokunulabilir öğe en az 44×44 pt'dir. Görünen şekil küçükse alan `.frame(width: 44, height: 44)` + `.contentShape(Rectangle())` ile büyütülür (`FavoriteButton`, sepet adet butonları).
 - **VoiceOver:** Yalnızca ikondan oluşan butonların etiketi vardır; tekrar eden butonların (kalp, adet) etiketi ürün adını içerir; dekoratif görseller gizlenir.

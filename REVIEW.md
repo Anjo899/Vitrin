@@ -86,7 +86,7 @@ Bu turda aşağıdakiler çalıştırılarak kontrol edildi:
 | # | Önem | Bulgu | Başlık |
 | --- | --- | --- | --- |
 | O11 | Önemli | Aşağı çekip yenileme hata verince liste siliniyor | Hata yönetimi |
-| O12 | Önemli | "Sepete Eklendi" butonunda beyaz yazı yeşil zeminde okunmuyor (≈2,0–2,2:1) | Erişilebilirlik |
+| O12 | Önemli | "Sepete Eklendi" butonunda beyaz yazı yeşil zeminde okunmuyor (≈2,0–2,2:1). ✅ Düzeltildi (27 Ekim 2026, `fix/added-button-contrast`) | Erişilebilirlik |
 | S11 | Küçük | Proje Swift 5 dil modunda; kod Swift 6'ya hazır ama derleyici korumuyor | Concurrency |
 | S12 | Küçük | `PriceFormatter.swift` adının ötesinde iş yapıyor; model dosyası SwiftUI'a bağlı | Mimari, isimlendirme |
 | S13 | Küçük | Dolar cinsinden `lineTotal` ve `totalPrice` kullanılmıyor; `CLAUDE.md` tersini söylüyor | Kod tekrarı |
@@ -318,6 +318,7 @@ Güncelleme (21 Ekim 2026): `ARCHITECTURE.md` artık Models → Utilities bağı
   - Simülatörde Accessibility Inspector ile en büyük boyutta dene.
 
 #### O12 · Önemli · "Sepete Eklendi" butonunda kontrast yetersiz
+- **Durum:** ✅ Düzeltildi (27 Ekim 2026, `fix/added-button-contrast`). Buton Assets'teki `SuccessFill` (#1E7B34, beyaz yazıyla ≈5,3:1, iki temada) ile boyanıyor; ✓ ikonu duruyor. Testli (`ColorContrastTests`).
 - **Dosya:** `Views/ProductDetail/AddToCartBar.swift:48`
 - **Sorun:** Ekleme sonrası buton 1,5 sn boyunca `.tint(.green)` ile yeşile dönüyor ve yazısı beyaz. Sistem yeşili açık temada `#34C759`, koyu temada `#30D158`; beyaz yazıyla kontrast ≈ 2,0–2,2:1. Büyük metin için bile WCAG AA en az 3:1 istiyor. Birinci turda O7 ile Assets'e erişilebilir renkler eklenmişti; bu yer onların dışında kaldı.
 - **Neden önemli:** Geri bildirim metni ("Sepete Eklendi") az gören kullanıcılar için okunmuyor. Süre kısa olsa da bu, işlemin başarılı olduğunu söyleyen tek metin.
@@ -512,7 +513,7 @@ Bugün 41 test var: fiyat ve para birimi, dil ve tema, kategori adları, decode,
 1. **O11 ve T1:** Yenileme hatasında listeyi koru. Ortak yükleyiciyi (S6) çıkar ve durum geçişlerini test et.
 2. **O2 ve O3:** Sepet ve favoriler için sürümlü kayıt tipine geç (id + adet); ürünleri açılışta tazele. S18 de bununla çözülür.
 3. **O4:** `APIClient.get`'i `@concurrent` yap; decoder ve tarih biçimlerini bir kez oluştur.
-4. **O12, O9, O10:** Erişilebilirlik turu. Simülatörde Accessibility Inspector, VoiceOver ve en büyük yazı boyutuyla dene.
+4. **O12, O9, O10:** Erişilebilirlik turu. Güncelleme (27 Ekim 2026): O12 düzeltildi. Simülatörde Accessibility Inspector, VoiceOver ve en büyük yazı boyutuyla dene.
 5. **S11:** Swift 6 dil moduna geç. Kod bugün hazır; ne kadar beklenirse o kadar zorlaşır.
 6. **S21 ve S13:** `PLAN.md` ve `CLAUDE.md`'yi kodla ve güncel kurallarla eşitle.
 7. Kalan küçük bulgular.

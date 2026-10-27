@@ -66,8 +66,8 @@ custom_rules:
     severity: error
 
   # 8. Erişilebilirlik: anlam taşıyan renkler Assets'ten gelir; metin, dolgu ve ikonda sistem renkleri kullanılmaz.
-  # Warning: bilinen ihlaller. "Sepete Eklendi" `.green` (O12), yıldızlar `.orange`,
-  # kalp `.red` ("Bugünkü durum: uyulmuyor", architect denetimi 21 Ekim 2026).
+  # Warning: bilinen ihlaller. Yıldızlar `.orange`, kalp `.red` ("Bugünkü durum: uyulmuyor",
+  # architect denetimi 21 Ekim 2026). "Sepete Eklendi"deki `.green` (O12) düzeltildi; kalanlar düzelince error.
   no_system_colors_in_views:
     name: "Sistem rengi yasak"
     included: '/TrendyolBenzeri/Views/'
