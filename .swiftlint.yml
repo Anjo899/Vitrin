@@ -15,6 +15,7 @@ excluded:
 
 opt_in_rules:
   # 8. Erişilebilirlik: görsellerin VoiceOver etiketi olur ya da dekoratif olarak gizlenir (REVIEW.md lint listesi, O9).
+  # O9 düzeltildi, ihlal kalmadı: error (aşağıda).
   - accessibility_label_for_image
   # 8. Erişilebilirlik: dokunma ile çalışan öğe buton özelliği taşır (REVIEW.md lint listesi, O9).
   - accessibility_trait_for_button
@@ -25,6 +26,10 @@ opt_in_rules:
 
 # `unused_declaration` (REVIEW.md lint listesi) bir analyzer kuralıdır; derleyici
 # günlüğü ister ve build tool plugin'inde çalışmaz. Bu yüzden açılmadı.
+
+# 8. Erişilebilirlik: etiketsiz ya da gizlenmemiş görsel yeni ihlali derlemeyi kırar (O9 sonrası ihlal yok).
+accessibility_label_for_image:
+  severity: error
 
 # Özel kurallar. Her kuralın üstünde ARCHITECTURE.md'deki bölümü yazılı.
 #
