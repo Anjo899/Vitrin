@@ -17,6 +17,9 @@ nonisolated struct APIClient: Sendable {
         self.session = session
     }
 
+    /// `@concurrent`: istek ve JSON çözme, çağıran MainActor'da olsa bile arka planda çalışır
+    /// (194 ürünlük cevap ana thread'i bloke etmesin; ARCHITECTURE.md 5).
+    @concurrent
     func get<T: Decodable>(_ path: String, query: [URLQueryItem] = []) async throws -> T {
         guard var components = URLComponents(url: baseURL.appending(path: path), resolvingAgainstBaseURL: false) else {
             throw APIError.invalidURL
@@ -56,19 +59,26 @@ nonisolated struct APIClient: Sendable {
 
 extension JSONDecoder {
     /// Yorum tarihleri "2025-04-30T09:41:02.053Z" gibi salise içeren ISO 8601 metinleri.
-    nonisolated static var dummyJSON: JSONDecoder {
+    /// Decoder ve tarih biçimleri bir kez oluşturulur; her istekte ve her tarih için yenisi yapılmaz.
+    nonisolated static let dummyJSON: JSONDecoder = {
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .custom { decoder in
             let container = try decoder.singleValueContainer()
             let string = try container.decode(String.self)
-            if let date = try? Date.ISO8601FormatStyle(includingFractionalSeconds: true).parse(string) {
+            if let date = try? DummyJSONDateFormat.withFractionalSeconds.parse(string) {
                 return date
             }
-            if let date = try? Date.ISO8601FormatStyle().parse(string) {
+            if let date = try? DummyJSONDateFormat.withoutFractionalSeconds.parse(string) {
                 return date
             }
             throw DecodingError.dataCorruptedError(in: container, debugDescription: "Geçersiz tarih: \(string)")
         }
         return decoder
-    }
+    }()
+}
+
+/// dummyjson tarih biçimleri; `JSONDecoder.dummyJSON` her tarihte bunları yeniden kullanır.
+nonisolated private enum DummyJSONDateFormat {
+    static let withFractionalSeconds = Date.ISO8601FormatStyle(includingFractionalSeconds: true)
+    static let withoutFractionalSeconds = Date.ISO8601FormatStyle()
 }
