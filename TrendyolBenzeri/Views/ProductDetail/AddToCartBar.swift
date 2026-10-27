@@ -47,7 +47,8 @@ struct AddToCartBar: View {
             }
             .buttonStyle(.borderedProminent)
             .controlSize(.large)
-            .tint(showsAddedFeedback ? .green : .accentColor)
+            // Beyaz yazı için yeterli kontrast (5,3:1); sistem yeşili ≈2,2:1 kalıyordu. Başarıyı ✓ ikonu da anlatır.
+            .tint(showsAddedFeedback ? Color.successFill : .accentColor)
             .disabled(!cartStore.canAdd(product))
             .accessibilityIdentifier("addToCartButton")
         }
