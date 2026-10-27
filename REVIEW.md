@@ -26,7 +26,7 @@ Birinci turun 23 bulgusunun durumu:
 Bu turda 15 yeni bulgu var: 2 Önemli, 13 Küçük. Kritik bulgu yok. En önemli açık konular:
 1. **O2:** Sepet ve favoriler ürünün eski kopyasını saklıyor.
 2. **O11 (yeni):** Aşağı çekip yenileme başarısız olursa ekrandaki liste siliniyor. `CLAUDE.md` bunun tersini söylüyor.
-3. **O4:** JSON çözümü ana thread'de yapılıyor.
+3. **O4:** JSON çözümü ana thread'de yapılıyor. Güncelleme (27 Ekim 2026): düzeltmesi `fix/decode-off-main`'de.
 4. **O9 ve O10:** VoiceOver ve Dynamic Type desteği eksik.
 
 ### Önem dereceleri
@@ -59,7 +59,7 @@ Bu turda aşağıdakiler çalıştırılarak kontrol edildi:
 | O1 | Önemli | Sepet toplamında kuruş farkı | ✅ Düzeltildi | `81b795c`, TL ve dolar için `27092ef`. Satır toplamı = görünen birim fiyat × adet; toplam = görünen satırların toplamı. Testli |
 | O2 | Önemli | Sepet ve favoriler ürünün eski kopyasını saklıyor | ❌ Hâlâ açık | Ayrıntı aşağıda |
 | O3 | Önemli | Plist çözülemezse veri kayboluyor | 🟡 Hâlâ açık (kısmen düzeltildi) | `.corrupt` yedeği var (`fbdf477`). Sürümlü kayıt tipi yok; ikinci bozulmada eski yedek siliniyor |
-| O4 | Önemli | JSON çözümü ana thread'de | ❌ Hâlâ açık | Ayrıntı aşağıda |
+| O4 | Önemli | JSON çözümü ana thread'de | ✅ Düzeltildi (27 Ekim 2026, `fix/decode-off-main`) | `APIClient.get` `@concurrent`; decoder ve tarih biçimleri `static let`. Testli |
 | O5 | Önemli | Eski arama sonucu yenisinin üzerine yazılıyor | ✅ Düzeltildi | `57e680a`, testli. `ErrorView`'daki `Task {}` duruyor ama `latestQuery` kontrolü eski sonucu engelliyor |
 | O6 | Önemli | Türkçe yerelleştirme yok | ✅ Düzeltildi | `40537db`: String Catalog ve `tr.lproj`. Türkçe cihazda sistem metinleri de Türkçe. Kalan sınırlar S16'da |
 | O7 | Önemli | Stok ve indirim metinlerinde kontrast | ✅ Düzeltildi | `dfa4564`. Aynı türden yeni bir sorun: O12 |
@@ -194,6 +194,7 @@ Güncelleme (21 Ekim 2026): `ARCHITECTURE.md` artık Models → Utilities bağı
 - Arama iptali ve eski sonuç kontrolü (O5) doğru.
 
 #### O4 · Önemli · JSON çözümü ana thread'de yapılıyor (birinci turdan, açık)
+- **Durum:** ✅ Düzeltildi (27 Ekim 2026, `fix/decode-off-main`). `APIClient.get` `@concurrent`; MainActor'dan çağrılsa da istek ve çözme arka planda. `JSONDecoder.dummyJSON` ve iki tarih biçimi bir kez oluşturuluyor. Testli (`APIClientTests`: çözme ana thread dışında, decoder tek).
 - **Dosya:** `Networking/APIClient.swift:20,50,57–73`, `Views/Home/HomeViewModel.swift:76`
 - **Sorun:**
   - `SWIFT_APPROACHABLE_CONCURRENCY` açık olduğu için `nonisolated async func get`, çağıranın actor'ünde, yani MainActor'da çalışıyor. Ana sayfa `limit=0` ile 194 ürünü yorumlarıyla tek istekte çekiyor ve yaklaşık 300 KB'lık JSON ana thread'de çözülüyor.
@@ -511,7 +512,7 @@ Bugün 41 test var: fiyat ve para birimi, dil ve tema, kategori adları, decode,
 ### Önerilen sıra
 1. **O11 ve T1:** Yenileme hatasında listeyi koru. Ortak yükleyiciyi (S6) çıkar ve durum geçişlerini test et.
 2. **O2 ve O3:** Sepet ve favoriler için sürümlü kayıt tipine geç (id + adet); ürünleri açılışta tazele. S18 de bununla çözülür.
-3. **O4:** `APIClient.get`'i `@concurrent` yap; decoder ve tarih biçimlerini bir kez oluştur.
+3. **O4:** `APIClient.get`'i `@concurrent` yap; decoder ve tarih biçimlerini bir kez oluştur. Güncelleme (27 Ekim 2026): yapıldı.
 4. **O12, O9, O10:** Erişilebilirlik turu. Simülatörde Accessibility Inspector, VoiceOver ve en büyük yazı boyutuyla dene.
 5. **S11:** Swift 6 dil moduna geç. Kod bugün hazır; ne kadar beklenirse o kadar zorlaşır.
 6. **S21 ve S13:** `PLAN.md` ve `CLAUDE.md`'yi kodla ve güncel kurallarla eşitle.

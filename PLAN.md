@@ -125,7 +125,7 @@ Sepet satırları (görsel, ad, fiyat, `−` / adet / `+`; adet 1'deyken `−` �
 - `.claude/agents/`: `committer` ve `pr-manager` yeniden projede.
 
 ## Sonraki adımlar
-`REVIEW.md`'deki önerilen sıra: yenileme hatasında listeyi korumak ve ViewModel testleri (O11, T1), sepet ve favoriler için sürümlü kayıt (O2, O3), ağ işini arka plana almak (O4), erişilebilirlik turu (O12, O9, O10), Swift 6 dil modu (S11).
+`REVIEW.md`'deki önerilen sıra: yenileme hatasında listeyi korumak ve ViewModel testleri (O11, T1), sepet ve favoriler için sürümlü kayıt (O2, O3), ağ işini arka plana almak (O4; düzeltildi, 27 Ekim 2026), erişilebilirlik turu (O12, O9, O10), Swift 6 dil modu (S11).
 
 ## Her branch için iş akışı
 Ayrıntılar `CLAUDE.md`'deki "Git çalışma şekli" bölümünde. Kısaca:

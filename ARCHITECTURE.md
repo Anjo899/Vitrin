@@ -250,8 +250,7 @@ Proje ayarları:
 - Görevler view'un yaşam döngüsüne bağlanır: `.task`, `.task(id:)`, `.refreshable`. View kapanınca görev iptal olur. Yapılandırılmamış `Task { }` yalnızca bir butondan iş başlatmak gerektiğinde kullanılır.
   - Bugünkü durum: `ErrorView`'daki "Tekrar Dene" `Task { }` ile başlıyor ve iptal edilmiyor; bkz. `REVIEW.md` S22.
 - Actor sınırından geçen her tip `Sendable`'dır. Yeni model, servis ve kalıcılık tipleri `nonisolated` ve `Sendable` yazılır.
-- Ağ ve JSON çözme işi ana thread'de yapılmaz; bu tür fonksiyonlar `@concurrent` ile işaretlenir.
-  - Bugünkü durum: uyulmuyor. `APIClient.get` çağıranın actor'ünde, yani ana thread'de çalışıyor; bkz. `REVIEW.md` O4.
+- Ağ ve JSON çözme işi ana thread'de yapılmaz; bu tür fonksiyonlar `@concurrent` ile işaretlenir (`APIClient.get`). Decoder ve tarih biçimleri gibi pahalı nesneler her çağrıda değil, bir kez (`static let`) oluşturulur.
 - Proje Swift 6 dil modunda tutulur; veri yarışı riskleri derleme hatası olur.
   - Bugünkü durum: uyulmuyor. `SWIFT_VERSION = 5.0`; kod Swift 6'da uyarısız derleniyor ama ayar değişmedi; bkz. `REVIEW.md` S11.
 
