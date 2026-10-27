@@ -362,8 +362,8 @@ let store = CartStore()
   - Bugünkü durum: kısmen uyuluyor. Kalp etiketi ürün adını içermiyor, kart tek öğe değil; bkz. `REVIEW.md` O9.
     - Notta geçmeyen yerler: sepet adet butonlarının etiketi ürün adını içermiyor ve adet değeri bağlamsız okunuyor (`Views/Cart/CartItemRow.swift`); başarıyla yüklenen ürün görseli ne etiketli ne gizli (`Views/Components/ProductImageView.swift`).
 - **Dynamic Type:** Yazılar metin stilleriyle (`.headline`, `.caption`) verilir; ikon ve sabit boyutlar `@ScaledMetric` ile büyür.
-  - Bugünkü durum: uyulmuyor. `.system(size:)` ve sabit çerçeveler var; bkz. `REVIEW.md` O10.
-    - Notta geçmeyen yerler: `.system(size:)` `FavoriteButton` ve `StarRatingView`'da; sabit boyutlar `StarRatingView`, `CartItemRow` ve `ProductImageGallery`'de; `StarRatingView`'a sabit `size:` veren çağrılar `ProductDetailView` ve `ReviewRowView`'da.
+  - Dokunma alanları `.frame(minWidth: 44, minHeight: 44)` ile en az 44 pt'dir ve yazı büyüyünce büyür. Büyüyen ikon ve görsellere üst sınır konabilir (kalp dairesi 52 pt, sepet görseli 120 pt). Fotoğraf galerisinin yüksekliği metin olmadığı için sabittir.
+  - Erişilebilirlik yazı boyutlarında (`dynamicTypeSize.isAccessibilitySize`) alt çubuklar (sepete ekle, sepet özeti) yan yana değil alt alta dizilir. UI testi sepet akışını en büyük boyutta da çalıştırır. SwiftLint `no_fixed_font_size` error'dır.
 
 ```swift
 // ✅ 44 pt dokunma alanı, Assets rengi, etiket

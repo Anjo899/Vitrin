@@ -65,7 +65,7 @@ Bu turda aşağıdakiler çalıştırılarak kontrol edildi:
 | O7 | Önemli | Stok ve indirim metinlerinde kontrast | ✅ Düzeltildi | `dfa4564`. Aynı türden yeni bir sorun: O12 |
 | O8 | Önemli | Dokunma alanı 44 pt'den küçük | ✅ Düzeltildi | `74064b6` |
 | O9 | Önemli | VoiceOver kartı bağlamsız okuyor | ❌ Hâlâ açık | Puan etiketleri var; kart, kalp, görsel ve adet sorunları duruyor |
-| O10 | Önemli | Dynamic Type desteği eksik | ❌ Hâlâ açık | Sabit punto ve çerçeveler duruyor |
+| O10 | Önemli | Dynamic Type desteği eksik | ✅ Düzeltildi (27 Ekim 2026, `fix/dynamic-type`) | Metin stilleri ve `@ScaledMetric`; alt çubuklar büyük boyutta alt alta. UI testli |
 | T1 | Önemli | ViewModel, `APIClient` ve fiyat testleri eksik | 🟡 Hâlâ açık (kısmen düzeltildi) | Fiyat, para birimi ve arama testleri eklendi. Yükleme, yenileme ve iptal geçişleri ile `APIClient` hata eşlemesi test edilmiyor. Güncelleme (23 Ekim 2026): bunlar da test edildi; O11'in doğru davranış testleri düzeltmeye kadar kapalı |
 | S1 | Küçük | "%0" indirim rozeti | ❌ Hâlâ açık | Simülatörde Green Bell Pepper kartında "0%" görüldü |
 | S2 | Küçük | Aramada `+` boşluk olarak gidiyor | ❌ Hâlâ açık | Kod değişmedi |
@@ -307,6 +307,7 @@ Güncelleme (21 Ekim 2026): `ARCHITECTURE.md` artık Models → Utilities bağı
   - Adet kontrolünü `accessibilityAdjustableAction` ile ayarlanabilir tek bir öğe yap.
 
 #### O10 · Önemli · Dynamic Type desteği eksik (birinci turdan, açık)
+- **Durum:** ✅ Düzeltildi (27 Ekim 2026, `fix/dynamic-type`). `.system(size:)` ve `StarRatingView(size:)` metin stillerine geçti; kalp dairesi ve sepet görseli `@ScaledMetric` (üst sınırlı); dokunma alanları `minWidth/minHeight: 44`; sepete ekle ve sepet özeti çubukları erişilebilirlik boyutlarında alt alta. UI testi akışı AccessibilityXXXL boyutunda da çalıştırıyor; simülatör ekran görüntüsüyle doğrulandı. `no_fixed_font_size` error'a çekildi. Galeri yüksekliği (görsel, metin değil) sabit bırakıldı.
 - **Dosya:** `Views/Components/FavoriteButton.swift:22–28`, `Views/Components/StarRatingView.swift:11,17`, `Views/Cart/CartItemRow.swift:53,63,76`, `Views/ProductDetail/ProductImageGallery.swift:26`, `Views/Cart/CartView.swift:60–88`, `Views/ProductDetail/AddToCartBar.swift:22–50`
 - **Sorun:**
   - `.font(.system(size:))`, `size:` parametreleri ve sabit `frame` değerleri yazı boyutuyla büyümüyor.
