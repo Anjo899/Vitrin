@@ -13,6 +13,7 @@ struct CartView: View {
     /// Kökte seçilen dile göre verilir; dil değişince fiyatlar anında yeni para birimine geçer.
     @Environment(\.currency) private var currency
     @State private var showsCheckoutAlert = false
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
         content
@@ -58,7 +59,12 @@ struct CartView: View {
     }
 
     private var summaryBar: some View {
-        HStack(spacing: 16) {
+        // Erişilebilirlik yazı boyutlarında toplam ve buton yan yana sığmaz; alt alta dizilir.
+        let layout = dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: 8))
+            : AnyLayout(HStackLayout(spacing: 16))
+
+        return layout {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Toplam (\(cartStore.totalQuantity) ürün)")
                     .font(.caption)

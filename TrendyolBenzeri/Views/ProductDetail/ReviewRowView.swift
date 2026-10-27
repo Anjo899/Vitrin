@@ -19,7 +19,7 @@ struct ReviewRowView: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
-            StarRatingView(rating: Double(review.rating), size: 11)
+            StarRatingView(rating: Double(review.rating), textStyle: .caption2)
             Text(review.comment)
                 .font(.subheadline)
         }

@@ -57,7 +57,7 @@ struct ProductDetailView: View {
                 .font(.title3.bold())
 
             HStack(spacing: 6) {
-                StarRatingView(rating: product.rating, size: 14)
+                StarRatingView(rating: product.rating, textStyle: .subheadline)
                 Text(product.rating, format: .number.precision(.fractionLength(1)))
                     .font(.subheadline.weight(.semibold))
                 Text("(\(product.reviews.count) değerlendirme)")

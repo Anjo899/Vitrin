@@ -76,15 +76,15 @@ custom_rules:
     severity: warning
 
   # 8. Erişilebilirlik (Dynamic Type): yazılar metin stilleriyle verilir, ikon ve sabit boyutlar @ScaledMetric ile büyür.
-  # Warning: bilinen ihlal ("Bugünkü durum: uyulmuyor", REVIEW.md O10).
-  # REVIEW.md'deki `frame(width: <sayı>` önerisi alınmadı: ARCHITECTURE.md 8 dokunma alanı
-  # için `.frame(width: 44, height: 44)` yazılmasını istiyor.
+  # O10 düzeltildi, ihlal kalmadı: error.
+  # REVIEW.md'deki `frame(width: <sayı>` önerisi alınmadı: galeri yüksekliği gibi metin dışı sabit
+  # boyutlar ARCHITECTURE.md 8'de izinli; dokunma alanı artık `minWidth/minHeight: 44` ile yazılıyor.
   no_fixed_font_size:
     name: "Sabit punto yasak"
     included: '/TrendyolBenzeri/Views/'
     regex: '\.system\(size:|\bsize:\s*\d'
     message: "Metin stili (.headline, .caption) ya da @ScaledMetric kullanın (ARCHITECTURE.md 8)."
-    severity: warning
+    severity: error
 
   # 3. State management: `.previewEnvironment` store oluşturur; bu yalnızca `#Preview` bloklarında geçerli bir istisnadır.
   # Yardımcının kendi dosyası hariç. Bugün ihlal yok: error.

@@ -12,6 +12,8 @@ struct CartItemRow: View {
     @Environment(CartStore.self) private var cartStore
     /// Kökte seçilen dile göre verilir; dil değişince fiyatlar anında yeni para birimine geçer.
     @Environment(\.currency) private var currency
+    /// Görsel yazı boyutuyla büyür; en büyük boyutlarda satırı doldurmasın diye 120 pt ile sınırlı.
+    @ScaledMetric(relativeTo: .body) private var thumbnailSize: CGFloat = 72
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
@@ -50,7 +52,7 @@ struct CartItemRow: View {
 
     private var thumbnail: some View {
         ProductImageView(url: item.product.thumbnail)
-            .frame(width: 72, height: 72)
+            .frame(width: min(thumbnailSize, 120), height: min(thumbnailSize, 120))
     }
 
     private var quantityControls: some View {
@@ -60,7 +62,7 @@ struct CartItemRow: View {
             } label: {
                 // Adet 1'deyken azaltmak ürünü sepetten çıkarır; ikon bunu belli eder.
                 Image(systemName: item.quantity == 1 ? "trash" : "minus")
-                    .frame(width: 44, height: 44) // HIG: en az 44 pt dokunma alanı
+                    .frame(minWidth: 44, minHeight: 44) // HIG: en az 44 pt dokunma alanı
             }
             .accessibilityLabel(item.quantity == 1 ? Text("Sepetten çıkar") : Text("Adedi azalt"))
 
@@ -73,7 +75,7 @@ struct CartItemRow: View {
                 cartStore.increment(item)
             } label: {
                 Image(systemName: "plus")
-                    .frame(width: 44, height: 44)
+                    .frame(minWidth: 44, minHeight: 44)
             }
             .disabled(!cartStore.canAdd(item.product))
             .accessibilityLabel(Text("Adedi artır"))

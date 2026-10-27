@@ -11,6 +11,8 @@ struct FavoriteButton: View {
     let product: Product
 
     @Environment(FavoritesStore.self) private var favoritesStore
+    /// Görünen daire yazı boyutuyla büyür; kartın üstünü kapatmasın diye 52 pt ile sınırlı.
+    @ScaledMetric(relativeTo: .body) private var circleSize: CGFloat = 34
 
     var body: some View {
         let isFavorite = favoritesStore.isFavorite(product)
@@ -19,13 +21,13 @@ struct FavoriteButton: View {
             favoritesStore.toggle(product)
         } label: {
             Image(systemName: isFavorite ? "heart.fill" : "heart")
-                .font(.system(size: 16, weight: .semibold))
+                .font(.body.weight(.semibold))
                 .foregroundStyle(isFavorite ? .red : .secondary)
-                .frame(width: 34, height: 34)
+                .frame(width: min(circleSize, 52), height: min(circleSize, 52))
                 .background(.regularMaterial, in: Circle())
                 .contentTransition(.symbolEffect(.replace))
-                // Görünen daire 34 pt kalır, dokunma alanı HIG'in önerdiği 44 pt olur.
-                .frame(width: 44, height: 44)
+                // Dokunma alanı en az HIG'in önerdiği 44 pt; daire büyürse alan da büyür.
+                .frame(minWidth: 44, minHeight: 44)
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
