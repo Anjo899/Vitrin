@@ -357,7 +357,7 @@ let store = CartStore()
   - Bilgi yalnızca renkle verilmez; yanında metin ya da ikon olur.
   - Bugünkü durum: uyulmuyor. "Sepete Eklendi" butonu `.green` üzerinde beyaz yazı kullanıyor (≈2:1); bkz. `REVIEW.md` O12.
   - Bugünkü durum: uyulmuyor. Puan yıldızları `.orange` ile çiziliyor (`Views/Components/StarRatingView.swift`, `Views/Components/ProductCardView.swift`); sistem turuncusu açık temada beyaz zeminde ≈2,2:1. Değerlendirme satırlarında puanı gösteren tek şey bu yıldızlar. Bkz. architect denetimi, 21 Ekim 2026.
-- **Dokunma alanı:** Her dokunulabilir öğe en az 44×44 pt'dir. Görünen şekil küçükse alan `.frame(width: 44, height: 44)` + `.contentShape(Rectangle())` ile büyütülür (`FavoriteButton`, sepet adet butonları).
+- **Dokunma alanı:** Her dokunulabilir öğe en az 44×44 pt'dir. Görünen şekil küçükse alan `.frame(minWidth: 44, minHeight: 44)` + `.contentShape(Rectangle())` ile büyütülür (`FavoriteButton`, sepet adet butonları); `min…` yazı büyüyünce alanın da büyümesine izin verir.
 - **VoiceOver:** Yalnızca ikondan oluşan butonların etiketi vardır; tekrar eden butonların (kalp, adet) etiketi ürün adını içerir; dekoratif görseller gizlenir.
   - Bugünkü durum: kısmen uyuluyor. Kalp etiketi ürün adını içermiyor, kart tek öğe değil; bkz. `REVIEW.md` O9.
     - Notta geçmeyen yerler: sepet adet butonlarının etiketi ürün adını içermiyor ve adet değeri bağlamsız okunuyor (`Views/Cart/CartItemRow.swift`); başarıyla yüklenen ürün görseli ne etiketli ne gizli (`Views/Components/ProductImageView.swift`).
@@ -366,10 +366,12 @@ let store = CartStore()
   - Erişilebilirlik yazı boyutlarında (`dynamicTypeSize.isAccessibilitySize`) alt çubuklar (sepete ekle, sepet özeti) yan yana değil alt alta dizilir. UI testi sepet akışını en büyük boyutta da çalıştırır. SwiftLint `no_fixed_font_size` error'dır.
 
 ```swift
-// ✅ 44 pt dokunma alanı, Assets rengi, etiket
+// ✅ Yazıyla büyüyen ikon, en az 44 pt dokunma alanı, Assets rengi, etiket
+@ScaledMetric(relativeTo: .body) private var circleSize: CGFloat = 34
 Image(systemName: "heart")
-    .frame(width: 34, height: 34)
-    .frame(width: 44, height: 44)
+    .font(.body.weight(.semibold))
+    .frame(width: circleSize, height: circleSize)
+    .frame(minWidth: 44, minHeight: 44)
     .contentShape(Rectangle())
     .accessibilityLabel(Text("\(product.title) ürününü favorilere ekle"))
 Text("Tükendi").foregroundStyle(Color.stockOut)

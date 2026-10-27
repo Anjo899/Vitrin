@@ -77,8 +77,8 @@ custom_rules:
 
   # 8. Erişilebilirlik (Dynamic Type): yazılar metin stilleriyle verilir, ikon ve sabit boyutlar @ScaledMetric ile büyür.
   # O10 düzeltildi, ihlal kalmadı: error.
-  # REVIEW.md'deki `frame(width: <sayı>` önerisi alınmadı: ARCHITECTURE.md 8 dokunma alanı
-  # için `.frame(width: 44, height: 44)` yazılmasını istiyor.
+  # REVIEW.md'deki `frame(width: <sayı>` önerisi alınmadı: galeri yüksekliği gibi metin dışı sabit
+  # boyutlar ARCHITECTURE.md 8'de izinli; dokunma alanı artık `minWidth/minHeight: 44` ile yazılıyor.
   no_fixed_font_size:
     name: "Sabit punto yasak"
     included: '/TrendyolBenzeri/Views/'
