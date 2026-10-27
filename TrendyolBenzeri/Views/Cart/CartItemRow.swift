@@ -12,6 +12,7 @@ struct CartItemRow: View {
     @Environment(CartStore.self) private var cartStore
     /// Kökte seçilen dile göre verilir; dil değişince fiyatlar anında yeni para birimine geçer.
     @Environment(\.currency) private var currency
+    @Environment(\.locale) private var locale
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
@@ -32,6 +33,9 @@ struct CartItemRow: View {
                         Text(item.product.price(in: currency), format: currency.format)
                             .strikethrough()
                             .foregroundStyle(.secondary)
+                            .accessibilityLabel(Text(verbatim: ProductAccessibility.oldPriceLabel(
+                                for: item.product, currency: currency, locale: locale
+                            )))
                     }
                 }
                 .font(.caption)
@@ -87,6 +91,21 @@ struct CartItemRow: View {
                 .stroke(Color(.separator))
         }
         .animation(.default, value: item.quantity)
+        // VoiceOver için tek, ayarlanabilir öğe: "<ürün> adedi, 2"; yukarı/aşağı kaydırma artırır/azaltır.
+        // 1'den azaltmak, butondaki gibi ürünü sepetten çıkarır (REVIEW.md O9).
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text(ProductAccessibility.quantityLabel(for: item.product)))
+        .accessibilityValue(Text(item.quantity, format: .number))
+        .accessibilityAdjustableAction { direction in
+            switch direction {
+            case .increment:
+                cartStore.increment(item)
+            case .decrement:
+                cartStore.decrement(item)
+            @unknown default:
+                break
+            }
+        }
     }
 }
 

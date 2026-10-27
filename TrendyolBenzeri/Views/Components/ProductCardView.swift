@@ -11,6 +11,9 @@ import SwiftUI
 struct ProductCardView: View {
     let product: Product
 
+    @Environment(\.currency) private var currency
+    @Environment(\.locale) private var locale
+
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             productImage
@@ -40,6 +43,11 @@ struct ProductCardView: View {
             RoundedRectangle(cornerRadius: 12)
                 .stroke(Color(.separator), lineWidth: 0.5)
         }
+        // VoiceOver kartı tek öğe olarak, fiyatların bağlamıyla okur (ARCHITECTURE.md 8, REVIEW.md O9).
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text(verbatim: ProductAccessibility.cardLabel(
+            for: product, currency: currency, locale: locale
+        )))
     }
 
     private var productImage: some View {
@@ -83,6 +91,7 @@ struct PriceView: View {
     let product: Product
     /// Kökte seçilen dile göre verilir; dil değişince fiyatlar anında yeni para birimine geçer.
     @Environment(\.currency) private var currency
+    @Environment(\.locale) private var locale
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -91,6 +100,9 @@ struct PriceView: View {
                     .font(.caption2)
                     .strikethrough()
                     .foregroundStyle(.secondary)
+                    .accessibilityLabel(Text(verbatim: ProductAccessibility.oldPriceLabel(
+                        for: product, currency: currency, locale: locale
+                    )))
             }
             Text(product.discountedPrice(in: currency), format: currency.format)
                 .font(.subheadline.bold())

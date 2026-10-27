@@ -29,6 +29,8 @@ struct ProductImageView: View {
                         image
                             .resizable()
                             .scaledToFit()
+                            // Ürün görseli dekoratif; ad ve bilgiler yanındaki metinlerden okunur.
+                            .accessibilityHidden(true)
                     case .failure(let error):
                         placeholder
                             .onAppear { handleFailure(error) }
